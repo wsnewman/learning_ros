@@ -1,2 +1,13 @@
 # learning_ros
-repository to accompany "A Systematic Approach to Learning Robot Programming with ROS"
+This repository accompanies the text "A Systematic Approach to Learning Robot Programming with ROS".
+Code examples reside in folders corresponding to chapters.
+
+This entire repository should be cloned to: ~/ros_ws/src (assuming your ros workspace is named "ros_ws" and resides within your home directory).  To do so, navigate to ~/ros_ws/src from a terminal and enter:
+`git clone https://github.com/wsnewman/learning_ros.git`
+and also clone the external packages used with:
+`git clone https://github.com/wsnewman/learning_ros_external_packages.git`
+
+Then, from a terminal, navigate to ~/ros_ws and compile the code with the command:
+`catkin_make`
+
+

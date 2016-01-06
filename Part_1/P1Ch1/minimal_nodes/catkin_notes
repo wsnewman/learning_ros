@@ -1,0 +1,20 @@
+auto-generated:
+find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  std_msgs
+)
+
+and 
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+)
+
+
+modify lines:
+## Declare a cpp executable
+add_executable(minimal_publisher src/minimal_publisher.cpp)
+
+## Specify libraries to link a library or executable target against
+target_link_libraries(minimal_publisher
+  ${catkin_LIBRARIES}
+ )
