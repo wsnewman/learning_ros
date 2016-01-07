@@ -1,4 +1,4 @@
 <launch> 
-<node name= "minimal_publisher" pkg= "minimal_nodes" type= "minimal_publisher" /> 
-<node name= "minimal_subscriber" pkg= "minimal_nodes" type= "minimal_subscriber" /> 
+<node name= "publisher" pkg= "minimal_nodes" type= "sleepy_minimal_publisher" /> 
+<node name= "subscriber" pkg= "minimal_nodes" type= "minimal_subscriber" /> 
 </launch> 
