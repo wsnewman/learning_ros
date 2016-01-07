@@ -103,6 +103,7 @@ include_directories(
 
 ## Declare a cpp executable
 add_executable(minimal_publisher src/minimal_publisher.cpp)
+add_executable(demo_sleepy_minimal_publisher src/sleepy_minimal_publisher.cpp)
 add_executable(minimal_subscriber src/minimal_subscriber.cpp)
 add_executable(minimal_simulator src/minimal_simulator.cpp)
 add_executable(minimal_controller src/minimal_controller.cpp)
@@ -112,6 +113,7 @@ add_executable(minimal_controller src/minimal_controller.cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(minimal_publisher  ${catkin_LIBRARIES} )
+target_link_libraries(demo_sleepy_minimal_publisher  ${catkin_LIBRARIES} )
 target_link_libraries(minimal_subscriber  ${catkin_LIBRARIES} )
 target_link_libraries(minimal_simulator  ${catkin_LIBRARIES} )
 target_link_libraries(minimal_controller  ${catkin_LIBRARIES} )

@@ -2,7 +2,7 @@
 #include <std_msgs/Float64.h>
 
 int main(int argc, char **argv) {
-    ros::init(argc, argv, "minimal_publisher1"); // name of this node will be "minimal_publisher1"
+    ros::init(argc, argv, "minimal_publisher2"); // name of this node will be "minimal_publisher2"
     ros::NodeHandle n; // two lines to create a publisher object that can talk to ROS
     ros::Publisher my_publisher_object = n.advertise<std_msgs::Float64>("topic1", 1);
     //"topic1" is the name of the topic to which we will publish

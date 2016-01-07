@@ -11,8 +11,6 @@ void myCallback(const std_msgs::Float64& message_holder)
   // slowing down this function for display calls, and it makes the 
   // data available for viewing and logging purposes 
   ROS_INFO("received value is: %f",message_holder.data); 
-  if (message_holder.data>0.5) 
-      ROS_WARN("data is too big!!");
   //really could do something interesting here with the received data...but all we do is print it 
 } 
 
