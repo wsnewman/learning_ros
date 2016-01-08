@@ -1,15 +1,15 @@
 #include <ros/ros.h>
-#include <example_ros_msg/example_message.h>
+#include <example_ros_msg/ExampleMessage.h>
 #include <math.h>
 
 int main(int argc, char **argv) {
     ros::init(argc, argv, "example_ros_message_publisher"); // name of this node 
     ros::NodeHandle n; // two lines to create a publisher object that can talk to ROS
-    ros::Publisher my_publisher_object = n.advertise<example_ros_msg::example_message>("example_topic", 1);
+    ros::Publisher my_publisher_object = n.advertise<example_ros_msg::ExampleMessage>("example_topic", 1);
     //"example_topic" is the name of the topic to which we will publish
     // the "1" argument says to use a buffer size of 1; could make larger, if expect network backups
     
-    example_ros_msg::example_message  my_new_message;
+    example_ros_msg::ExampleMessage  my_new_message;
     //create a variable of type "example_msg", 
     // as defined in this package
    

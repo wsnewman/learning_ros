@@ -10,4 +10,3 @@ cs_add_executable(example_ros_message_publisher src/example_ros_message_publishe
 
 cs_install()
 cs_export()
-
