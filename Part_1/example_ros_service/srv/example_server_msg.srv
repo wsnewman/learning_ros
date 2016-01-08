@@ -1,0 +1,6 @@
+string name
+---
+bool on_the_list
+bool good_guy
+int32 age
+string nickname
