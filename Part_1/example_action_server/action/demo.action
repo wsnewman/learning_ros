@@ -1,0 +1,11 @@
+#goal definition
+#the lines with the hash signs are merely comments
+#goal, result and feedback are defined by this fixed order, and separated by 3 hyphens
+int32 input
+---
+#result definition
+int32 output
+int32 goal_stamp
+---
+#feedback
+int32 fdbk
