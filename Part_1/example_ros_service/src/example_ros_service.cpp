@@ -5,12 +5,12 @@
 
 
 #include <ros/ros.h>
-#include <example_ros_service/example_server_msg.h>
+#include <example_ros_service/ExampleServiceMsg.h>
 #include <iostream>
 #include <string>
 using namespace std;
 
-bool callback(example_ros_service::example_server_msgRequest& request, example_ros_service::example_server_msgResponse& response)
+bool callback(example_ros_service::ExampleServiceMsgRequest& request, example_ros_service::ExampleServiceMsgResponse& response)
 {
     ROS_INFO("callback activated");
     string in_name(request.name); //let's convert this to a C++-class string, so can use member funcs
