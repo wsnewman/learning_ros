@@ -109,7 +109,7 @@ int main(int argc, char** argv) {
 
     ROS_INFO("instantiating the demo action server: ");
 
-    ExampleActionServer as_object; // create an instance of the class "exampleActionServer"
+    ExampleActionServer as_object; // create an instance of the class "ExampleActionServer"
     
     ROS_INFO("going into spin");
     // from here, all the work is done in the action server, with the interesting stuff done within "executeCB()"
