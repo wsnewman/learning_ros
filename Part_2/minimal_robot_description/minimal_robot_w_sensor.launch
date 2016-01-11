@@ -1,0 +1,8 @@
+<launch>
+<param name="robot_description" 
+textfile="$(find minimal_robot_description)/minimal_robot_w_sensor.urdf"/>
+
+ <!-- wsn: transform for kinect -->
+<node pkg="tf" type="static_transform_publisher" name="kinect_calib" args="0 0 0 -0.500 0.500 -0.500 0.500 kinect_link kinect_sensor_frame 10"/>
+
+</launch>

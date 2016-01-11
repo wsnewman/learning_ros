@@ -1,0 +1,25 @@
+<launch>
+
+<include file ="$(find gazebo_ros)/launch/empty_world.launch"/>
+
+<!--rosrun gazebo_ros spawn_model  -file minimal_robot_w_sensor.urdf -urdf -model one_DOF_robot-->
+  <!-- spawn robot in gazebo -->
+  <node name="spawn_robot" pkg="gazebo_ros" type="spawn_model" args="-file $(find minimal_robot_description)/minimal_robot_w_sensor.urdf -urdf -model one_DOF_robot"/>
+
+  <!-- send robot urdf to param server -->
+<param name="robot_description" 
+textfile="$(find minimal_robot_description)/minimal_robot_w_sensor.urdf"/>
+
+<!-- rosrun minimal_joint_controller minimal_joint_controller -->
+<node pkg="minimal_joint_controller" type="minimal_joint_controller" name="minimal_joint_controller"/>
+
+ <!-- wsn: transform for kinect -->
+<!--node pkg="tf" type="static_transform_publisher" name="kinect_calib" args="0 0 0 -0.500 0.500 -0.500 0.500 kinect_link kinect_sensor_frame 10"/-->
+
+<node pkg="tf" type="static_transform_publisher" name="kinect_calib2" args="0 0 0 -0.500 0.500 -0.500 0.500 kinect_link kinect_pc_frame 10"/>
+
+<node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher"/>
+
+<node pkg="rviz" type="rviz" name="rviz"/>
+ 
+</launch>

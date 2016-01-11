@@ -1,0 +1,171 @@
+<?xml version="1.0"?>
+<robot  name="one_DOF_robot">
+<!--color specification for rviz-->
+<material name="blue">
+  <color rgba="0.0 0.0 0.8 1.0"/>
+</material>
+<material name="orange">
+  <color rgba="1.0 0.42 0.04 1"/>
+</material>
+<material name="kinect_gray">
+   <color rgba="0.2 0.2 0.2 1.0"/>
+</material>    
+
+<!-- Used for fixing robot to Gazebo 'base_link' -->
+  <link name="world"/>
+
+  <joint name="glue_robot_to_world" type="fixed">
+    <parent link="world"/>
+    <child link="link1"/>
+  </joint>
+
+ <!-- Base Link -->
+  <link name="link1">
+    <collision>
+      <origin xyz="0 0 0.5" rpy="0 0 0"/>
+      <geometry>
+       <box size="0.2 0.2 0.7"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 0.5" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.2 0.2 1"/>
+      </geometry>
+      <!--this informs Rviz what color we want this link -->
+     <material name="blue"/>
+    </visual>
+
+    <inertial>
+      <origin xyz="0 0 0.5" rpy="0 0 0"/>
+      <mass value="1"/>
+      <inertia
+        ixx="1.0" ixy="0.0" ixz="0.0"
+        iyy="1.0" iyz="0.0"
+        izz="1.0"/>
+    </inertial>
+  </link>
+  <!-- gazebo and rviz use different color encodings; inform gazebo that we want this link to be Blue-->
+  <gazebo reference="link1">
+  <material>Gazebo/Blue</material>
+</gazebo>
+
+<!-- Moveable Link -->
+  <link name="link2">
+    <collision>
+      <origin xyz="0 0 0.5" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="1" radius="0.1"/>
+        <!--box size="0.15 0.15 0.8"-->
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 0.5" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="1" radius="0.1"/>
+      </geometry>
+      <material name="orange"/>
+    </visual>
+
+    <inertial>
+      <origin xyz="0 0 0.5" rpy="0 0 0"/>
+      <mass value="1"/>
+      <inertia
+        ixx="0.1" ixy="0.0" ixz="0.0"
+        iyy="0.1" iyz="0.0"
+        izz="0.005"/>
+    </inertial>
+  </link>
+  
+    <gazebo reference="link2">
+  <material>Gazebo/Orange</material>
+</gazebo>
+
+  <joint name="joint1" type="continuous">
+    <parent link="link1"/>
+    <child link="link2"/>
+    <origin xyz="0 0 1" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+
+<!-- TRY ADDING a Kinect sensor: first the visual/collision/inertial box -->
+    <link name="kinect_link">
+      <collision>
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <geometry>
+              <!-- coarse model; a simple box -->
+              <box size="0.05 0.2 0.05"/>
+          </geometry>
+      </collision>
+
+      <visual>
+          <origin xyz="0 0 0" rpy="0 0 0" />
+          <geometry>
+              <box size="0.05 0.2 0.05" />
+          </geometry>
+          <material name="kinect_gray"/>
+      </visual>
+
+      <inertial>
+          <mass value="0.1" />
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+      </inertial>
+  </link>
+  <!--the above displays a box meant to imply Kinect-->
+  <!--now set the position/orientation of the above box: -->
+  <joint name="kinect_joint" type="fixed">
+      <axis xyz="0 1 0" />
+      <!--origin xyz="0.55 0.03 1.585" rpy="0.06 0.95 0"/ -->
+      <origin xyz="0.2 0.0 0.95" rpy="0.0 1.2 0"/> 
+      <parent link="link2"/>
+      <child link="kinect_link"/>
+  </joint>
+  <!-- wsn: add kinect sensor emulation-->
+<gazebo reference="kinect_link">
+    <sensor type="depth" name="openni_camera_camera">       
+        <always_on>1</always_on>
+        <visualize>true</visualize>             
+        <camera>
+            <horizontal_fov>1.047</horizontal_fov>  
+            <image>
+                <width>640</width>
+                <height>480</height>
+                <format>R8G8B8</format>
+            </image>
+            <depth_camera>
+
+            </depth_camera>
+            <clip>
+                <near>0.1</near>
+                <far>100</far>
+            </clip>
+        </camera>
+        <plugin name="camera_controller" filename="libgazebo_ros_openni_kinect.so">
+            <alwaysOn>true</alwaysOn>
+                <updateRate>10.0</updateRate>
+                <cameraName>kinect</cameraName>
+                <frameName>kinect_pc_frame</frameName>                   
+            <imageTopicName>rgb/image_raw</imageTopicName>
+            <depthImageTopicName>depth/image_raw</depthImageTopicName>
+            <pointCloudTopicName>depth/points</pointCloudTopicName>
+            <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>              
+            <depthImageCameraInfoTopicName>depth/camera_info</depthImageCameraInfoTopicName>            
+            <pointCloudCutoff>0.4</pointCloudCutoff>                
+                <hackBaseline>0.07</hackBaseline>
+                <distortionK1>0.0</distortionK1>
+                <distortionK2>0.0</distortionK2>
+                <distortionK3>0.0</distortionK3>
+                <distortionT1>0.0</distortionT1>
+                <distortionT2>0.0</distortionT2>
+            <CxPrime>0.0</CxPrime>
+            <Cx>0.0</Cx>
+            <Cy>0.0</Cy>
+            <focalLength>0.0</focalLength>
+            </plugin>
+    </sensor>
+</gazebo>
+</robot>
+

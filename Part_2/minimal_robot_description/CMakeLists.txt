@@ -1,13 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(minimal_nodes)
+project(minimal_robot_description)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  std_msgs
-)
+find_package(catkin REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -66,7 +63,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   std_msgs
+#   std_msgs  # Or other packages containing msgs
 # )
 
 ###################################
@@ -80,8 +77,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES minimal_nodesmal_publish
-#  CATKIN_DEPENDS roscpp std_msgs
+#  LIBRARIES minimal_robot_description
+#  CATKIN_DEPENDS other_catkin_pkg
 #  DEPENDS system_lib
 )
 
@@ -92,31 +89,24 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
-include_directories(
-  ${catkin_INCLUDE_DIRS}
-)
 
 ## Declare a cpp library
-# add_library(minimal_nodes
-#   src/${PROJECT_NAME}/minimal_nodes.cpp
+# add_library(minimal_robot_description
+#   src/${PROJECT_NAME}/minimal_robot_description.cpp
 # )
 
 ## Declare a cpp executable
-add_executable(minimal_publisher src/minimal_publisher.cpp)
-add_executable(sleepy_minimal_publisher src/sleepy_minimal_publisher.cpp)
-add_executable(minimal_subscriber src/minimal_subscriber.cpp)
-add_executable(minimal_simulator src/minimal_simulator.cpp)
-add_executable(minimal_controller src/minimal_controller.cpp)
+# add_executable(minimal_robot_description_node src/minimal_robot_description_node.cpp)
+
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(minimal_nodes_node minimal_nodes_generate_messages_cpp)
+# add_dependencies(minimal_robot_description_node minimal_robot_description_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(minimal_publisher  ${catkin_LIBRARIES} )
-target_link_libraries(sleepy_minimal_publisher  ${catkin_LIBRARIES} )
-target_link_libraries(minimal_subscriber  ${catkin_LIBRARIES} )
-target_link_libraries(minimal_simulator  ${catkin_LIBRARIES} )
-target_link_libraries(minimal_controller  ${catkin_LIBRARIES} )
+# target_link_libraries(minimal_robot_description_node
+#   ${catkin_LIBRARIES}
+# )
+
 #############
 ## Install ##
 #############
@@ -132,7 +122,7 @@ target_link_libraries(minimal_controller  ${catkin_LIBRARIES} )
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS minimal_nodes minimal_nodes_node
+# install(TARGETS minimal_robot_description minimal_robot_description_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -157,7 +147,7 @@ target_link_libraries(minimal_controller  ${catkin_LIBRARIES} )
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_minimal_nodes.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_minimal_robot_description.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
