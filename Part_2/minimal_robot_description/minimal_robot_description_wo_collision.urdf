@@ -11,13 +11,6 @@
 
  <!-- Base Link -->
   <link name="link1">
-    <collision>
-      <origin xyz="0 0 0.5" rpy="0 0 0"/>
-      <geometry>
-       <box size="0.2 0.2 0.7"/>
-      </geometry>
-    </collision>
-
     <visual>
       <origin xyz="0 0 0.5" rpy="0 0 0"/>
       <geometry>
@@ -37,14 +30,6 @@
 
 <!-- Moveable Link -->
   <link name="link2">
-    <collision>
-      <origin xyz="0 0 0.5" rpy="0 0 0"/>
-      <geometry>
-        <cylinder length="1" radius="0.1"/>
-        <!--box size="0.15 0.15 0.8"-->
-      </geometry>
-    </collision>
-
     <visual>
       <origin xyz="0 0 0.5" rpy="0 0 0"/>
       <geometry>

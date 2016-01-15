@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<robot  name="static_robot">
+
+<!-- Used for fixing robot to Gazebo 'base_link' -->
+  <link name="world"/>
+
+  <joint name="glue_robot_to_world" type="fixed">
+    <parent link="world"/>
+    <child link="link1"/>
+  </joint>
+
+ <!-- Base Link -->
+  <link name="link1">
+    <visual>
+      <origin xyz="0 0 0.5" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.2 0.2 1"/>
+      </geometry>
+    </visual>
+  </link>
+</robot>
+
