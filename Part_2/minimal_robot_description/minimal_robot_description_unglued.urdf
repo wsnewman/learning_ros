@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<robot  name="one_DOF_robot">
+
+<!-- same as minimal robot, except no static link fixing the robot to ground -->
+ <!-- Base Link -->
+  <link name="link1">
+    <collision>
+      <origin xyz="0 0 0.5" rpy="0 0 0"/>
+      <geometry>
+       <box size="0.2 0.2 0.7"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 0.5" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.2 0.2 1"/>
+      </geometry>
+    </visual>
+
+    <inertial>
+      <origin xyz="0 0 0.5" rpy="0 0 0"/>
+      <mass value="1"/>
+      <inertia
+        ixx="1.0" ixy="0.0" ixz="0.0"
+        iyy="1.0" iyz="0.0"
+        izz="1.0"/>
+    </inertial>
+  </link>
+  <gazebo reference="link1">
+    <material>Gazebo/Blue</material>
+  </gazebo>
+<!-- Moveable Link -->
+  <link name="link2">
+    <collision>
+      <origin xyz="0 0 0.5" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="1" radius="0.1"/>
+        <!--box size="0.15 0.15 0.8"-->
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 0.5" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="1" radius="0.1"/>
+      </geometry>
+    </visual>
+
+    <inertial>
+      <origin xyz="0 0 0.5" rpy="0 0 0"/>
+      <mass value="1"/>
+      <inertia
+        ixx="0.1" ixy="0.0" ixz="0.0"
+        iyy="0.1" iyz="0.0"
+        izz="0.005"/>
+    </inertial>
+  </link>
+  <gazebo reference="link2">
+    <material>Gazebo/Red</material>
+  </gazebo>
+
+  <joint name="joint1" type="revolute">
+    <parent link="link1"/>
+    <child link="link2"/>
+    <origin xyz="0 0 1" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="10.0" lower="0.0" upper="2.0" velocity="0.5"/>
+    <dynamics damping="1.0"/>
+  </joint>
+
+  <transmission name="tran1">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint1">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor1">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <gazebo>
+     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+       <robotNamespace>/one_DOF_robot</robotNamespace>
+     </plugin>
+  </gazebo>
+</robot>
+

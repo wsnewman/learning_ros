@@ -1,0 +1,8 @@
+<launch>
+  <!-- Load joint controller configurations from YAML file to parameter server -->
+  <rosparam file="$(find minimal_robot_description)/control_config/one_dof_ctl_params.yaml" command="load"/>
+  
+  <!--start up the controller plug-ins via the controller manager -->
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+    output="screen" ns="/one_DOF_robot" args="joint_state_controller joint1_position_controller"/>
+</launch>
