@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<robot 
+     xmlns:xacro="http://www.ros.org/wiki/xacro" name="mobot">
+  <xacro:include filename="$(find mobot_urdf)/urdf/mobot_w_jnt_pub.xacro" />    
+  <xacro:include filename="$(find minimal_robot_description)/minimal_robot_w_jnt_pub.urdf" /> 
+  
+  <!-- attach the simple arm to the mobile robot -->
+  <joint name="arm_base_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="link1" />
+    <origin rpy="0 0 0 " xyz="${-bodylen/2} 0 ${bodyOZ+bodyheight/2}"/>
+  </joint>    
+</robot>
