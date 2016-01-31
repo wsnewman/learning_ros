@@ -1,0 +1,10 @@
+#This service message has a command mode (an int) and fields to accept and/or return a pose
+int32 cmd_mode
+
+#some requests require the client to specify a desired pose for the marker
+#as pose-stamped, also includes the reference frame and time stamp
+geometry_msgs/PoseStamped poseStamped_IM_desired
+
+---
+#return the IM pose
+geometry_msgs/PoseStamped poseStamped_IM_current
