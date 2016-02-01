@@ -1,0 +1,11 @@
+<launch>
+<!-- Convert xacro model file and put on parameter server -->
+<param name="robot_description" command="$(find xacro)/xacro.py '$(find mobot_urdf)/urdf/mobot_w_lidar.xacro'" />
+
+<!-- Spawn the robot from parameter server into Gazebo -->
+<node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model mobot" />
+
+<!-- start a robot_state_publisher -->
+<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+</launch>

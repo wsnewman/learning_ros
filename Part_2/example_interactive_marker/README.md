@@ -8,7 +8,7 @@ This node initializes the pose of the interactive marker, then listens for chang
 user interaction.  It keeps track of current pose.
 
 Also provides a service called "/IM6DofSvc" which uses services messages of type:
-cwru_srv/IM_node_service_message.  IM service requests contains a command mode.  If mode is
+ImNodeSvcMsg (defined in this package).  IM service requests contain a command mode.  If mode is
 GET_CURRENT_MARKER_POSE, then the service response contains the current pose of the marker.
 
 If the command mode is SET_NEW_MARKER_POSE, then the poseStamped_IM_desired field of the
