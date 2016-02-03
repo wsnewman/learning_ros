@@ -35,6 +35,7 @@ geometry_msgs::Quaternion convertPlanarPhi2Quaternion(double phi);
 
 void do_halt();
 void do_move(double distance);
+void do_spin(double spin_ang);
 
 //signum function: strip off and return the sign of the argument
 double sgn(double x) { if (x>0.0) {return 1.0; }
