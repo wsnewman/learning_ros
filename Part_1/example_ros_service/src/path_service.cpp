@@ -15,9 +15,6 @@ bool callback(example_ros_service::PathSrvRequest& request, example_ros_service:
 {
     
     ROS_INFO("callback activated");
-    //geometry_msgs::Pose poses[];
-    //std::vector <geometry_msgs::Pose> poses[];
-    //poses = request.nav_path.poses.size();
     int npts = request.nav_path.poses.size();
     ROS_INFO("received path request with %d poses",npts);
  
