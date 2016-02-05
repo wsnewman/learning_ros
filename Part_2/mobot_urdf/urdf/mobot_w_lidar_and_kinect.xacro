@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<robot 
+     xmlns:xacro="http://www.ros.org/wiki/xacro" name="mobot">
+  <xacro:include filename="$(find mobot_urdf)/urdf/mobot_w_lidar.xacro" />    
+  <xacro:include filename="$(find mobot_urdf)/urdf/example_camera.xacro" /> 
+  <xacro:include filename="$(find mobot_urdf)/urdf/example_kinect.xacro" />   
+  <!-- attach the camera to the mobile robot -->
+  <joint name="camera_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="camera_link" />  
+    <origin rpy="0 0 0 " xyz="0.1 0 0.7"/>
+  </joint>   
+  <!-- attach the kinect to the mobile robot -->
+  <joint name="kinect_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="kinect_link" />  
+    <origin rpy="0 0 0 " xyz="0.1 0 0.72"/>
+  </joint>   
+  <!-- kinect depth frame has a different viewpoint; publish it separately-->     
+</robot>
+

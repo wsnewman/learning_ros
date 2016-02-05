@@ -1,0 +1,21 @@
+<launch>
+<!-- Convert xacro model file and put on parameter server -->
+<param name="robot_description" command="$(find xacro)/xacro.py '$(find mobot_urdf)/urdf/mobot_w_lidar_and_kinect.xacro'" />
+
+<!-- Spawn the robot from parameter server into Gazebo -->
+<node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model mobot" />
+
+<node pkg="tf" type="static_transform_publisher" name="kinect_broadcaster" args="0 0 0 -0.500 0.500 -0.500 0.500 kinect_link kinect_depth_frame 100" />
+
+<!-- start a robot_state_publisher -->
+<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+<!-- launch rviz using a specific config file -->
+ <node pkg="rviz" type="rviz" name="rviz" args="-d $(find mobot_urdf)/rviz_config/mobot_w_lidar_and_kinect.rviz"/>
+ 
+<!-- launch image_view as well --> 
+ <node pkg="image_view" type="image_view" name="image_view">
+   <remap from="image" to="/kinect/rgb/image_raw" />
+ </node>
+
+</launch>

@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<robot 
+     xmlns:xacro="http://www.ros.org/wiki/xacro" name="mobot_camera">
+ 
+  <!-- add a simulated camera, including visual, collision and inertial properties, and physics simulation-->
+  <link name="camera_link">
+      <!-- here is the physical body (case) of the camera-->
+      <collision>
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <geometry>
+              <box size="0.1 0.02 0.02"/>
+          </geometry>
+      </collision>
+
+      <visual>
+          <origin xyz="0 0 0" rpy="0 0 0" />
+          <geometry>
+              <box size="0.1 0.02 0.02"/>
+          </geometry>
+          <material name="camera_case">
+              <color rgba="0.7 0.0 0.0 1.0"/>
+          </material>
+      </visual>
+
+      <inertial>
+          <mass value="0.1" />
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001" />
+      </inertial>
+  </link>
+  
+ <!-- here is the gazebo plug-in to simulate a color camera -->
+ <!--must refer to the above-defined link to place the camera in space-->
+  <gazebo reference="camera_link">
+   <!--optionally, displace/rotate the optical frame relative to the enclosure-->
+   <pose>0.1 00 0.0 0 0 0</pose>
+    <sensor type="camera" name="example_camera">
+      <update_rate>30.0</update_rate>
+      <camera name="example_camera">
+        <!--describe some optical properties of the camera-->
+        <!--field of view is expressed as an angle, in radians-->
+        <horizontal_fov>1.0</horizontal_fov>
+        <!--set resolution of pixels of image sensor, e.g. 640x480-->
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <!--min and max range of camera-->
+          <near>0.01</near>
+          <far>100.0</far>
+        </clip>
+        <noise>
+          <!--optionally, add noise, to make images more realistic-->
+          <type>gaussian</type>
+          <!-- Noise is sampled independently per pixel on each frame.
+               That pixel's noise value is added to each of its color
+               channels, which at that point lie in the range [0,1]. -->
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <!--here is the plug-in that does the work of camera emulation-->
+      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>10.0</updateRate> <!--can set the publication rate-->
+        <cameraName>example_camera</cameraName> <!--topics will be example_camera/... -->
+        <!--listen to the following topic name to get streaming images-->
+        <imageTopicName>image_raw</imageTopicName>
+        <!--the following topic carries info about the camera, e.g. 640x480, etc-->
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <!--frameName must match gazebo reference name...seems redundant-->
+        <!-- this name will be the frame_id name in header of published frames-->
+        <frameName>camera_link</frameName>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+  </gazebo>     
+
+</robot>
