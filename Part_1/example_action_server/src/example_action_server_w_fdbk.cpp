@@ -1,5 +1,10 @@
-// example_action_server: a simple action server
-// Wyatt Newman
+// example_action_server: 2nd version, includes "cancel" and "feedback"
+// expects client to give an integer corresponding to a timer count, in seconds
+// server counts up to this value, provides feedback, and can be cancelled any time
+// re-use the existing action message, although not all fields are needed
+// use request "input" field for timer setting input, 
+// value of "fdbk" will be set to the current time (count-down value)
+// "output" field will contain the final value when the server completes the goal request
 
 #include<ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
@@ -25,9 +30,9 @@ private:
     // here are some message types to communicate with our client(s)
     example_action_server::demoGoal goal_; // goal message, received from client
     example_action_server::demoResult result_; // put results here, to be sent back to the client when done w/ goal
-    example_action_server::demoFeedback feedback_; // not used in this example; 
-    // would need to use: as_.publishFeedback(feedback_); to send incremental feedback to the client
-
+    example_action_server::demoFeedback feedback_; // for feedback 
+    //  use: as_.publishFeedback(feedback_); to send incremental feedback to the client
+    int countdown_val_;
 
 
 public:
@@ -44,13 +49,14 @@ public:
 // member as_ will get instantiated with specified node-handle, name by which this server will be known,
 //  a pointer to the function to be executed upon receipt of a goal.
 //  
-// Syntax of naming the function to be invoked: get a pointer to the function, called executeCB, which is a member method
-// of our class exampleActionServer.  Since this is a class method, we need to tell boost::bind that it is a class member,
-// using the "this" keyword.  the _1 argument says that our executeCB takes one argument
-// the final argument  "false" says don't start the server yet.  (We'll do this in the constructor)
+// Syntax of naming the function to be invoked: get a pointer to the function, called executeCB, 
+// which is a member method of our class exampleActionServer.  
+// Since this is a class method, we need to tell boost::bind that it is a class member,
+// using the "this" keyword.  the _1 argument says that our executeCB function takes one argument
+// The final argument,  "false", says don't start the server yet.  (We'll do this in the constructor)
 
 ExampleActionServer::ExampleActionServer() :
-   as_(nh_, "example_action", boost::bind(&ExampleActionServer::executeCB, this, _1),false) 
+   as_(nh_, "timer_action", boost::bind(&ExampleActionServer::executeCB, this, _1),false) 
 // in the above initialization, we name the server "example_action"
 //  clients will need to refer to this name to connect with this server
 {
@@ -69,54 +75,45 @@ ExampleActionServer::ExampleActionServer() :
 // The name "demo" is prepended to other message types created automatically during compilation.
 // e.g.,  "demoAction" is auto-generated from (our) base name "demo" and generic name "Action"
 void ExampleActionServer::executeCB(const actionlib::SimpleActionServer<example_action_server::demoAction>::GoalConstPtr& goal) {
-    //ROS_INFO("in executeCB");
-    //ROS_INFO("goal input is: %d", goal->input);
+    ROS_INFO("in executeCB");
+    ROS_INFO("goal input is: %d", goal->input);
     //do work here: this is where your interesting code goes
-    
-    //....
-
-    // for illustration, populate the "result" message with two numbers:
-    // the "input" is the message count, copied from goal->input (as sent by the client)
-    // the "goal_stamp" is the server's count of how many goals it has serviced so far
-    // if there is only one client, and if it is never restarted, then these two numbers SHOULD be identical...
-    // unless some communication got dropped, indicating an error
-    // send the result message back with the status of "success"
-
-    g_count++; // keep track of total number of goals serviced since this server was started
-    result_.output = g_count; // we'll use the member variable result_, defined in our class
-    result_.goal_stamp = goal->input;
-    
-    // the class owns the action server, so we can use its member methods here
-   
-    // DEBUG: if client and server remain in sync, all is well--else whine and complain and quit
-    // NOTE: this is NOT generically useful code; server should be happy to accept new clients at any time, and
-    // no client should need to know how many goals the server has serviced to date
-    if (g_count != goal->input) {
-        ROS_WARN("hey--mismatch!");
-        ROS_INFO("g_count = %d; goal_stamp = %d", g_count, result_.goal_stamp);
-        g_count_failure = true; //set a flag to commit suicide
-        ROS_WARN("informing client of aborted goal");
-        as_.setAborted(result_); // tell the client we have given up on this goal; send the result message as well
+    ros::Rate timer(1.0); // 1Hz timer
+    countdown_val_ = goal->input;
+    //implement a simple timer, which counts down from provided countdown_val to 0, in seconds
+    while (countdown_val_>0) {
+       ROS_INFO("countdown = %d",countdown_val_);
+       
+       // each iteration, check if cancellation has been ordered
+       if (as_.isPreemptRequested()){	
+          ROS_WARN("goal cancelled!");
+          result_.output = countdown_val_;
+          as_.setAborted(result_); // tell the client we have given up on this goal; send the result message as well
+          return; // done with callback
+ 		}
+ 	
+ 	   //if here, then goal is still valid; provide some feedback
+ 	   feedback_.fdbk = countdown_val_; // populate feedback message with current countdown value
+ 	   as_.publishFeedback(feedback_); // send feedback to the action client that requested this goal
+       countdown_val_--; //decrement the timer countdown
+       timer.sleep(); //wait 1 sec between loop iterations of this timer
     }
-    else {
-         as_.setSucceeded(result_); // tell the client that we were successful acting on the request, and return the "result" message
-    }
+    //if we survive to here, then the goal was successfully accomplished; inform the client
+    result_.output = countdown_val_; //value should be zero, if completed countdown
+    as_.setSucceeded(result_); // return the "result" message to client, along with "success" status
 }
 
 int main(int argc, char** argv) {
-    ros::init(argc, argv, "demo_action_server_node"); // name this node 
+    ros::init(argc, argv, "timer_action_server_node"); // name this node 
 
-    ROS_INFO("instantiating the demo action server: ");
+    ROS_INFO("instantiating the timer_action_server: ");
 
     ExampleActionServer as_object; // create an instance of the class "ExampleActionServer"
     
     ROS_INFO("going into spin");
     // from here, all the work is done in the action server, with the interesting stuff done within "executeCB()"
     // you will see 5 new topics under example_action: cancel, feedback, goal, result, status
-    while (!g_count_failure) {
-        ros::spinOnce(); //normally, can simply do: ros::spin();  
-        // for debug, induce a halt if we ever get our client/server communications out of sync
-    }
+    ros::spin();
 
     return 0;
 }

@@ -12,7 +12,7 @@ using namespace std;
 
 bool callback(example_ros_service::ExampleServiceMsgRequest& request, example_ros_service::ExampleServiceMsgResponse& response)
 {
-    ROS_INFO("callback activated");
+    ROS_INFO("callback callback activated");
     string in_name(request.name); //let's convert this to a C++-class string, so can use member funcs
     //cout<<"in_name:"<<in_name<<endl;
     response.on_the_list=false;
