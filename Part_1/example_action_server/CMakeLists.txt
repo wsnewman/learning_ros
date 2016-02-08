@@ -9,7 +9,7 @@ catkin_simple()
 # Executables
 cs_add_executable(example_action_server src/example_action_server.cpp)
 cs_add_executable(example_action_client src/example_action_client.cpp)
-
+cs_add_executable(example_countdown_server src/example_action_server_w_fdbk.cpp)
 cs_install()
 cs_export()
     
