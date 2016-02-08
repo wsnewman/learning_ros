@@ -6,9 +6,9 @@
 
 // can test this function manually with terminal commands, e.g. (in separate terminals):
 // rosrun example_ros_class example_ros_class
-// rostopic echo exampleMinimalPubTopic
-// rostopic pub -r 4 exampleMinimalSubTopic std_msgs/Float32 2.0
-// rosservice call exampleMinimalService 1
+// rostopic echo example_class_output_topic
+// rostopic pub -r 4 example_class_input_topic std_msgs/Float32 2.0
+// rosservice call example_minimal_service     // sends a trigger signal; don't need a request argument
 
 
 // this header incorporates all the necessary #include files and defines the class "ExampleRosClass"
@@ -74,7 +74,7 @@ void ExampleRosClass::subscriberCallback(const std_msgs::Float32& message_holder
     val_to_remember_ += val_from_subscriber_; //can use a member variable to store values between calls; add incoming value each callback
     output_msg.data= val_to_remember_;
     // demo use of publisher--since publisher object is a member function
-    minimal_publisher_.publish(output_msg); //output the square of the received value; 
+    minimal_publisher_.publish(output_msg); //output the current value of val_to_remember_ 
 }
 
 

@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
     path_srv.request.nav_path.poses.push_back(pose_stamped);
     
     // some more poses...
-    quat = convertPlanarPhi2Quaternion(1.57); // get a quaterion corresponding to this heading
+    quat = convertPlanarPhi2Quaternion(1.57); // get a quaternion corresponding to this heading
     pose_stamped.pose.orientation = quat;   
     pose_stamped.pose.position.y=1.0; // say desired y-coord is 1.0
     path_srv.request.nav_path.poses.push_back(pose_stamped);
