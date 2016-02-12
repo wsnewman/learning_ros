@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
     ros::Subscriber alarm_subscriber = n.subscribe("lidar_alarm",1,alarmCallback); 
     //some "magic numbers"
     double sample_dt = 0.01; //specify a sample period of 10ms  
-    double speed = 1.0; // 1m/s speed command
+    double speed = 0.5; // 1m/s speed command
     double yaw_rate = 0.5; //0.5 rad/sec yaw rate command
     double time_3_sec = 3.0; // should move 3 meters or 1.5 rad in 3 seconds
     
