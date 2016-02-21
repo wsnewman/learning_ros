@@ -37,6 +37,9 @@ int main(int argc, char **argv) {
 
     ros::Rate looprate(1 / dt); //timer for fixed publication rate   
     TrajBuilder trajBuilder(&n); //instantiate one of these
+    trajBuilder.set_dt(dt); //make sure trajectory builder and main use the same time step
+    trajBuilder.set_alpha_max(1.0);
+    //hard code two poses; more generally, would get poses from a nav_msgs/Path message.
     double psi_start = 0.0;
     double psi_end = 0.0; //3.0;
     g_start_state.pose.pose.orientation = trajBuilder.convertPlanarPsi2Quaternion(psi_start);
@@ -47,16 +50,18 @@ int main(int argc, char **argv) {
     g_start_pose.pose.position.y = 0.0;
     g_start_pose.pose.position.z = 0.0;
     g_start_pose.pose.orientation = trajBuilder.convertPlanarPsi2Quaternion(psi_start);
-    g_end_pose = g_start_pose;
+    g_end_pose = g_start_pose; //includes copying over twist with all zeros
+    //don't really care about orientation, since this will follow from 
+    // point-and-go trajectory; 
     g_end_pose.pose.orientation = trajBuilder.convertPlanarPsi2Quaternion(psi_end);
-    g_end_pose.pose.position.x = 5.0;
+    g_end_pose.pose.position.x = 5.0; //set goal coordinates
     g_end_pose.pose.position.y = 0.0; //-4.0;
 
     double des_psi;
     std_msgs::Float64 psi_msg;
     std::vector<nav_msgs::Odometry> vec_of_states;
     //trajBuilder.build_triangular_spin_traj(g_start_pose,g_end_pose,vec_of_states);
-    trajBuilder.build_point_and_go_traj(g_start_pose, g_end_pose, vec_of_states);
+    //trajBuilder.build_point_and_go_traj(g_start_pose, g_end_pose, vec_of_states);
 
     nav_msgs::Odometry des_state;
     nav_msgs::Odometry last_state;
@@ -69,7 +74,7 @@ int main(int argc, char **argv) {
     }
     ROS_INFO("done computing trajectories");
      * */
-    
+
     // main loop; publish a desired state every iteration    
     while (ros::ok()) {
         ROS_INFO("building traj from start to end");
@@ -89,7 +94,7 @@ int main(int argc, char **argv) {
         ROS_INFO("building traj from end to start");
         last_state = vec_of_states.back();
         last_pose.header = last_state.header;
-        last_pose.pose= last_state.pose.pose;
+        last_pose.pose = last_state.pose.pose;
         trajBuilder.build_point_and_go_traj(last_pose, g_start_pose, vec_of_states);
         for (int i = 0; i < vec_of_states.size(); i++) {
             des_state = vec_of_states[i];
@@ -103,7 +108,7 @@ int main(int argc, char **argv) {
         }
         last_state = vec_of_states.back();
         g_start_pose.header = last_state.header;
-        g_start_pose.pose= last_state.pose.pose;
+        g_start_pose.pose = last_state.pose.pose;
     }
 }
 
