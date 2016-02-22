@@ -24,7 +24,6 @@ const double default_dt=0.02;
 
 class TrajBuilder {
 private:
-    ros::NodeHandle nh_;
     //constants and parameters: changeable via public "set" fncs
     double dt_;
     double accel_max_;
@@ -37,9 +36,10 @@ private:
     geometry_msgs::Twist halt_twist_;
 
 public:
-    TrajBuilder(ros::NodeHandle* nodehandle); //constructor
+    TrajBuilder(); //constructor
 
     void set_dt(double dt) {
+        ROS_INFO("setting dt to %f",dt);
         dt_ = dt;
     }
 
@@ -96,7 +96,6 @@ public:
             geometry_msgs::PoseStamped end_pose,
             std::vector<nav_msgs::Odometry> &vec_of_states);
     void build_braking_traj(geometry_msgs::PoseStamped start_pose,
-            geometry_msgs::PoseStamped end_pose,
             std::vector<nav_msgs::Odometry> &vec_of_states);
 
 };

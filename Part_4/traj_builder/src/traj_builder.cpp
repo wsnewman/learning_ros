@@ -33,14 +33,14 @@
 
 
 //constructor: fill in default param values (changeable via "set" fncs)
-TrajBuilder::TrajBuilder(ros::NodeHandle* nodehandle) : nh_(*nodehandle) {
-    dt_ = 0.02; //send desired-state messages at fixed rate, e.g. 0.02 sec = 50Hz
+TrajBuilder::TrajBuilder()  {
+    dt_ = default_dt; //0.02; //send desired-state messages at fixed rate, e.g. 0.02 sec = 50Hz
     //dynamic parameters: should be tuned for target system
-    accel_max_ = 0.5; //1m/sec^2
-    alpha_max_ = 0.2; //1 rad/sec^2
-    speed_max_ = 1.0; //1 m/sec
-    omega_max_ = 1.0; //1 rad/sec
-    path_move_tol_ = 0.01; // if path points are within 1cm, fuggidaboutit   
+    accel_max_ = default_accel_max; //0.5; //1m/sec^2
+    alpha_max_ = default_alpha_max; //0.2; //1 rad/sec^2
+    speed_max_ = default_speed_max; //1.0; //1 m/sec
+    omega_max_ = default_omega_max; //1.0; //1 rad/sec
+    path_move_tol_ = default_path_move_tol; //0.01; // if path points are within 1cm, fuggidaboutit   
 
     //define a halt state; zero speed and spin, and fill with viable coords
     halt_twist_.linear.x = 0.0;
@@ -404,7 +404,6 @@ void TrajBuilder::build_triangular_spin_traj(geometry_msgs::PoseStamped start_po
 //this function would be useful for planning a need for sudden braking
 //compute trajectory corresponding to applying max prudent decel to halt
 void TrajBuilder::build_braking_traj(geometry_msgs::PoseStamped start_pose,
-        geometry_msgs::PoseStamped end_pose,
         std::vector<nav_msgs::Odometry> &vec_of_states) {
     //FINISH ME!
 

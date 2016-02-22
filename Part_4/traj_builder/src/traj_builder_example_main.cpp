@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
     ros::Publisher twist_commander = n.advertise<geometry_msgs::Twist>("cmd_vel", 1);
 
     ros::Rate looprate(1 / dt); //timer for fixed publication rate   
-    TrajBuilder trajBuilder(&n); //instantiate one of these
+    TrajBuilder trajBuilder; //instantiate one of these
     trajBuilder.set_dt(dt); //make sure trajectory builder and main use the same time step
     trajBuilder.set_alpha_max(1.0);
     //hard code two poses; more generally, would get poses from a nav_msgs/Path message.
