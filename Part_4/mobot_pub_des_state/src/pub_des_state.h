@@ -5,8 +5,6 @@
 #include <traj_builder/traj_builder.h> //has almost all the headers we need
 #include <std_msgs/Float64.h>
 #include <std_msgs/Bool.h>
-//#include <actionlib/server/simple_action_server.h>
-//#include<mobot_pub_des_state/pathCmdAction.h>
 #include <std_srvs/Trigger.h>
 #include <mobot_pub_des_state/path.h>
 #include <std_msgs/Float64.h>
