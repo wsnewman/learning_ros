@@ -18,4 +18,9 @@ It will resume motion if/when new subgoals are added to the queue.
 `rosrun mobot_pub_des_state mobot_pub_des_state`
 `rosrun mobot_pub_des_state pub_des_state_path_client`
 
+Perform e-stop and e-stop reset with:
+`rosservice call estop_service`
+`rosservice call flush_path_queue_service`
+`rosservice call clear_estop_service`
+
     

@@ -12,7 +12,7 @@
 //constants and parameters:
 const double dt = 0.02; //send desired-state messages at fixed rate, e.g. 0.02 sec = 50Hz
 //dynamic parameters: should be tuned for target system
-const double accel_max = 1.0; //1m/sec^2
+const double accel_max = 0.5; //1m/sec^2
 const double alpha_max = 0.2; // rad/sec^2
 const double speed_max = 1.0; //1 m/sec
 const double omega_max = 1.0; //1 rad/sec
