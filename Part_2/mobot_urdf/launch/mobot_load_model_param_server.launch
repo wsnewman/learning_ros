@@ -1,0 +1,4 @@
+<launch>
+<!-- Convert xacro model file and put on parameter server -->
+<param name="robot_description" command="$(find xacro)/xacro.py '$(find mobot_urdf)/urdf/mobot_w_lidar_and_kinect.xacro'" />
+</launch>

@@ -1,0 +1,18 @@
+set bar on table: 
+x = 0.007
+y = 0.0005
+z = 0.85
+r,p,y = 0, -pi/2, 0
+
+table in world:
+x = -0.326
+y = -0.034
+z = 0.075
+
+bar on table standing upright, in view of camera:
+x= 0.007
+y =0
+z = 0.85
+rpy=0,0,0
+
+

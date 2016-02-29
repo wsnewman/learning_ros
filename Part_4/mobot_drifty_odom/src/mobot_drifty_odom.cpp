@@ -5,13 +5,12 @@
 #include <string.h>
 #include <stdio.h>  
 #include <math.h>
-//#include <random>
 
 //from URDF:  <xacro:property name="tirediam" value="0.3302" />
 const double R_LEFT_WHEEL = 0.3302/2.0;
-const double R_RIGHT_WHEEL = R_LEFT_WHEEL; //+0.005; //introduce error--tire diam diff
+const double R_RIGHT_WHEEL = R_LEFT_WHEEL+0.005; //introduce error--tire diam diff
 //from URDF: <xacro:property name="track" value=".56515" />
-const double TRACK = 0.56515; //0.560; // track error
+const double TRACK = 0.560515;//0.56515; //0.560; // track error
 
 const double wheel_ang_sham_init= -1000000.0;
 bool joints_states_good=false;
@@ -78,7 +77,8 @@ void joint_state_CB(const sensor_msgs::JointState& joint_states)
         g_drifty_odom.pose.pose.position.x += ds*cos(g_odom_psi);
         g_drifty_odom.pose.pose.position.y += ds*sin(g_odom_psi);
         g_odom_psi+= dpsi;
-        ROS_INFO("dthetal, dthetar, dpsi, g_odom_psi = %f, %f %f, %f",dtheta_left,dtheta_right,dpsi,g_odom_psi);
+        ROS_INFO("dthetal, dthetar, dpsi, odom_psi, dx, dy= %f, %f %f, %f %f %f",dtheta_left,dtheta_right,dpsi,g_odom_psi,
+           ds*cos(g_odom_psi),ds*sin(g_odom_psi));
         g_drifty_odom.pose.pose.orientation = convertPlanarPsi2Quaternion(g_odom_psi);
   
         g_drifty_odom.twist.twist.linear.x = ds/g_dt;
@@ -120,9 +120,12 @@ int main(int argc, char **argv) {
     g_drifty_odom.twist.twist.angular.x = 0.0;
     g_drifty_odom.twist.twist.angular.y = 0.0;
     g_drifty_odom.twist.twist.angular.z = 0.0;
-
+    ros::Rate timer(100.0); // a 100Hz timer
     
     g_drifty_odom_pub = nh.advertise<nav_msgs::Odometry>("drifty_odom", 1); 
     g_joint_state_subscriber = nh.subscribe("joint_states",1,joint_state_CB); 
-    ros::spin();
+    while(ros::ok()) {
+        ros::spinOnce();
+        timer.sleep();
+    }
 }

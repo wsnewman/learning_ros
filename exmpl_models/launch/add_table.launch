@@ -1,0 +1,3 @@
+<launch>
+<node name="spawn_sdf" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/davinci_table/model-1_4.sdf -sdf -model davinci_table" />
+</launch>

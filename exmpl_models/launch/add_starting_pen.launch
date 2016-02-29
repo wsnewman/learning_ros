@@ -1,0 +1,3 @@
+<launch>
+<node name="spawn_sdf" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/starting_pen/model.sdf -sdf -model starting_pen -y -5" />
+</launch>

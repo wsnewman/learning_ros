@@ -30,8 +30,10 @@ catkin_simple()
 # Executables: uncomment the following and edit arguments to compile new nodes
 # may add more of these lines for more nodes from the same package
 cs_add_executable(mobot_pub_des_state src/pub_des_state_main.cpp src/pub_des_state.cpp)
+cs_add_executable(mobot_pub_des_state_startup src/pub_des_state_startup_main.cpp src/pub_des_state.cpp)
 cs_add_executable(open_loop_controller src/open_loop_controller.cpp)
 cs_add_executable(pub_des_state_path_client src/pub_des_state_path_client.cpp)
+cs_add_executable(pub_des_state_path_client_3x3 src/pub_des_state_path_client_3mx3m_sqr.cpp)
 #the following is required, if desire to link a node in this package with a library created in this same package
 # edit the arguments to reference the named node and named library within this package
 # target_link_library(example my_lib)
