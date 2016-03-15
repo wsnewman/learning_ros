@@ -27,7 +27,10 @@ Playback the recorded bag file with, e.g.:
 
 To watch the progress, start up rviz:
 `rosrun rviz rviz`
-and add a "map" display topic.
+and add a "map" display topic.  Can watch the map-building progress.
+
+When the playback is done, save the computed map with a chosen map name:
+`rosrun map_server map_saver -f newMap`
 
 
 

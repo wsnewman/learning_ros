@@ -1,0 +1,22 @@
+optirun roslaunch gazebo_ros empty_world.launch
+
+roslaunch mobot_urdf mobot_startup_open_loop.launch
+
+roscd maps
+rosrun map_server map_server newMap.yaml
+
+rosrun mobot_drifty_odom mobot_drifty_odom
+
+rosrun amcl amcl odom:=drifty_odom
+
+rosrun odom_tf odom_tf
+-----------------------
+w/ rosrun amcl amcl, can run:
+rosrun tf tf_echo map base_link
+and DO get a response:
+At time 129.271
+- Translation: [0.013, -0.014, 0.000]
+- Rotation: in Quaternion [0.000, 0.000, 0.000, 1.000]
+            in RPY (radian) [0.000, 0.000, 0.000]
+            in RPY (degree) [0.000, 0.005, 0.003]
+
