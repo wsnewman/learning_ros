@@ -1,4 +1,4 @@
-optirun roslaunch gazebo_ros empty_world.launch
+(optirun) roslaunch gazebo_ros empty_world.launch
 
 roslaunch mobot_urdf mobot_startup_open_loop.launch
 
@@ -7,9 +7,16 @@ rosrun map_server map_server newMap.yaml
 
 rosrun mobot_drifty_odom mobot_drifty_odom
 
-rosrun amcl amcl odom:=drifty_odom
+rosrun amcl amcl 
 
 rosrun odom_tf odom_tf
+
+rosrun mobot_pub_des_state pub_des_state_path_client_3x3
+
+rosrun tf tf_echo drifty_odom map
+
+display drifty_odom on rviz (w/rt "map" frame); watch this frame move around as robot moves
+
 -----------------------
 w/ rosrun amcl amcl, can run:
 rosrun tf tf_echo map base_link
