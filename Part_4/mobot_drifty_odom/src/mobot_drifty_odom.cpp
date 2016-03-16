@@ -130,6 +130,7 @@ int main(int argc, char **argv) {
     g_drifty_odom.twist.twist.angular.x = 0.0;
     g_drifty_odom.twist.twist.angular.y = 0.0;
     g_drifty_odom.twist.twist.angular.z = 0.0;
+    
     ros::Rate timer(100.0); // a 100Hz timer
 
     g_drifty_odom_pub = nh.advertise<nav_msgs::Odometry>("drifty_odom", 1);
