@@ -24,7 +24,7 @@
  #include <tf/transform_listener.h>
 #include <tf/LinearMath/Vector3.h>
 #include <tf/LinearMath/QuadWord.h>
-
+#include <tf/transform_broadcaster.h>
  
 const double UPDATE_RATE=50.0; // for a 50Hz update rate
 // define a class, including a constructor, member variables and member functions
@@ -45,6 +45,7 @@ public:
     tf::StampedTransform stfBaseLink_wrt_Map_; //base link w/rt map frame; compute this
                                                // and publish it on tf
     tf::StampedTransform stfAmclBaseLinkWrtMap_;  
+    tf::StampedTransform stfEstBaseWrtMap_;
     
     geometry_msgs::PoseStamped base_link_wrt_odom_; //can extract this from 
     geometry_msgs::PoseStamped base_link_wrt_map_; //this is what we care about; need to compute it
@@ -52,6 +53,8 @@ public:
 
     tf::StampedTransform tfLink2ToOdom_;  
     tf::StampedTransform stfBaseLinkWrtDriftyOdom_;
+    tf::StampedTransform stfDriftyOdomWrtBase_;
+    tf::StampedTransform stfDriftyOdomWrtMap_;
     
     tf::StampedTransform get_tfBaseLinkWrtDriftyOdom() { return stfBaseLinkWrtDriftyOdom_; } 
     
@@ -63,7 +66,8 @@ public:
 
     tf::Transform get_tf_from_stamped_tf(tf::StampedTransform sTf);     
     //illustrates a tf_listener in a class; this is somewhat more complex than creating a tf_listener in main()
-    tf::TransformListener* tfListener_;     
+    tf::TransformListener* tfListener_;   
+    tf::TransformBroadcaster br_;
 private:
     ros::NodeHandle nh_; // we will need this, to pass between "main" and constructor
     // some objects to support subscriber, service, and publisher
@@ -76,7 +80,8 @@ private:
 
     //state values from odometry; these will get filled in by odom callback      
     nav_msgs::Odometry current_odom_; // fill in these objects from callbacks
-    geometry_msgs::Pose odom_pose_;    
+    geometry_msgs::Pose odom_pose_;   
+    int odom_count_;
     //double odom_vel_;
     //double odom_omega_;
     double odom_x_;
