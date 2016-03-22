@@ -128,10 +128,13 @@ int main(int argc, char** argv) {
     cout<<endl<<endl;
     ROS_INFO("starting identification of plane from data: ");
     // first compute the centroid of the data:
+    /*
     Eigen::Vector3d centroid;
     // here's a handy way to initialize data to all zeros; more variants exist
     centroid = Eigen::MatrixXd::Zero(3,1); // see http://eigen.tuxfamily.org/dox/AsciiQuickReference.txt
-    //add all the points together:
+*/
+    Eigen::Vector3d centroid = Eigen::MatrixXd::Zero(3,1);
+          //add all the points together:
     npts = points_mat.cols(); // number of points = number of columns in matrix; check the size
     cout<<"matrix has ncols = "<<npts<<endl;
     for (int ipt =0;ipt<npts;ipt++) {

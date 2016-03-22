@@ -51,28 +51,20 @@ OdomTf::OdomTf(ros::NodeHandle* nodehandle) : nh_(*nodehandle) { // constructor
     }
     ROS_INFO("map to odom tf is good");
     // from now on, tfListener will keep track of transforms
-    stfAmclBaseLinkWrtMap_.frame_id_ = "map";
-    stfAmclBaseLinkWrtMap_.child_frame_id_ = "base_link";    
-     tf::Vector3 pos;
-    pos.setX(0);
-    pos.setY(0);
-    pos.setZ(0);
-    stfAmclBaseLinkWrtMap_.stamp_ = ros::Time::now();
-    stfAmclBaseLinkWrtMap_.setOrigin(pos);
-    // also need to get the orientation of odom_pose and use setRotation
-    tf::Quaternion q;
-    q.setX(0);
-    q.setY(0);
-    q.setZ(0);
-    q.setW(1);
-    stfAmclBaseLinkWrtMap_.setRotation(q);
+    //initialize an identity transform, declaring base-link and map frames are coincident:
+    stfAmclBaseLinkWrtMap_.setIdentity();
+    tf::Quaternion quat(0, 0, 0, 1);
+    stfAmclBaseLinkWrtMap_.setRotation(quat);	//all rotations 0
     stfAmclBaseLinkWrtMap_.frame_id_ = "map";
     stfAmclBaseLinkWrtMap_.child_frame_id_ = "base_link";
+    stfAmclBaseLinkWrtMap_.stamp_ = ros::Time::now();           
+
     cout<<endl<<"init stfAmclBaseLinkWrtMap_"<<endl;
     printStampedTf(stfAmclBaseLinkWrtMap_);    
     
+    //initialize an odometry frame coincident with map and base-link
     stfDriftyOdomWrtMap_ = stfAmclBaseLinkWrtMap_;
-    stfDriftyOdomWrtMap_.frame_id_ = "map";
+    stfDriftyOdomWrtMap_.frame_id_ = "map"; // declare the respective frames
     stfDriftyOdomWrtMap_.child_frame_id_ = "drifty_odom"; 
 
     initializeSubscribers(); // package up the messy work of creating subscribers; do this overhead in constructor
@@ -163,15 +155,28 @@ geometry_msgs::PoseStamped OdomTf::get_pose_from_transform(tf::StampedTransform 
 
 bool OdomTf::multiply_stamped_tfs(tf::StampedTransform A_stf,
         tf::StampedTransform B_stf, tf::StampedTransform &C_stf) {
-    tf::Transform A, B, C; //simple transforms--not stamped
-    std::string str1(A_stf.child_frame_id_); //want to compare strings to check consistency
-    std::string str2(B_stf.frame_id_);
-    if (str1.compare(str2) != 0) { //SHOULD get that child frame of A is parent frame of B
+
+    //long-winded approach:
+    //std::string str1(A_stf.child_frame_id_); //want to compare strings to check consistency
+    //std::string str2(B_stf.frame_id_);
+    //if (str1.compare(str2) != 0) { //SHOULD get that child frame of A is parent frame of B
+    //more compact approach:
+    if (A_stf.child_frame_id_.compare(B_stf.frame_id_) != 0) {    
         std::cout << "can't multiply transforms; mismatched frames" << endl;
-        std::cout << str1 << " is not " << str2 << '\n';
+	std::cout << A_stf.child_frame_id_ << " is not " << B_stf.frame_id_ << '\n';
         return false;
     }
     //if here, the named frames are logically consistent
+        tf::Transform C = A_stf*B_stf; //multiplication is defined for transforms
+	C_stf.setData(C);
+	C_stf.frame_id_ = A_stf.frame_id_;
+	C_stf.child_frame_id_ = B_stf.child_frame_id_;
+	C_stf.stamp_ = ros::Time::now();
+ 
+    //long-winded approach, equivalent to above:
+    /*
+    tf::Transform A, B; //simple transforms--not stamped
+        
     A = get_tf_from_stamped_tf(A_stf); // get the transform from the stamped transform
     B = get_tf_from_stamped_tf(B_stf);
     C = A*B; //multiplication is defined for transforms 
@@ -180,12 +185,16 @@ bool OdomTf::multiply_stamped_tfs(tf::StampedTransform A_stf,
     C_stf.setOrigin(C.getOrigin()); //populate the origin and orientation of the result
     C_stf.setBasis(C.getBasis());
     C_stf.stamp_ = ros::Time::now(); //assign the time stamp to current time; 
+     * */
     // alternatively, could assign this to the OLDER of A or B transforms
     return true; //if got here, the multiplication is valid
 }
 
 tf::StampedTransform OdomTf::stamped_transform_inverse(tf::StampedTransform stf) {
-    tf::StampedTransform stf_inv;
+    // instantiate stamped transform with constructor args
+    tf::StampedTransform stf_inv(stf.inverse(), stf.stamp_, stf.frame_id_, stf.child_frame_id_);
+    /* long-winded equivalent:
+    tf::StampedTransform stf_inv;    
     tf::Transform tf = get_tf_from_stamped_tf(stf);
     tf::Transform tf_inv = tf.inverse();
     
@@ -194,6 +203,7 @@ tf::StampedTransform OdomTf::stamped_transform_inverse(tf::StampedTransform stf)
     stf_inv.child_frame_id_ = stf.frame_id_;
     stf_inv.setOrigin(tf_inv.getOrigin());
     stf_inv.setBasis(tf_inv.getBasis());
+     * */
     return stf_inv;
 }
 
