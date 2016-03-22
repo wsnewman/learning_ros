@@ -192,7 +192,8 @@ bool OdomTf::multiply_stamped_tfs(tf::StampedTransform A_stf,
 
 tf::StampedTransform OdomTf::stamped_transform_inverse(tf::StampedTransform stf) {
     // instantiate stamped transform with constructor args
-    tf::StampedTransform stf_inv(stf.inverse(), stf.stamp_, stf.frame_id_, stf.child_frame_id_);
+    //note: child_frame and frame_id are reversed, to correspond to inverted transform
+    tf::StampedTransform stf_inv(stf.inverse(), stf.stamp_, stf.child_frame_id_, stf.frame_id_);
     /* long-winded equivalent:
     tf::StampedTransform stf_inv;    
     tf::Transform tf = get_tf_from_stamped_tf(stf);
