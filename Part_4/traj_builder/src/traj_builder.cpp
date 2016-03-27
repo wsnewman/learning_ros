@@ -71,10 +71,10 @@ double TrajBuilder::sat(double x) {
 
 //signum function: returns the sign of a value
 double TrajBuilder::sgn(double x) {
-    if (x > 1.0) {
+    if (x > 0.0) {
         return 1.0;
     }
-    if (x< -1.0) {
+    if (x< 0.0) {
         return -1.0;
     }
     return 0.0;
