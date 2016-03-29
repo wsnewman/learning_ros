@@ -33,11 +33,17 @@ cs_add_library(pcl_utils src/pcl_utils.cpp)
 # may add more of these lines for more nodes from the same package
 # cs_add_executable(example src/example.cpp)
 cs_add_executable(pcl_simple_main src/pcl_simple_main.cpp)
+cs_add_executable(ransac_main src/ransac_main.cpp)
+cs_add_executable(pcd_snapshot src/pcd_snapshot.cpp)
+
 
 #the following is required, if desire to link a node in this package with a library created in this same package
 # edit the arguments to reference the named node and named library within this package
 # target_link_library(example my_lib)
 target_link_libraries(pcl_simple_main pcl_utils)
+target_link_libraries(ransac_main pcl_utils)
+target_link_libraries(pcd_snapshot pcl_utils)
+
 
 cs_install()
 cs_export()

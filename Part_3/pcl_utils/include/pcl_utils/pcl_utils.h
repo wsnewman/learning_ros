@@ -96,7 +96,11 @@ public:
     //same as above, but assumes 
     void copy_indexed_pts_to_output_cloud(vector<int> &indices,PointCloud<pcl::PointXYZRGB> &outputCloud);
 
-    void get_gen_purpose_cloud(pcl::PointCloud<pcl::PointXYZ> & outputCloud );    
+    void get_gen_purpose_cloud(pcl::PointCloud<pcl::PointXYZ> & outputCloud ); 
+    void get_kinect_points(pcl::PointCloud<pcl::PointXYZ> & outputCloud );
+    void get_kinect_points(pcl::PointCloud<pcl::PointXYZ>::Ptr outputCloudPtr );
+    
+
     void example_pcl_operation();
     //operate on transformed Kinect data and identify point indices within +/-z_eps of specified height
     void filter_cloud_z(PointCloud<pcl::PointXYZ>::Ptr inputCloud, double z_nom, double z_eps, vector<int> &indices);
@@ -123,6 +127,8 @@ private:
     ros::NodeHandle nh_; 
     // some objects to support subscriber, service, and publisher
     ros::Subscriber pointcloud_subscriber_; //use this to subscribe to a pointcloud topic
+    ros::Subscriber real_kinect_subscriber_; //use this to subscribe to a physical kinect device
+    
     ros::Subscriber selected_points_subscriber_; // this to subscribe to "selectedPoints" topic from Rviz
 
     

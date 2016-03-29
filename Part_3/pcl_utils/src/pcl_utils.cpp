@@ -33,7 +33,7 @@ void PclUtils::fit_points_to_plane(Eigen::MatrixXf points_mat, Eigen::Vector3f &
         centroid_ += points_mat.col(ipt); //add all the column vectors together
     }
     centroid_ /= npts; //divide by the number of points to get the centroid    
-    cout<<"centroid: "<<centroid_.transpose()<<endl;
+    //cout<<"centroid: "<<centroid_.transpose()<<endl;
 
 
     // subtract this centroid from all points in points_mat:
@@ -115,10 +115,15 @@ void PclUtils::fit_points_to_plane(Eigen::MatrixXf points_mat, Eigen::Vector3f &
     // at this point, we have the minimum eval in "min_lambda", and the plane normal
     // (corresponding evec) in "est_plane_normal"/
     // these correspond to the ith entry of i_normal
-    cout<<"min eval is "<<min_lambda<<", corresponding to component "<<i_normal<<endl;
-    cout<<"corresponding evec (est plane normal): "<<plane_normal.transpose()<<endl;
-    cout<<"max eval is "<<max_lambda<<", corresponding to component "<<i_major_axis<<endl;
-    cout<<"corresponding evec (est major axis): "<<major_axis_.transpose()<<endl;    
+    //cout<<"min eval is "<<min_lambda<<", corresponding to component "<<i_normal<<endl;
+    //cout<<"corresponding evec (est plane normal): "<<plane_normal.transpose()<<endl;
+    //cout<<"max eval is "<<max_lambda<<", corresponding to component "<<i_major_axis<<endl;
+    //cout<<"corresponding evec (est major axis): "<<major_axis_.transpose()<<endl;  
+    
+    //what is the correct sign of the normal?  If the data is with respect to the camera frame,
+    // then the camera optical axis is z axis, and thus any points reflected must be from a surface
+    // with negative z component of surface normal
+    if (plane_normal(2)>0) plane_normal = -plane_normal; // negate, if necessary
     
     //cout<<"correct answer is: "<<normal_vec.transpose()<<endl;
     plane_dist = plane_normal.dot(centroid_);
@@ -243,6 +248,35 @@ void PclUtils::get_transformed_selected_points(pcl::PointCloud<pcl::PointXYZ> & 
         outputCloud.points[i].getVector3fMap() = pclTransformedSelectedPoints_ptr_->points[i].getVector3fMap();   
     }
 }
+
+void PclUtils::get_kinect_points(pcl::PointCloud<pcl::PointXYZ> & outputCloud ) {
+    int npts = pclKinect_ptr_->points.size(); //how many points to extract?
+    outputCloud.header = pclKinect_ptr_->header;
+    outputCloud.is_dense = pclKinect_ptr_->is_dense;
+    outputCloud.width = npts;
+    outputCloud.height = 1;
+
+    cout << "copying cloud w/ npts =" << npts << endl;
+    outputCloud.points.resize(npts);
+    for (int i = 0; i < npts; ++i) {
+        outputCloud.points[i].getVector3fMap() = pclKinect_ptr_->points[i].getVector3fMap();   
+    }
+}
+
+void PclUtils::get_kinect_points(pcl::PointCloud<pcl::PointXYZ>::Ptr outputCloudPtr ) {
+    int npts = pclKinect_ptr_->points.size(); //how many points to extract?
+    outputCloudPtr->header = pclKinect_ptr_->header;
+    outputCloudPtr->is_dense = pclKinect_ptr_->is_dense;
+    outputCloudPtr->width = npts;
+    outputCloudPtr->height = 1;
+
+    cout << "copying cloud w/ npts =" << npts << endl;
+    outputCloudPtr->points.resize(npts);
+    for (int i = 0; i < npts; ++i) {
+        outputCloudPtr->points[i].getVector3fMap() = pclKinect_ptr_->points[i].getVector3fMap();   
+    }
+}
+
 
 //same as above, but for general-purpose cloud
 void PclUtils::get_gen_purpose_cloud(pcl::PointCloud<pcl::PointXYZ> & outputCloud ) {
@@ -529,6 +563,7 @@ void PclUtils::initializeSubscribers() {
     ROS_INFO("Initializing Subscribers");
 
     pointcloud_subscriber_ = nh_.subscribe("/kinect/depth/points", 1, &PclUtils::kinectCB, this);
+    real_kinect_subscriber_ = nh_.subscribe("/camera/depth_registered/points", 1, &PclUtils::kinectCB, this);
     // add more subscribers here, as needed
 
     // subscribe to "selected_points", which is published by Rviz tool
