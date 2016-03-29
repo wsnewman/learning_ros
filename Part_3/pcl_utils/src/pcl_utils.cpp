@@ -17,7 +17,35 @@ pclTransformedSelectedPoints_ptr_(new PointCloud<pcl::PointXYZ>),pclGenPurposeCl
     got_selected_points_ = false;
 }
 
+//fnc to read a pcd file and put contents in pclKinect_ptr_: color version
+int PclUtils::read_clr_pcd_file(string fname)
+{
 
+  if (pcl::io::loadPCDFile<pcl::PointXYZRGB> (fname, *pclKinect_clr_ptr_) == -1) //* load the file
+  {
+    ROS_ERROR ("Couldn't read file \n");
+    return (-1);
+  }
+  std::cout << "Loaded "
+            << pclKinect_clr_ptr_->width * pclKinect_clr_ptr_->height
+            << " data points from file "<<fname<<std::endl;
+  return (0);
+}
+
+//non-color version
+int PclUtils::read_pcd_file(string fname)
+{
+
+  if (pcl::io::loadPCDFile<pcl::PointXYZ> (fname, *pclKinect_ptr_) == -1) //* load the file
+  {
+    ROS_ERROR ("Couldn't read file \n");
+    return (-1);
+  }
+  std::cout << "Loaded "
+            << pclKinect_ptr_->width * pclKinect_ptr_->height
+            << " data points from file "<<fname<<std::endl;
+  return (0);
+}
 
 
 void PclUtils::fit_points_to_plane(Eigen::MatrixXf points_mat, Eigen::Vector3f &plane_normal, double &plane_dist) {
@@ -33,7 +61,7 @@ void PclUtils::fit_points_to_plane(Eigen::MatrixXf points_mat, Eigen::Vector3f &
         centroid_ += points_mat.col(ipt); //add all the column vectors together
     }
     centroid_ /= npts; //divide by the number of points to get the centroid    
-    //cout<<"centroid: "<<centroid_.transpose()<<endl;
+    cout<<"centroid: "<<centroid_.transpose()<<endl;
 
 
     // subtract this centroid from all points in points_mat:
@@ -263,7 +291,52 @@ void PclUtils::get_kinect_points(pcl::PointCloud<pcl::PointXYZ> & outputCloud ) 
     }
 }
 
-void PclUtils::get_kinect_points(pcl::PointCloud<pcl::PointXYZ>::Ptr outputCloudPtr ) {
+void PclUtils::get_kinect_points(pcl::PointCloud<pcl::PointXYZRGB> & outputCloud ) {
+    int npts = pclKinect_clr_ptr_->points.size(); //how many points to extract?
+    outputCloud.header = pclKinect_clr_ptr_->header;
+    outputCloud.is_dense = pclKinect_clr_ptr_->is_dense;
+    outputCloud.width = npts;
+    outputCloud.height = 1;
+
+    cout << "get_kinect_points xyzrgb, copying cloud w/ npts =" << npts << endl;
+    outputCloud.points.resize(npts);
+    for (int i = 0; i < npts; ++i) {
+        outputCloud.points[i] = pclKinect_clr_ptr_->points[i];   
+    }    
+    
+}
+
+//need this version for viewer
+void PclUtils::get_kinect_points(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &outputCloudPtr ) {
+    int npts = pclKinect_clr_ptr_->points.size(); //how many points to extract?
+    //cout<<"need to copy "<<npts<<" points"<<endl;
+    //cout<<"enter 1: ";
+    //int ans;
+    //cin>>ans;
+    outputCloudPtr->header = pclKinect_clr_ptr_->header;
+    outputCloudPtr->is_dense = pclKinect_clr_ptr_->is_dense;
+    cout<<"setting width: "<<endl;
+    outputCloudPtr->width = npts;
+    cout<<"setting height"<<endl;
+    outputCloudPtr->height = 1;
+
+    //cout << "ready to resize output cloud to npts = " << npts << endl;
+    //    cout<<"enter 1: ";
+    // cin>>ans;   
+    outputCloudPtr->points.resize(npts);
+    for (int i = 0; i < npts; ++i) {
+        outputCloudPtr->points[i].getVector3fMap() = pclKinect_clr_ptr_->points[i].getVector3fMap();  
+        
+        outputCloudPtr->points[i].r = pclKinect_clr_ptr_->points[i].r;
+        outputCloudPtr->points[i].g = pclKinect_clr_ptr_->points[i].g;
+        outputCloudPtr->points[i].b = pclKinect_clr_ptr_->points[i].b;
+
+    }        
+}
+
+
+
+void PclUtils::get_kinect_points(pcl::PointCloud<pcl::PointXYZ>::Ptr &outputCloudPtr ) {
     int npts = pclKinect_ptr_->points.size(); //how many points to extract?
     outputCloudPtr->header = pclKinect_ptr_->header;
     outputCloudPtr->is_dense = pclKinect_ptr_->is_dense;

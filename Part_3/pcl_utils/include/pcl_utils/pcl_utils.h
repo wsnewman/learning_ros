@@ -27,6 +27,7 @@
 #include <tf/transform_listener.h>  // transform listener headers
 #include <tf/transform_broadcaster.h>
 
+#include <pcl/io/io.h>
 #include <pcl/io/pcd_io.h>  //point-cloud library headers; likely don't need all these
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
@@ -84,7 +85,10 @@ public:
     void reset_got_selected_points() {got_selected_points_= false;};    
     bool got_kinect_cloud() { return got_kinect_cloud_; };
     bool got_selected_points() {return got_selected_points_;};
-    void save_kinect_snapshot() {    pcl::io::savePCDFileASCII ("kinect_snapshot.pcd", *pclKinect_ptr_);};
+    void save_kinect_snapshot() {    pcl::io::savePCDFileASCII ("kinect_snapshot.pcd", *pclKinect_ptr_);}; //B/W
+    int read_pcd_file(string fname); 
+    int read_clr_pcd_file(string fname);
+    
     //alternative "save" fnc: save as a colored pointcloud
     void save_kinect_clr_snapshot() {pcl::io::savePCDFileASCII ("kinect_clr_snapshot.pcd", *pclKinect_clr_ptr_);};
     void save_transformed_kinect_snapshot() { pcl::io::savePCDFileASCII ("xformed_kinect_snapshot.pcd", *pclTransformed_ptr_);};
@@ -98,8 +102,10 @@ public:
 
     void get_gen_purpose_cloud(pcl::PointCloud<pcl::PointXYZ> & outputCloud ); 
     void get_kinect_points(pcl::PointCloud<pcl::PointXYZ> & outputCloud );
-    void get_kinect_points(pcl::PointCloud<pcl::PointXYZ>::Ptr outputCloudPtr );
-    
+    void get_kinect_points(pcl::PointCloud<pcl::PointXYZ>::Ptr &outputCloudPtr );
+    void get_kinect_points(pcl::PointCloud<pcl::PointXYZRGB> & outputCloudPtr );
+    void get_kinect_points(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &outputCloud );
+
 
     void example_pcl_operation();
     //operate on transformed Kinect data and identify point indices within +/-z_eps of specified height

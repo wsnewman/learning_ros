@@ -39,6 +39,7 @@ int main(int argc, char** argv) {
     cout<<"frame id: "<<cloudPtr->header.frame_id<<endl;
    //std::vector<int> inliers;
 
+  // here's the RANSAC code:
   pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
   pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
   // Create the segmentation object
@@ -48,11 +49,11 @@ int main(int argc, char** argv) {
   // Mandatory
   seg.setModelType (pcl::SACMODEL_PLANE);
   seg.setMethodType (pcl::SAC_RANSAC);
-  seg.setDistanceThreshold (0.01);
-  std::cout<<"so far, so good"<<endl;
   seg.setInputCloud (cloudPtr);
   seg.segment (*inliers, *coefficients);
+  //done w/ RANSAC code
   
+  //output and display results:
   std::cout << "Model coefficients: " << coefficients->values[0] << " " 
                                       << coefficients->values[1] << " "
                                       << coefficients->values[2] << " " 
