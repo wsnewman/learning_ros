@@ -19,7 +19,7 @@ add_definitions(${EIGEN_DEFINITIONS})
 catkin_simple()
 
 # example boost usage
-# find_package(Boost REQUIRED COMPONENTS system thread)
+find_package(Boost REQUIRED COMPONENTS system thread)
 
 # C++0x support - not quite the same as final C++11!
 # use carefully;  can interfere with point-cloud library
