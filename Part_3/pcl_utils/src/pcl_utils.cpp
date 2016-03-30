@@ -47,6 +47,30 @@ int PclUtils::read_pcd_file(string fname)
   return (0);
 }
 
+// given plane parameters of normal vec and distance to plane, construct and return an Eigen Affine object 
+// suitable for transforming points to a frame defined on the plane
+Eigen::Affine3f PclUtils::make_affine_from_plane_params(Eigen::Vector3f plane_normal, double plane_dist) {
+    Eigen::Vector3f xvec,yvec,zvec;
+    Eigen::Matrix3f R_transform;
+    Eigen::Affine3f A_transform;
+    Eigen::Vector3f plane_origin;
+    // define a frame on the plane, with zvec parallel to the plane normal
+    zvec = plane_normal;
+    xvec<< 1,0,0; // this is arbitrary, but should be valid for images taken w/ zvec= optical axis
+    xvec = xvec - zvec * (zvec.dot(xvec)); // force definition of xvec to be orthogonal to plane normal
+    xvec /= xvec.norm(); // want this to be unit length as well    
+    yvec = zvec.cross(xvec);
+    R_transform.col(0) = xvec;
+    R_transform.col(1) = yvec;
+    R_transform.col(2) = zvec;
+    //cout<<"R_transform = :"<<endl;
+    //cout<<R_transform<<endl;
+    A_transform.linear() = R_transform; // directions of the x,y,z axes of the plane's frame, expressed w/rt camera frame
+    plane_origin = zvec*plane_dist; //define the plane-frame origin here
+    A_transform.translation() = plane_origin;
+    return A_transform;
+}
+
 
 void PclUtils::fit_points_to_plane(Eigen::MatrixXf points_mat, Eigen::Vector3f &plane_normal, double &plane_dist) {
     //ROS_INFO("starting identification of plane from data: ");
@@ -191,6 +215,22 @@ Eigen::Vector3f  PclUtils::compute_centroid(pcl::PointCloud<pcl::PointXYZ>::Ptr 
 
     for (int ipt = 0; ipt < npts; ipt++) {
         cloud_pt = input_cloud_ptr->points[ipt].getVector3fMap();
+        centroid += cloud_pt; //add all the column vectors together
+    }
+    centroid/= npts; //divide by the number of points to get the centroid
+    return centroid;
+}
+
+//same thing, but arg is reference cloud instead of pointer:
+Eigen::Vector3f  PclUtils::compute_centroid(pcl::PointCloud<pcl::PointXYZ> &input_cloud) {
+    Eigen::Vector3f centroid;
+    Eigen::Vector3f cloud_pt;   
+    int npts = input_cloud.points.size();    
+    centroid<<0,0,0;
+    //add all the points together:
+
+    for (int ipt = 0; ipt < npts; ipt++) {
+        cloud_pt = input_cloud.points[ipt].getVector3fMap();
         centroid += cloud_pt; //add all the column vectors together
     }
     centroid/= npts; //divide by the number of points to get the centroid
@@ -366,6 +406,37 @@ void PclUtils::get_gen_purpose_cloud(pcl::PointCloud<pcl::PointXYZ> & outputClou
     }    
 } 
 
+//makes a copy of the selected points from rviz tool; xyz only, no color (this version)
+void PclUtils::get_selected_points(pcl::PointCloud<pcl::PointXYZ>::Ptr &outputCloudPtr ) {
+    int npts = pclSelectedPoints_ptr_->points.size(); //how many points to extract?
+    outputCloudPtr->header = pclSelectedPoints_ptr_->header;
+    outputCloudPtr->is_dense = pclSelectedPoints_ptr_->is_dense;
+    outputCloudPtr->width = npts;
+    outputCloudPtr->height = 1;
+
+    cout << "copying cloud w/ npts =" << npts << endl;
+    outputCloudPtr->points.resize(npts);
+    for (int i = 0; i < npts; ++i) {
+        outputCloudPtr->points[i].getVector3fMap() = pclSelectedPoints_ptr_->points[i].getVector3fMap();   
+    }
+}
+
+// this version for argument of reference variable to cloud, not pointer to cloud
+void PclUtils::get_selected_points(pcl::PointCloud<pcl::PointXYZ> &outputCloud) {
+    int npts = pclSelectedPoints_ptr_->points.size(); //how many points to extract?
+    outputCloud.header = pclSelectedPoints_ptr_->header;
+    outputCloud.is_dense = pclSelectedPoints_ptr_->is_dense;
+    outputCloud.width = npts;
+    outputCloud.height = 1;
+
+    cout << "copying cloud w/ npts =" << npts << endl;
+    outputCloud.points.resize(npts);
+    for (int i = 0; i < npts; ++i) {
+        outputCloud.points[i].getVector3fMap() = pclSelectedPoints_ptr_->points[i].getVector3fMap();   
+    }    
+    
+}
+
 //void PclUtils::get_indices(vector<int> &indices,) {
 //    indices = indicies_;
 //}
@@ -517,6 +588,26 @@ void PclUtils::filter_cloud_z(PointCloud<pcl::PointXYZ>::Ptr inputCloud, double 
     cout << " number of points in range = " << n_extracted << endl;
 }
 
+void PclUtils::filter_cloud_z(PointCloud<pcl::PointXYZRGB>::Ptr inputCloud, double z_nom, double z_eps, vector<int> &indices) {
+    int npts = inputCloud->points.size();
+    Eigen::Vector3f pt;
+    indices.clear();
+    double dz;
+    int ans;
+    for (int i = 0; i < npts; ++i) {
+        pt = inputCloud->points[i].getVector3fMap();
+        //cout<<"pt: "<<pt.transpose()<<endl;
+        dz = pt[2] - z_nom;
+        if (fabs(dz) < z_eps) {
+            indices.push_back(i);
+            //cout<<"dz = "<<dz<<"; saving this point...enter 1 to continue: ";
+            //cin>>ans;
+        }
+    }
+    int n_extracted = indices.size();
+    cout << " number of points in range = " << n_extracted << endl;
+}
+
 //find points that are both (approx) coplanar at height z_nom AND within "radius" of "centroid"
 void PclUtils::filter_cloud_z(PointCloud<pcl::PointXYZ>::Ptr inputCloud, double z_nom, double z_eps, 
                 double radius, Eigen::Vector3f centroid, vector<int> &indices)  {
@@ -604,7 +695,9 @@ void PclUtils::copy_cloud_xyzrgb_indices(PointCloud<pcl::PointXYZRGB>::Ptr input
     cout << "copying cloud w/ npts =" << npts << endl;
     outputCloud->points.resize(npts);
     for (int i = 0; i < npts; ++i) {
-        outputCloud->points[i].getVector3fMap() = inputCloud->points[indices[i]].getVector3fMap();
+        //outputCloud->points[i].getVector3fMap() = inputCloud->points[indices[i]].getVector3fMap();
+        outputCloud->points[i] = inputCloud->points[indices[i]];
+
     }
 }
 
@@ -626,6 +719,45 @@ void PclUtils::transform_cloud(Eigen::Affine3f A, pcl::PointCloud<pcl::PointXYZ>
     for (int i = 0; i < npts; ++i) {
         output_cloud_ptr->points[i].getVector3fMap() = A * input_cloud_ptr->points[i].getVector3fMap();
     }
+}
+
+void PclUtils::transform_cloud(Eigen::Affine3f A, pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud_ptr,
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr output_cloud_ptr) {
+    output_cloud_ptr->header = input_cloud_ptr->header;
+    output_cloud_ptr->is_dense = input_cloud_ptr->is_dense;
+    output_cloud_ptr->width = input_cloud_ptr->width;
+    output_cloud_ptr->height = input_cloud_ptr->height; 
+    int npts = input_cloud_ptr->points.size();
+    cout << "transforming npts = " << npts << endl;
+    output_cloud_ptr->points.resize(npts);
+    //output_cloud_ptr->points.clear();
+
+    //somewhat odd notation: getVector3fMap() reading OR WRITING points from/to a pointcloud, with conversions to/from Eigen
+    float xval;
+    pcl::PointXYZRGB pcl_pt;
+    Eigen::Vector3f pt1,pt2;
+    for (int i = 0; i < npts; ++i) {
+        pt1 = input_cloud_ptr->points[i].getVector3fMap();
+        //cout<<"pt1: "<<pt1.transpose()<<endl;
+        //if (pt1(0)!= pt1(0)) { //option: could remove NaN's; odd syntax: will be true if NaN
+            //ROS_WARN("pt %d: Nan",i);
+        //}
+        //else  { 
+            pt2 = A*pt1; //transform these coordinates
+            //cout<<"pt2: "<<pt2.transpose()<<endl;           
+            pcl_pt.x = pt2(0);
+            pcl_pt.y = pt2(1);
+            pcl_pt.z = pt2(2);            
+            pcl_pt.rgb = input_cloud_ptr->points[i].rgb;
+            //output_cloud_ptr->points.push_back(pcl_pt); // = A * input_cloud_ptr->points[i].getVector3fMap();
+            output_cloud_ptr->points[i] = pcl_pt;
+        //output_cloud_ptr->points[i].rgb = input_cloud_ptr->points[i].rgb;
+        //}
+    }
+    int npts_out = output_cloud_ptr->points.size();
+    //output_cloud_ptr->width = npts_out;
+    //output_cloud_ptr->height = 1;    
+    //ROS_INFO("transformed cloud w/ NaNs removed has %d points",npts_out);
 }
 
 //member helper function to set up subscribers;
@@ -703,7 +835,8 @@ void PclUtils::selectCB(const sensor_msgs::PointCloud2ConstPtr& cloud) {
     fit_points_to_plane(pclSelectedPoints_ptr_, plane_normal, plane_dist);
     ROS_INFO("plane dist = %f",plane_dist);
     ROS_INFO("plane normal = (%f, %f, %f)",plane_normal(0),plane_normal(1),plane_normal(2));
-
+    patch_normal_ = plane_normal;
+    patch_dist_ = plane_dist;
  
     /*
     ROS_INFO("Color version has  %d * %d points", pclSelectedPtsClr_ptr_->width, pclSelectedPtsClr_ptr_->height);
