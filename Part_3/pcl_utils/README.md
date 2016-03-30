@@ -19,9 +19,10 @@ These indices are used to index into the original cloud using  pclUtils.copy_clo
 viewable within Rviz.
 
 ## Example usage
-An example pcd file is contained in "kinect_clr_snapshot.pcd" within the repository, Part_3/jinx_pcd.  Start up a roscore, start up Rviz.  
+An example pcd file is contained in "kinect_clr_snapshot" within the repository, Part_3/jinx_pcd.  This file is ASCII and human readable (e.g. using gedit).
+Start up a roscore, start up Rviz.  
 In another terminal, navigate to the directory containing the point-cloud file.  Run display_pcd_file or find_plane_pcd_file.  Respond to the prompt
-with a valid PCD file name (e.g. kinect_clr_snapshot.pcd).
+with a valid PCD file name (e.g. kinect_clr_snapshot).
 
 
     
