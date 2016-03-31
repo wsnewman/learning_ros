@@ -22,6 +22,7 @@ int main(int argc, char** argv) {
     }
     ROS_INFO("got snapshot; saving to file kinect_snapshot.pcd");
     pclUtils.save_kinect_clr_snapshot();//save_kinect_clr_snapshot
+    pclUtils.save_kinect_clr_snapshot_binary(); // save color snapshot as a binary file
     
     return 0;
 }

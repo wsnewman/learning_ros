@@ -97,6 +97,8 @@ public:
     
     //alternative "save" fnc: save as a colored pointcloud
     void save_kinect_clr_snapshot() {pcl::io::savePCDFileASCII ("kinect_clr_snapshot.pcd", *pclKinect_clr_ptr_);};
+    int  save_kinect_clr_snapshot_binary() {return(pcl::io::savePCDFile ("kinect_clr_snapshot_bin.pcd", *pclKinect_clr_ptr_,true));};	
+
     void save_transformed_kinect_snapshot() { pcl::io::savePCDFileASCII ("xformed_kinect_snapshot.pcd", *pclTransformed_ptr_);};
     void get_transformed_selected_points(pcl::PointCloud<pcl::PointXYZ> & outputCloud );
     void copy_cloud(PointCloud<pcl::PointXYZ>::Ptr inputCloud, PointCloud<pcl::PointXYZ>::Ptr outputCloud); 
