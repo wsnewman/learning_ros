@@ -78,7 +78,18 @@ public:
      * @return an Eigen Affine object, A, such that point_in_new_frame = A*point_in_original_frame
      */    
     Eigen::Affine3f transformTFToEigen(const tf::Transform &t);
+    
+    /** function to create an Eigen-style Affine transform based on construction of a coordinate frame
+     * placed on the surface of a plane
+     */
     Eigen::Affine3f make_affine_from_plane_params(Eigen::Vector3f plane_normal, double plane_dist);
+    /**
+     * returns an Eigen::Affine transform to a coordinate frame constructed on a plane defined by
+     * plane_parameters (normal_x, normal_y, normal_z, distance)
+     * useful for transforming data to find planar surfaces with z-axis vertical
+     */
+    Eigen::Affine3f make_affine_from_plane_params(Eigen::Vector4f plane_parameters);
+
 
     void transform_kinect_cloud(Eigen::Affine3f A);
     void transform_selected_points_cloud(Eigen::Affine3f A);
@@ -101,6 +112,8 @@ public:
 
     void save_transformed_kinect_snapshot() { pcl::io::savePCDFileASCII ("xformed_kinect_snapshot.pcd", *pclTransformed_ptr_);};
     void get_transformed_selected_points(pcl::PointCloud<pcl::PointXYZ> & outputCloud );
+    void get_copy_selected_points(pcl::PointCloud<pcl::PointXYZ>::Ptr &outputCloud );
+    
     void copy_cloud(PointCloud<pcl::PointXYZ>::Ptr inputCloud, PointCloud<pcl::PointXYZ>::Ptr outputCloud); 
     void copy_cloud_xyzrgb_indices(PointCloud<pcl::PointXYZRGB>::Ptr inputCloud, vector<int> &indices, PointCloud<pcl::PointXYZRGB>::Ptr outputCloud); 
 

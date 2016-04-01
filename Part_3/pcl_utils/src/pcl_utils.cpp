@@ -2,6 +2,7 @@
 //
 
 #include <pcl_utils/pcl_utils.h>
+#include <pcl-1.7/pcl/PCLHeader.h>
 //uses initializer list for member vars
 
 PclUtils::PclUtils(ros::NodeHandle* nodehandle) : nh_(*nodehandle), pclKinect_ptr_(new PointCloud<pcl::PointXYZ>),
@@ -56,6 +57,8 @@ Eigen::Affine3f PclUtils::make_affine_from_plane_params(Eigen::Vector3f plane_no
     Eigen::Vector3f plane_origin;
     // define a frame on the plane, with zvec parallel to the plane normal
     zvec = plane_normal;
+    if (zvec(2)>0) zvec*= -1.0; //insist that plane normal points towards camera
+    // this assumes that reference frame of points corresponds to camera w/ z axis pointing out from camera
     xvec<< 1,0,0; // this is arbitrary, but should be valid for images taken w/ zvec= optical axis
     xvec = xvec - zvec * (zvec.dot(xvec)); // force definition of xvec to be orthogonal to plane normal
     xvec /= xvec.norm(); // want this to be unit length as well    
@@ -65,10 +68,22 @@ Eigen::Affine3f PclUtils::make_affine_from_plane_params(Eigen::Vector3f plane_no
     R_transform.col(2) = zvec;
     //cout<<"R_transform = :"<<endl;
     //cout<<R_transform<<endl;
+    if (plane_dist>0) plane_dist*=-1.0; // all planes are a negative distance from the camera, to be consistent w/ normal
     A_transform.linear() = R_transform; // directions of the x,y,z axes of the plane's frame, expressed w/rt camera frame
     plane_origin = zvec*plane_dist; //define the plane-frame origin here
     A_transform.translation() = plane_origin;
     return A_transform;
+}
+
+//same as above, really, but accept input is a 4-vector
+Eigen::Affine3f PclUtils::make_affine_from_plane_params(Eigen::Vector4f plane_parameters) {
+    Eigen::Vector3f plane_normal;
+    double plane_dist;
+    plane_normal(0) = plane_parameters(0);
+    plane_normal(1) = plane_parameters(1);
+    plane_normal(2) = plane_parameters(2);
+    plane_dist = plane_parameters(3);
+    return (make_affine_from_plane_params(plane_normal, plane_dist));
 }
 
 
@@ -314,6 +329,20 @@ void PclUtils::get_transformed_selected_points(pcl::PointCloud<pcl::PointXYZ> & 
     outputCloud.points.resize(npts);
     for (int i = 0; i < npts; ++i) {
         outputCloud.points[i].getVector3fMap() = pclTransformedSelectedPoints_ptr_->points[i].getVector3fMap();   
+    }
+}
+void PclUtils::get_copy_selected_points(pcl::PointCloud<pcl::PointXYZ>::Ptr &outputCloud ) {
+    int npts = pclSelectedPoints_ptr_->points.size(); //how many points to extract?
+    outputCloud->header = pclSelectedPoints_ptr_->header;
+    outputCloud->header.frame_id = "camera_depth_optical_frame"; // work-around for bug in publish selected pts tool
+    outputCloud->is_dense = pclSelectedPoints_ptr_->is_dense;
+    outputCloud->width = npts;
+    outputCloud->height = 1;
+
+    cout << "copying cloud w/ npts =" << npts << endl;
+    outputCloud->points.resize(npts);
+    for (int i = 0; i < npts; ++i) {
+        outputCloud->points[i].getVector3fMap() = pclSelectedPoints_ptr_->points[i].getVector3fMap();   
     }
 }
 
