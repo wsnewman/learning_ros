@@ -89,9 +89,9 @@ int main(int argc, char** argv) {
     string fname;
     cout << "enter pcd file name: "; //prompt to enter file name
     cin >> fname;
-    pcl::PCDReader reader;
-    reader.read (fname, *cloud);
-    cloud->header.frame_id = "camera_depth_optical_frame";
+    //pcl::PCDReader reader;
+    //reader.read (fname, *cloud);
+    //cloud->header.frame_id = "camera_depth_optical_frame";
     //load a PCD file using pcl::io function; alternatively, could subscribe to Kinect messages
     if (pcl::io::loadPCDFile<pcl::PointXYZRGB> (fname, *pclKinect_clr_ptr) == -1) //* load the file
     {
@@ -108,7 +108,7 @@ int main(int argc, char** argv) {
     sensor_msgs::PointCloud2 ros_cloud, ros_planar_cloud,downsampled_cloud; //here are ROS-compatible messages
     pcl::toROSMsg(*pclKinect_clr_ptr, ros_cloud); //convert from PCL cloud to ROS message this way
     
-    cout<<"pcl2 cloud has num bytes = "<< cloud->data.size()<<endl;
+    //cout<<"pcl2 cloud has num bytes = "<< cloud->data.size()<<endl;
     
     //use voxel filtering to downsample the original cloud:
     cout<<"starting voxel filtering"<<endl;
@@ -122,7 +122,8 @@ int main(int argc, char** argv) {
     
     cout<<"num bytes in original cloud data = "<<pclKinect_clr_ptr->points.size()<<endl;
     cout<<"num bytes in filtered cloud data = "<<downsampled_kinect_ptr->points.size()<<endl; // ->data.size()<<endl;    
-    
+    pcl::toROSMsg(*downsampled_kinect_ptr, downsampled_cloud); //convert to ros message for publication and display
+
     //pcl::fromPCLPointCloud2(*cloud_filtered, downsampled_cloud); //convert from PCL cloud to ROS message this way
 
     PclUtils pclUtils(&nh); //instantiate a PclUtils object--a local library w/ some handy fncs
@@ -147,7 +148,7 @@ int main(int argc, char** argv) {
         }
         pubCloud.publish(ros_cloud);  // will not need to keep republishing if display setting is persistent
         pubPlane.publish(ros_planar_cloud); // display the set of points computed to be coplanar w/ selection
-        pubDnSamp.publish(cloud_filtered); //can directly publish a pcl::PointCloud2!!
+        pubDnSamp.publish(downsampled_cloud); //can directly publish a pcl::PointCloud2!!
         ros::spinOnce();  //pclUtils needs some spin cycles to invoke callbacks for new selected points
         ros::Duration(0.1).sleep();
     }
