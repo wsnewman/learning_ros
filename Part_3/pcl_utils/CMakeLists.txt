@@ -9,6 +9,7 @@ find_package(catkin_simple REQUIRED)
 
 #uncomment the next line to use the point-cloud library
 find_package(PCL 1.7 REQUIRED)
+include_directories(${PCL_INCLUDE_DIRS})
 
 #uncomment the following 4 lines to use the Eigen library
 find_package(cmake_modules REQUIRED)
@@ -32,24 +33,26 @@ cs_add_library(pcl_utils src/pcl_utils.cpp)
 # Executables: uncomment the following and edit arguments to compile new nodes
 # may add more of these lines for more nodes from the same package
 # cs_add_executable(example src/example.cpp)
-cs_add_executable(make_and_display_ellipse src/make_and_display_ellipse.cpp)
-
-cs_add_executable(pcl_simple_main src/pcl_simple_main.cpp)
-cs_add_executable(ransac_main src/ransac_main.cpp)
-cs_add_executable(pcd_snapshot src/pcd_snapshot.cpp)
+#cs_add_executable(make_and_display_ellipse src/make_and_display_ellipse.cpp)
+#cs_add_executable(pcl_simple_main src/pcl_simple_main.cpp)
+#cs_add_executable(ransac_main src/ransac_main.cpp)
 #cs_add_executable(example_process_pcd src/example_process_pcd.cpp)
+cs_add_executable(display_ellipse src/display_ellipse.cpp src/make_clouds.cpp)
+cs_add_executable(pcd_snapshot src/pcd_snapshot.cpp)
+#cs_add_executable(demo_pcl1 src/demo_pcl1.cpp)
+#cs_add_executable(demo_pcl2 src/demo_pcl2.cpp)
 
 cs_add_executable(display_pcd_file src/display_pcd_file.cpp)
-cs_add_executable(find_plane_pcd_file src/find_plane_pcd_file.cpp)
+cs_add_executable(find_plane_pcd_file src/find_plane_pcd_file.cpp src/find_indices_of_plane_from_patch.cpp)
 
 #the following is required, if desire to link a node in this package with a library created in this same package
 # edit the arguments to reference the named node and named library within this package
 # target_link_library(example my_lib)
-target_link_libraries(pcl_simple_main pcl_utils)
-target_link_libraries(ransac_main pcl_utils)
-target_link_libraries(pcd_snapshot pcl_utils)
-target_link_libraries(find_plane_pcd_file pcl_utils)
+#target_link_libraries(pcl_simple_main pcl_utils)
+#target_link_libraries(ransac_main pcl_utils)
+#target_link_libraries(pcd_snapshot pcl_utils)
 #target_link_libraries(example_process_pcd pcl_utils)
+target_link_libraries(find_plane_pcd_file pcl_utils)
 
 cs_install()
 cs_export()
