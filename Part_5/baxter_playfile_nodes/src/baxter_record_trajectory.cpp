@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
     cout << "left-arm current state:" << q_vec_left_arm.transpose() << endl;
 
     int ans;
-    cout << "enter 1 to start capturing, then move arms in desired trajectory: ";
+    cout << "enter 1 to start capturing, then move arms in desired trajectory; control-C when done recording: ";
     cin >> ans;
     while (ros::ok()) {
 
