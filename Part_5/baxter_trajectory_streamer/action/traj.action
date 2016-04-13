@@ -1,0 +1,9 @@
+#goal definition
+trajectory_msgs/JointTrajectory trajectory
+---
+#result definition
+#return_val = 1 for traj complete; traj_id should echo the input traj_id
+int32 return_val
+---
+#feedback: optional; could declare step number of trajectory in progress
+int32 fdbk
