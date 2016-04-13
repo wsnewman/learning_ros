@@ -1,0 +1,18 @@
+<launch>
+<!-- gripper z axis is parallel to flange normal; gripper x axis is along line between opposite fingertips  -->
+<!-- args: x y z yaw pitch roll 
+Usage: rosrun tf static_transform_publisher x y z yaw 
+pitch roll frame_id child_frame_id  period(milliseconds) 
+-->
+
+<node pkg="tf" type="static_transform_publisher" name="tool_xform" args="-0.030 0 0.120  -0.24 0 0   right_hand yale_gripper_frame 50"/>
+</launch>
+
+<!-- this yields:
+rosrun tf tf_echo right_hand yale_gripper_frame
+At time 1440173202.403
+- Translation: [-0.030, 0.000, 0.120]
+- Rotation: in Quaternion [0.000, 0.000, -0.120, 0.993]
+            in RPY (radian) [0.000, 0.000, -0.240]
+            in RPY (degree) [0.000, 0.000, -13.751]
+-->

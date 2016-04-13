@@ -1,0 +1,19 @@
+<launch>
+<!-- need camera link for Kinect driver -->
+<!-- make this tf external for tuning -->
+
+<node pkg="tf" type="static_transform_publisher" name="kinect_calib" args="0 0 0 0 0 0 1 head kinect_link 50"/>
+<node pkg="tf" type="static_transform_publisher" name="kinect_sensor" args="0 0 0 -0.500 0.500 -0.500 0.500 kinect_link kinect_pc_frame 50"/>
+
+<!-- these for debug, if do not launch freenect for Kinect -->
+<!--
+<node pkg="tf" type="static_transform_publisher" name="kinect_sensor2" args="0 0 0 -0.500 0.500 -0.500 0.500 kinect_link camera_depth_optical_frame 50"/>
+<node pkg="tf" type="static_transform_publisher" name="kinect_sensor3" args="0 0 0 -0.500 0.500 -0.500 0.500 camera_depth_optical_frame camera_rgb_optical_frame 50"/>
+-->
+
+<!-- make this tf external for tuning -->
+<!--node pkg="tf" type="static_transform_publisher" name="camera_link_frame_bdcst" args="0.217 -0.04 0.0505  1.224 0.055 -0.81 0 kinect_link camera_link 50"/-->
+
+
+<node pkg="tf" type="static_transform_publisher" name="camera_link_frame_bdcst" args="0.19 -0.00 0.08  -2.95 -4.1 -2.92   kinect_link camera_link 50"/></launch>
+
