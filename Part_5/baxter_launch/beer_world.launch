@@ -61,12 +61,4 @@
       <arg name="right_electric_gripper" value="$(arg right_electric_gripper)"/>
       <arg name="left_electric_gripper" value="$(arg left_electric_gripper)"/>
   </include>
-  
-  <!-- gripper and kinect frames -->
-  <include file="$(find baxter_launch_files)/launch/yale_gripper_xform.launch"/>
-  <include file="$(find baxter_launch_files)/launch/kinect_transform.launch"/>
-  <node pkg="baxter_trajectory_streamer" type="rt_arm_as" name="rt_arm_as"  output="screen"/>
-  <node pkg="baxter_trajectory_streamer" type="left_arm_as" name="left_arm_as"  output="screen"/> 
-  <node pkg="cartesian_planner" type="baxter_cart_move_as" name="baxter_cart_move_as" output="screen"/>
-  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find baxter_launch_files)/rviz_config/baxter.rviz"/> 
 </launch>
