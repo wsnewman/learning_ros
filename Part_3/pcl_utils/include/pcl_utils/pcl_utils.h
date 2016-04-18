@@ -22,7 +22,7 @@
 #include <geometry_msgs/PointStamped.h>
 #include <geometry_msgs/TransformStamped.h>
 
-#include <cwru_msgs/PatchParams.h>
+//#include <cwru_msgs/PatchParams.h>
 
 #include <tf/transform_listener.h>  // transform listener headers
 #include <tf/transform_broadcaster.h>
@@ -65,7 +65,7 @@ public:
     Eigen::Vector3f  compute_centroid(pcl::PointCloud<pcl::PointXYZ> &input_cloud);
     
     void fit_points_to_plane(pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud_ptr,Eigen::Vector3f &plane_normal, double &plane_dist);
-    void fit_xformed_selected_pts_to_plane(Eigen::Vector3f &plane_normal, double &plane_dist);  
+    //void fit_xformed_selected_pts_to_plane(Eigen::Vector3f &plane_normal, double &plane_dist);  
 
 // 
 // 
@@ -89,6 +89,7 @@ public:
      * useful for transforming data to find planar surfaces with z-axis vertical
      */
     Eigen::Affine3f make_affine_from_plane_params(Eigen::Vector4f plane_parameters);
+    Eigen::Affine3f make_affine_from_plane_params(Eigen::Vector4f plane_parameters, Eigen::Vector3f centroid);
 
 
     void transform_kinect_cloud(Eigen::Affine3f A);

@@ -1,0 +1,83 @@
+#This action message is specialized for Baxter
+#minimally, it may contain just a command code
+#more generally, it may contain desired left and right tool-frame poses, as well
+# as gripper poses (gripper opening--interpreted for specific grippers, e.g. Yale hand)
+# and an arrival time for the move
+# It is assumed that a move starts from the previous commanded pose, or from the current joint state
+
+#return codes provide status info, e.g. if a proposed move is reachable
+
+#define message constants:  these need to be groomed--many are obsolete
+uint8 ARM_TEST_MODE = 0
+
+#queries
+uint8 ARM_IS_SERVER_BUSY_QUERY = 1
+
+uint8 ARM_QUERY_IS_PATH_VALID = 2
+uint8 RT_ARM_GET_Q_DATA = 3
+uint8 LEFT_ARM_GET_Q_DATA = 4
+uint8 RT_ARM_GET_TOOL_POSE = 5
+uint8 LEFT_ARM_GET_TOOL_POSE = 5
+
+#requests for motion plans; need to extend this to left arm and both arms
+uint8 RT_ARM_PLAN_PATH_CURRENT_TO_GOAL_POSE=20 #plan paths from current arm pose
+uint8 RT_ARM_PLAN_PATH_CURRENT_TO_PRE_POSE=21
+
+uint8 RT_ARM_PLAN_JSPACE_PATH_CURRENT_TO_PRE_POSE=22
+uint8 RT_ARM_PLAN_JSPACE_PATH_CURRENT_TO_QGOAL=23
+
+#cartesian path from specified joint-space start and end;
+# orientation interpolation is a bit odd
+uint8 RT_ARM_PLAN_PATH_QSTART_TO_QGOAL = 25
+uint8 RT_ARM_PLAN_PATH_QSTART_TO_ADES = 24 #specify start and end, j-space start, affine desired end
+
+uint8 RT_ARM_PLAN_PATH_ASTART_TO_QGOAL = 26 #specified affine start, joint-space goal
+uint8 RT_ARM_PLAN_PATH_CURRENT_TO_GOAL_DP_XYZ = 27 #rectilinear translation w/ fixed orientation
+
+# request to preview plan:
+uint8 RT_ARM_DISPLAY_TRAJECTORY = 50
+
+#MOVE commands!
+uint8 RT_ARM_EXECUTE_PLANNED_PATH = 100
+
+uint8 RT_ARM_DESCEND_20CM=101
+uint8 RT_ARM_DEPART_20CM=102
+
+
+#goal:
+int32 command_code
+geometry_msgs/PoseStamped des_pose_gripper_right
+geometry_msgs/PoseStamped des_pose_gripper_left
+float64 gripper_opening_right
+float64 gripper_opening_left
+float64[] arm_dp_right #to command a 3-D vector displacement relative to current pose, fixed orientation
+float64[] arm_dp_left
+float64[] q_goal_right
+float64[] q_goal_left
+float64 move_time
+---
+#result definition
+#  response codes...
+uint8 ARM_STATUS_UNDEFINED=0
+uint8 ARM_RECEIVED_AND_INITIATED_RQST=1
+uint8 ARM_REQUEST_REJECTED_ALREADY_BUSY=2
+uint8 ARM_SERVER_NOT_BUSY=3
+uint8 ARM_SERVER_IS_BUSY=4
+uint8 ARM_RECEIVED_AND_COMPLETED_RQST=5
+uint8 RT_ARM_PATH_IS_VALID=6
+uint8 RT_ARM_PATH_NOT_VALID=7
+
+uint8 COMMAND_CODE_NOT_RECOGNIZED=8
+uint8 SUCCESS=9
+uint8 NOT_FINISHED_BEFORE_TIMEOUT=10
+int32 return_code
+int32 err_code
+string err_msg
+float64 computed_arrival_time
+float64[] q_arm_right
+float64[] q_arm_left
+geometry_msgs/PoseStamped current_pose_gripper_right
+geometry_msgs/PoseStamped current_pose_gripper_left
+---
+#feedback: optional; 
+int32 fdbk

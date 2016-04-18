@@ -11,6 +11,9 @@ current arm poses and go to hard-coded goal poses.
 ## Example usage
 Start the robot or the simulator, e.g.:
 `roslaunch baxter_gazebo baxter_world.launch`
+OR:
+`roslaunch baxter_launch baxter_world.launch`
+(to add cafe table and beer can)
 Enable the robot:
 `rosrun baxter_tools enable_robot.py -e`
 Start the trajectory-interpolation action servers:

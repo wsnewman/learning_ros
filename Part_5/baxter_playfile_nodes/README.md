@@ -32,7 +32,6 @@ Start the trajectory-interpolation action servers:
 In another terminal, cd to the directory containing the desired trajectory filename(s).
 Run the playback node, with command-line arguments for the right-arm trajectory and left-arm trajectory.
 (If only 1 filename is provided, it will be interpreted and executed as the right-arm file). E.g.:
-`rosrun baxter_playfile_nodes 
 `rosrun baxter_playfile_nodes baxter_playback baxter_r_arm_traj.jsp`
 (to move just the right arm).  Or,
 `rosrun baxter_playfile_nodes baxter_playback baxter_r_arm_traj.jsp baxter_l_arm_traj.jsp`

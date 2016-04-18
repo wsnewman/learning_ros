@@ -1,0 +1,5 @@
+ <launch>
+  <node pkg="baxter_trajectory_streamer" type="rt_arm_as" name="rt_arm_as"/>
+  <node pkg="baxter_trajectory_streamer" type="left_arm_as" name="left_arm_as"/>
+  <node pkg="baxter_trajectory_streamer" type="pre_pose" name="pre_pose"/>
+</launch>

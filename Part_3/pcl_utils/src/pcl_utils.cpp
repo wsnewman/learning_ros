@@ -86,6 +86,20 @@ Eigen::Affine3f PclUtils::make_affine_from_plane_params(Eigen::Vector4f plane_pa
     return (make_affine_from_plane_params(plane_normal, plane_dist));
 }
 
+//another variant: put frame origin at provided centroid
+Eigen::Affine3f PclUtils::make_affine_from_plane_params(Eigen::Vector4f plane_parameters, Eigen::Vector3f centroid) {
+    Eigen::Vector3f plane_normal;
+    Eigen::Affine3f A_transform;
+    double plane_dist;
+    plane_normal(0) = plane_parameters(0);
+    plane_normal(1) = plane_parameters(1);
+    plane_normal(2) = plane_parameters(2);
+    plane_dist = plane_parameters(3);
+    A_transform =  make_affine_from_plane_params(plane_normal, plane_dist);
+    A_transform.translation() = centroid; //use the centroid as the frame origin
+    return A_transform;
+}
+
 
 void PclUtils::fit_points_to_plane(Eigen::MatrixXf points_mat, Eigen::Vector3f &plane_normal, double &plane_dist) {
     //ROS_INFO("starting identification of plane from data: ");
@@ -254,10 +268,11 @@ Eigen::Vector3f  PclUtils::compute_centroid(pcl::PointCloud<pcl::PointXYZ> &inpu
 
 // this fnc operates on transformed selected points
 
+/*
 void PclUtils::fit_xformed_selected_pts_to_plane(Eigen::Vector3f &plane_normal, double &plane_dist) {
     fit_points_to_plane(pclTransformedSelectedPoints_ptr_, plane_normal, plane_dist);
     //Eigen::Vector3f centroid;
-    cwru_msgs::PatchParams patch_params_msg;
+    //cwru_msgs::PatchParams patch_params_msg;
     //compute the centroid; this is redundant w/ computation inside fit_points...oh well.
     // now the centroid computed by plane fit is stored in centroid_ member var
     //centroid = compute_centroid(pclTransformedSelectedPoints_ptr_);
@@ -270,8 +285,9 @@ void PclUtils::fit_xformed_selected_pts_to_plane(Eigen::Vector3f &plane_normal, 
         patch_params_msg.centroid[i]= centroid_[i];
     }
     patch_params_msg.frame_id = "torso";
-    patch_publisher_.publish(patch_params_msg);
+    //patch_publisher_.publish(patch_params_msg);
 }
+*/
 
 Eigen::Affine3f PclUtils::transformTFToEigen(const tf::Transform &t) {
     Eigen::Affine3f e;
@@ -808,8 +824,8 @@ void PclUtils::initializeSubscribers() {
 
 void PclUtils::initializePublishers() {
     ROS_INFO("Initializing Publishers");
-    pointcloud_publisher_ = nh_.advertise<sensor_msgs::PointCloud2>("cwru_pcl_pointcloud", 1, true);
-    patch_publisher_ = nh_.advertise<cwru_msgs::PatchParams>("pcl_patch_params", 1, true);
+    pointcloud_publisher_ = nh_.advertise<sensor_msgs::PointCloud2>("pcl_pointcloud", 1, true);
+    //patch_publisher_ = nh_.advertise<cwru_msgs::PatchParams>("pcl_patch_params", 1, true);
     //add more publishers, as needed
     // note: COULD make minimal_publisher_ a public member function, if want to use it within "main()"
 }
