@@ -177,7 +177,7 @@ int main(int argc, char** argv) {
     ROS_INFO("sending goal to grab object: ");
         object_grabber_ac.sendGoal(object_grabber_goal,&objectGrabberDoneCb); 
         //decide how long to wait...
-        finished_before_timeout = object_grabber_ac.waitForResult(ros::Duration(10.0));
+        finished_before_timeout = object_grabber_ac.waitForResult(ros::Duration(40.0));
 
         if (!finished_before_timeout) {
             ROS_WARN("giving up waiting on result; quitting ");
