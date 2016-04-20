@@ -1,0 +1,25 @@
+#navigator action message
+#pass in a destination code, and optional coordinates
+#returns codes regarding outcome
+
+int32 HOME = 0
+int32 TABLE= 1
+#add more locations here...
+
+int32 COORDS=100
+
+#goal:
+int32 location_code
+geometry_msgs/PoseStamped desired_pose
+---
+#result definition
+#  response codes...
+int32 DESIRED_POSE_ACHIEVED=0
+int32 FAILED_CANNOT_REACH_DES_POSE=1
+int32 DESTINATION_CODE_UNRECOGNIZED=1
+#could add more informative failure codes here...
+
+int32 return_code
+---
+#feedback: optional; 
+int32 fdbk

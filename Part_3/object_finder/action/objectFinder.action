@@ -1,0 +1,43 @@
+#objectFinder.action
+#goal:
+#define object codes...add more!
+#some generic solid objects:
+int32 UPRIGHT_CYLINDER = 1
+int32 HORIZONTAL_CYLINDER = 2
+int32 CUBE = 3
+int32 PRISM = 4
+int32 SPHERE = 5
+
+#some very specific objects...add more!
+#better: read these in from a database that is more easily augmented
+int32 COKE_CAN_UPRIGHT=100
+
+#goal fields to fill in:
+#identify the object, along with its stable pose type (e.g., upright, horizontal, on faceN)
+int32 object_id
+#boolean to declare if object is on a horizontal surface of known height:
+bool known_surface_ht
+#if surface ht is known, fill it in
+float32 surface_ht
+#optionally, provide dimensions that parameterize generic shapes
+#dim1 is a radius (for sphere or cylinder) or length (for cube or prism)
+float32 object_dimension1
+#dim2 is height (for cylinder or prism)
+float32 object_dimension2
+#dim3 is width (for prism)
+float32 object_dimension3
+
+---
+#result
+int32 OBJECT_NOT_FOUND=0
+int32 OBJECT_FOUND=1
+int32 OBJECT_CODE_NOT_RECOGNIZED=2
+#return the identified pose here:
+int32 found_object_code
+geometry_msgs/PoseStamped object_pose
+---
+#feedback: optional; 
+int32 fdbk
+
+
+
