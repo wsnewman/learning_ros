@@ -1,0 +1,24 @@
+#object_grabber action message
+#pass in an object code and the object's frame (w/rt named frame_id)
+#object_grabber will plan approach, grasp and lift of object
+#returns codes regarding outcome
+
+int32 COKE_CAN = 1
+#add more objects here...
+
+#goal:
+int32 object_code
+geometry_msgs/PoseStamped object_frame
+---
+#result definition
+#  response codes...
+int32 OBJECT_ACQUIRED=0
+int32 FAILED_CANNOT_REACH=1
+int32 FAILED_CANNOT_APPROACH=2
+int32 FAILED_CANNOT_GRASP=3
+int32 FAILED_DROPPED=4
+int32 FAILED_OBJECT_UNKNOWN=5
+int32 return_code
+---
+#feedback: optional; 
+int32 fdbk
