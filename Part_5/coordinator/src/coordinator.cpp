@@ -130,10 +130,14 @@ int main(int argc, char** argv) {
     //ALL SET UP; WAITING FOR TRIGGER
     //wait for the Alexa trigger:
     ROS_INFO("waiting for Alexa code: rostopic pub Alexa_codes std_msgs/UInt32 100");
-    while (!g_get_coke_trigger) {
+    while(ros::ok()) {
+     if (!g_get_coke_trigger) {
         ros::Duration(0.5).sleep();
         ros::spinOnce();    
     }
+     else{
+                 g_get_coke_trigger=false; // reset the trigger
+
 
     //  IF HERE, START THE FETCH BEHAVIOR!!
     
@@ -203,8 +207,9 @@ int main(int argc, char** argv) {
             ROS_WARN("COULD NOT REACH TABLE; QUITTING");
             return 1;
         }
-  ROS_INFO("My work here is done!"); //more generally, keep this behavior alive      
-        
+  ROS_INFO("Done fetching! Run me again?");    
+             }
+    }
     return 0;
 }
 
