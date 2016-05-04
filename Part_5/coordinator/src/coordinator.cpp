@@ -73,7 +73,7 @@ void navigatorDoneCb(const actionlib::SimpleClientGoalState& state,
 void alexaCB(const std_msgs::UInt32& code_msg) {
     int alexa_code = code_msg.data;
     ROS_INFO("received Alexa code: %d", alexa_code);
-    if (alexa_code= ALEXA_GET_COKE_CODE) {
+    if (alexa_code== ALEXA_GET_COKE_CODE) {
       g_get_coke_trigger = true;
     }
 }
