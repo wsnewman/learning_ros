@@ -142,6 +142,10 @@ public:
     //same as above, but specifically operates on transformed kinect cloud
     void filter_cloud_z(double z_nom, double z_eps, 
                 double radius, Eigen::Vector3f centroid, vector<int> &indices);   
+    void box_filter(PointCloud<pcl::PointXYZ>::Ptr inputCloud, Eigen::Vector3f pt_min, Eigen::Vector3f pt_max, 
+                vector<int> &indices);
+    void box_filter(Eigen::Vector3f pt_min, Eigen::Vector3f pt_max, vector<int> &indices);
+    
     
     void analyze_selected_points_color();
     

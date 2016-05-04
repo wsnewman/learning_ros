@@ -56,7 +56,8 @@ Eigen::Affine3f PclUtils::make_affine_from_plane_params(Eigen::Vector3f plane_no
     Eigen::Affine3f A_transform;
     Eigen::Vector3f plane_origin;
     // define a frame on the plane, with zvec parallel to the plane normal
-    zvec = plane_normal;
+    for (int i=0;i<3;i++) 
+       zvec(i) = plane_normal(i);
     if (zvec(2)>0) zvec*= -1.0; //insist that plane normal points towards camera
     // this assumes that reference frame of points corresponds to camera w/ z axis pointing out from camera
     xvec<< 1,0,0; // this is arbitrary, but should be valid for images taken w/ zvec= optical axis
@@ -677,6 +678,33 @@ void PclUtils::filter_cloud_z(PointCloud<pcl::PointXYZ>::Ptr inputCloud, double 
     int n_extracted = indices.size();
     cout << " number of points in range = " << n_extracted << endl;    
     
+}
+
+//find points that are both (approx) coplanar at height z_nom AND within "radius" of "centroid"
+void PclUtils::box_filter(PointCloud<pcl::PointXYZ>::Ptr inputCloud, Eigen::Vector3f pt_min, Eigen::Vector3f pt_max, 
+                vector<int> &indices)  {
+    int npts = inputCloud->points.size();
+    Eigen::Vector3f pt;
+    indices.clear();
+    double dz;
+    int ans;
+    for (int i = 0; i < npts; ++i) {
+        pt = inputCloud->points[i].getVector3fMap();
+        //cout<<"pt: "<<pt.transpose()<<endl;
+        //check if in the box:
+        if ((pt[0]>pt_min[0])&&(pt[0]<pt_max[0])&&(pt[1]>pt_min[1])&&(pt[1]<pt_max[1])&&(pt[2]>pt_min[2])&&(pt[2]<pt_max[2])) { 
+            //passed box-crop test; include this point
+               indices.push_back(i);
+        }
+    }
+    int n_extracted = indices.size();
+    cout << " number of points in range = " << n_extracted << endl;    
+    
+}
+
+//special case of above for transformed Kinect pointcloud:
+void PclUtils::box_filter(Eigen::Vector3f pt_min, Eigen::Vector3f pt_max, vector<int> &indices) {
+   box_filter(pclTransformed_ptr_, pt_min, pt_max, indices);      
 }
     
 

@@ -1,0 +1,121 @@
+depth image
+
+do voxel filtering
+do projection onto 2-D:  
+each enabled voxel (described back in original frame) projects onto some (i,j)
+pixel; can store distance (from focal pt to voxel) as gray-scale value (decide on scaling)
+
+what about voids?  e.g., table removed from scene.  then only empty voxels project
+onto corresponding (i,j) pixel.  What depth value to assign?  0?  255? (maybe 0?)
+
+what about "holes" in original depth image?  some pixel (i,j) maps onto nan for (x,y,z)
+all voxels along this ray will be empty
+
+if had floor and sides, then ideally expect ALL (i,j) map onto SOME (x,y,z).
+Or, looking at angle w/ object on large tray--> expect depth value either from object
+or tray;
+
+attempt repair?
+first, crop image to get rid of nans on edges;
+create smaller, ordered point cloud
+find all nans and substitute average of (x,y,z) pts from neighboring (i,j) pixels;
+  (start w/ isolated nan pixels; see about larger holes)
+
+find all indices of pts on table, indices_pts_on_table
+find all indices of pts above table;
+order implies mapping of pt index to (i,j) of 2-D projection
+
+in original image, replace all (x,y,z) of (i,j) corresponding to pts NOT above table
+...
+
+say pts above table translate to bright (i,j) points, and points not above table are
+black (treated as pts far away from camera). (could assign (x,y,z) values to these
+all in same cube, not too far from object of interest.  E.g. a voxel under the object?
+
+try again: for all (i,j), if (x,y,z) is nan or not within filter box, re-assign
+intensity (i,j) = black; else assign intensity proportional to z-value;
+
+expect: a plane that is normal to optical axis--> uniform intensity; background all black
+*a plane that is tilted has a smooth intensity gradient (background is black)
+*a curve (e.g. cylinder) has bright near points, shading to dark w/ edges to black bkgd
+*an object w/ holes (e.g. cup handle) has black interior regions
+*an object w/ missing data has black pin-prick holes (remove as outliers w. openCV?)
+*resize (zoom) image so avg z value (of non-black pixels?) is normalized
+  (accounts for object viewed at different depths?)
+*center the image so centroid (of all pixels) is in middle
+
+is this same as 3-D lidar scan?  each ray through an (i,j) pixel, and save 1/distance as intensity; trim (set to dmax, or intensity 0) each non-object pixel
+
+equiv to disparity map?  (of object-only pixels)
+
+not quite disparity...e.g., say (after correcting avg z value of object voxels),
+range of interest is 1.0m to 1.3m (after removal of table, etc)
+map these values 255<->1.0m, 32<->1.3m  (all bkgnd at intensity 0)
+(display to human as color map for distance?)
+
+absolute dimensions matter...so width of x-y and depth range of transformed object image matter
+
+how to down-sample?  e.g. 640x480-> 400x300 (trim edges) -> 64x32? (pick an image size)
+do this in early processing?  choose down-sample window size, stride,
+  ignore nan vals; do max-pool?  do avg (x,y,z)?  discard max, discard min, then max-pool?
+  (outlier removal?) or discard min and max, avg the rest?
+  
+  pass through multiple filter layers?
+  
+  ----
+  note that indices of points in point-cloud also allow indexing back into the HxW camera array...
+  so can project these values back again to create edited 2-D image;
+  
+  shift/scale: assume object is on a table top; remove table pts (keep these indices?);
+    find indices of pts above the tables
+  In TABLE SPACE, subtract z_table_height from all points of interest;
+  back in CAMERA SPACE, compute x_centroid (lateral), z_centroid (depth)
+  the d-mean all x values (subtract x_centroid); 
+  adjust z values of all pts of interest w/ z+= z_nom -z_centroid (so new z_centroid = z_nom)
+  
+  given these pts in CAMERA space, create a 2-D projection:
+   *define virtual camera params
+   *for all table points, map these to black in projection image;
+   *linear range: z_range_min-> 255, z_range_max-> 128 (?); background -> 0 (and NaN's?)
+   
+  projection:  given point (x,y,z) in CAMERA space (possibly result of filtering and zooming)
+    compute gray-scale value based on z-coord;
+    assign this value to pixel (i,j) in 2-D image based on: x/z = (u-u_c)/fx (where u and f are in pixels)
+      y/z = (v-v_c)/fy
+     choose Nu=u_max, Nv=v_max based on desired resolution,
+    and choose focal pt s.t.:  (x_max-x_min)/z_min = u_max/fx;     (y_max-y_min)/z_min = v_max/fy
+    choose x_max, x_min, y_max, y_min, z_max, z_min for (box) region of interest
+    (nominal viewing platform)
+    
+    what is reasonable?
+     *lowest resolution that is recognizable; 11x11 for numbers; 16x32 for happy_world;
+     640x480 full; 100x100??
+    
+    for reduced resolution, init all cells to mid-level gray (black has meaning= visible part of table)
+     (gray is "I don't know" filler)
+    have second "image" recording num pts/cell, all set to zero;
+    for each point-cloud point, project onto (u,v)-> (i,j); AVERAGE in the new gray-scale value
+    (note: for cells w/ 0 pts, original gray will get replaced identically w/ new gray-scale value)
+    
+    visualize and save image
+    
+    ---------------starter code-------
+    see pt_cloud_to_image; try inputting grasp2_snapshot
+    still need to box filter and adjust depth range;
+    need better resolution
+    can still tune focal length...decide on resolution; crop images; 
+    
+    see:
+    http://robotica.unileon.es/mediawiki/index.php/PCL/OpenNI_tutorial_2:_Cloud_processing_(basic)
+
+
+    
+
+  
+  
+
+
+
+
+
+
