@@ -1,0 +1,11 @@
+<launch>
+ 
+<node pkg="tf" type="static_transform_publisher" name="camera_frame_bdcst" args="0 0 0 -1.5708 0 -1.5708   camera_link camera_optical_frame 50"/>
+
+<node pkg="image_view" type="image_view" name="image_view">
+<remap from="image" to="simple_camera/image_raw"/>
+</node>
+
+<node pkg="example_opencv" type="find_red_pixels" name="find_red_pixels" output="screen"/>
+
+</launch>
