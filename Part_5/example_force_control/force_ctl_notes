@@ -1,0 +1,32 @@
+try 1-DOF model;
+  created example_force_control/prismatic_1dof_robot_description_w_jnt_clt.urdf
+  has effortJointInterface
+  
+launch file: example_force_control/prismatic_1dof_robot_w_jnt_ctl.launch
+  references config in: .../control_config/one_dof_vel_ctl_params.yaml
+  which sets pure velocity-control proportional gain
+  
+run with:
+  roslaunch gazebo_ros empty_world.launch 
+  roslaunch example_force_control prismatic_1dof_robot_w_jnt_ctl.launch 
+  rosrun example_force_control sine_commander 
+    (enter amp and freq)
+  view with: rqt_plot
+  test tuning w/ rosrun rqt_reconfigure rqt_reconfigure
+  
+Next: ******want to create a force sensor;
+   (use a plug-in for controller? ) 
+   or simply tolerate time delay, etc, of force controller
+   
+   then, cmd velocity as:
+     K_virt, M_virt, B_virt
+     
+     M_virt*acc_ideal = K_virt*(x_attractor - x_state) - B_virt*v_state + F_sense
+     
+     --> acc_ideal = (1/M_virt)*{K_virt*(...) - B_virt*... + F_sense}
+     --> v_ideal += acc_ideal*dt;
+         v_ideal = sat(v_ideal,v_sat)
+         
+     command v_ideal to velocity controller
+     
+     

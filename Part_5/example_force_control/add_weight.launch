@@ -1,0 +1,5 @@
+<launch>
+
+<node name="spawn_sdf" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/cyl_weight/model-1_4.sdf -sdf -model cyl_weight -x 0 -y 0 -z 4" />
+    
+</launch>

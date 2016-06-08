@@ -1,0 +1,13 @@
+one_DOF_robot:
+  # Publish all joint states -----------------------------------
+  joint_state_controller:
+    type: joint_state_controller/JointStateController
+    publish_rate: 50  
+  
+  # Position Controllers ---------------------------------------
+  joint1_position_controller:
+    type: effort_controllers/JointPositionController
+    joint: joint1
+    pid: {p: 10.0, i: 10.0, d: 10.0, i_clamp_min: -10.0, i_clamp_max: 10.0}
+    
+    
