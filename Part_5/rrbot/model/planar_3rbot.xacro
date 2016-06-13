@@ -1,0 +1,168 @@
+<?xml version="1.0"?>
+<!-- Revolute-Revolute Manipulator -->
+<!-- modified (simplified) from https://github.com/ros-simulation/gazebo_ros_demos/blob/master/rrbot_description/urdf/rrbot.xacro-->
+
+<robot name="planar_3rbot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Constants for robot dimensions -->
+  <xacro:property name="PI" value="3.1415926535897931"/>
+  <xacro:property name="mass" value="1" /> <!-- arbitrary value for mass -->
+  <xacro:property name="width" value="0.1" /> <!-- Square dimensions (widthxwidth) of beams -->
+  <xacro:property name="height1" value="2" /> <!-- Link 1 -->
+  <xacro:property name="height2" value="1" /> <!-- Link 2 -->
+  <xacro:property name="height3" value="1" /> <!-- Link 3 -->
+  <xacro:property name="height4" value="1" /> <!-- Link 4 -->  
+  <xacro:property name="camera_link" value="0.05" /> <!-- Size of square 'camera' box -->
+  <xacro:property name="axel_offset" value="0.05" /> <!-- Space btw top of beam and the each joint -->
+
+  <!-- Used for fixing robot to Gazebo 'base_link' -->
+  <link name="world"/>
+
+  <joint name="fixed" type="fixed">
+    <parent link="world"/>
+    <child link="link1"/>
+    <origin xyz="0 0 0" rpy="1.5708 -1.5708 0"/>
+  </joint>
+
+  <!-- Base Link -->
+  <link name="link1">
+    <collision>
+      <origin xyz="${height1/2} 0 0" rpy="0 0 0"/>
+      <geometry>
+	<box size="${height1} ${width}  ${width} "/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="${height1/2} 0  0" rpy="0 0 0"/>
+      <geometry>
+	<box size="${height1} ${width}  ${width}"/>
+      </geometry>
+    </visual>
+
+    <inertial>
+      <origin xyz="${height1/2} 0  0" rpy="0 0 0"/>
+      <mass value="${mass}"/>
+      <inertia
+	  ixx="${mass / 12.0 * (width*width + width*width)}" ixy="0.0" ixz="0.0"
+	  iyy="${mass / 12.0 * (width*width + height1*height1)}" iyz="0.0"	   
+	  izz="${mass / 12.0 * (height1*height1 + width*width)}"/> 
+    </inertial>
+  </link>
+
+
+  <joint name="joint1" type="continuous">
+    <parent link="link1"/>
+    <child link="link2"/>
+    <origin xyz="${height1 - axel_offset} 0  ${width} " rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <dynamics damping="0.7"/>
+  </joint>
+
+
+  <link name="link2">
+    <collision>
+      <origin xyz="0 ${height2/2 - axel_offset} 0" rpy="0 0 0"/>
+      <geometry>
+	<box size="${height2} ${width}  ${width} "/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="${height2/2 - axel_offset} 0  0" rpy="0 0 0"/>
+      <geometry>
+	<box size="${height2} ${width}  ${width}"/>
+      </geometry>
+    </visual>
+
+    <inertial>
+      <origin xyz="${height2/2 - axel_offset} 0  0" rpy="0 0 0"/>
+      <mass value="${mass}"/>
+      <inertia
+	  ixx="${mass / 12.0 * (width*width + width*width)}" ixy="0.0" ixz="0.0"
+	  iyy="${mass / 12.0 * (width*width + height2*height2)}" iyz="0.0"
+	  izz="${mass / 12.0 * (height2*height2 + width*width)}"/>
+    </inertial>
+  </link>
+
+  <joint name="joint2" type="continuous">
+    <parent link="link2"/>
+    <child link="link3"/>
+    <origin xyz="${height2 - axel_offset*2} 0 ${width} " rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <dynamics damping="0.7"/>
+  </joint>
+
+
+  <link name="link3">
+    <collision>
+      <origin xyz="${height3/2 - axel_offset} 0 0" rpy="0 0 0"/>
+      <geometry>
+	<box size="${height3} ${width}  ${width}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="${height3/2 - axel_offset} 0  0" rpy="0 0 0"/>
+      <geometry>
+	<box size="${height3} ${width}  ${width}"/>
+      </geometry>
+    </visual>
+
+    <inertial>
+      <origin xyz="${height3/2 - axel_offset} 0  0" rpy="0 0 0"/>
+      <mass value="${mass}"/>
+      <inertia
+	  ixx="${mass / 12.0 * (width*width + width*width)}" ixy="0.0" ixz="0.0"
+	  iyy="${mass / 12.0 * (width*width + height3*height3)}" iyz="0.0"
+	  izz="${mass / 12.0 * (height3*height3 + width*width)}"/>
+    </inertial>
+  </link>
+
+    <joint name="joint3" type="continuous">
+    <parent link="link3"/>
+    <child link="link4"/>
+    <origin xyz="${height3 - axel_offset*2} 0 ${width} " rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <dynamics damping="0.7"/>
+  </joint>  
+  
+  <link name="link4">
+    <collision>
+      <origin xyz="${height4/2 - axel_offset} 0 0" rpy="0 0 0"/>
+      <geometry>
+	<box size="${height4} ${width}  ${width}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="${height4/2 - axel_offset} 0  0" rpy="0 0 0"/>
+      <geometry>
+	<box size="${height4} ${width}  ${width}"/>
+      </geometry>
+    </visual>
+
+    <inertial>
+      <origin xyz="${height4/2 - axel_offset} 0  0" rpy="0 0 0"/>
+      <mass value="${mass}"/>
+      <inertia
+	  ixx="${mass / 12.0 * (width*width + width*width)}" ixy="0.0" ixz="0.0"
+	  iyy="${mass / 12.0 * (width*width + height4*height4)}" iyz="0.0"
+	  izz="${mass / 12.0 * (height4*height4 + width*width)}"/>
+    </inertial>
+  </link>
+
+  <joint name="flange_jnt" type="fixed">
+    <parent link="link4"/>
+    <child link="flange"/>
+    <origin xyz="${height4 - axel_offset} 0  0" rpy="0 0 0"/>
+  </joint>
+  
+  <link name="flange"/>
+  
+  <!--specify motors, transmissions and ros control plug-in -->
+  <xacro:include filename="$(find rrbot)/model/planar_3rbot_control.xacro" />
+
+
+</robot>
+

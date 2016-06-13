@@ -1,10 +1,10 @@
-//test_rrbot_fk: tests rrbot_fk_ik library
+//test_3rbot_fk_ik: tests planar_3rbot_fk_ik library
 // subscribes to joint values states;
 // computes FK
 // uses FK to compute IK
 // compare IK solutions to actual answer
 
-#include <rrbot/rrbot_kinematics.h> 
+#include <rrbot/planar_3rbot_kinematics.h> 
 #include <sensor_msgs/JointState.h>
 
 Eigen::VectorXd g_q_vec;
@@ -20,33 +20,33 @@ int main(int argc, char **argv) {
     ros::init(argc, argv, "rrbot_fk_test");
 
     ros::NodeHandle nh;
-    Eigen::Vector2d q_init;
-    q_init<<0,0;
+    Eigen::Vector3d q_init;
+    q_init<<0,0,0;
     g_q_vec= q_init; // init global q_vec
 
-    ros::Subscriber joint_state_sub = nh.subscribe("rrbot/joint_states", 1, jointStatesCb);
+    ros::Subscriber joint_state_sub = nh.subscribe("planar_3rbot/joint_states", 1, jointStatesCb);
     //warm up joint states:
     g_q_vec[0]=100;
     while (g_q_vec[0]>99) {
         ros::spinOnce();
         ros::Duration(0.1).sleep();
     }
+    ROS_INFO("received joint-state data; proceeding");
     Eigen::Affine3d affine_flange;
 
-    Rrbot_fwd_solver rrbot_fwd_solver;
-    Rrbot_IK_solver rrbot_ik_solver;    
+    Planar_3rbot_fwd_solver planar_3rbot_fwd_solver;
+    Planar_3rbot_IK_solver planar_3rbot_IK_solver;    
     Eigen::Vector3d flange_origin_wrt_world;
     int n_solns;
-    //bool valid_q_elbow = false;
-    //std::vector<double> q_elbow_solns;
-    //q_elbow_solns.clear();
-    std::vector<Eigen::Vector2d> q_solns;
-    //double q_elbow, q_shoulder; 
+    std::vector<Eigen::Vector3d> q_solns; //put IK solns here
+    //double dq1_sample_res = 0.1;
+
+   
     while (ros::ok()) {
         cout<<endl<<endl;
-        ROS_INFO("angs: %f, %f", g_q_vec[0], g_q_vec[1]);
+        ROS_INFO("angs: %f, %f, %f", g_q_vec[0], g_q_vec[1], g_q_vec[2]);
 
-        affine_flange = rrbot_fwd_solver.fwd_kin_flange_wrt_world_solve(g_q_vec);
+        affine_flange = planar_3rbot_fwd_solver.fwd_kin_flange_wrt_world_solve(g_q_vec);
         //for (int i = 0; i < NJNTS; i++) {
         //    cout << "frame " << i << " w/rt world: " << endl;
         //    cout << rrbot_fwd_solver.get_frame(i) << endl;
@@ -59,10 +59,10 @@ int main(int argc, char **argv) {
         Eigen::Quaterniond quat(affine_flange.linear());
         cout<<"equiv quat: "<<quat.x()<<", "<< quat.y()<<", "<<quat.z()<<", "<<quat.w()<<endl;
 
-        //cout<<"robot pose: (q_shoulder,q_elbow) = ("<<g_q_vec[0]<<", "<<g_q_vec[1]<<")"<<endl;
-        ROS_INFO("computing inverse kinematics: ");
-        n_solns= rrbot_ik_solver.ik_solve(affine_flange, q_solns);      
-       
+        
+        ROS_INFO("computing inverse kinematics, given q1: "); 
+        q_solns.clear();
+        n_solns= planar_3rbot_IK_solver.solve_for_qsolns_given_q1(flange_origin_wrt_world, g_q_vec[0], q_solns);
         if (n_solns<1) cout << "found no viable IK solns" << endl;
 
         else {

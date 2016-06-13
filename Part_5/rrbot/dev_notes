@@ -1,0 +1,85 @@
+IK: 
+  solve elbow angle(s) using law of cosines;
+  then solve for shoulder angle:
+  
+  [O_flange_wrt_world; 1 ] = 
+     A_base_link_wrt_world_*A_mats_[0]*A_mats[1] *[0;0;0;1];
+     
+  or, 
+  A_base_link_wrt_world_inv*[O_flange_wrt_world; 1 ] = A_mats[0]*A_mats[1]*[0;0;0;1];
+
+  
+  or,
+  A_base_link_wrt_world_inv*[O_flange_wrt_world; 1 ] = A_mats[0]*A_mats[1]*[0;0;0;1];
+  
+  or,
+  A_base_link_wrt_world_inv*[O_flange_wrt_world; 1 ] = A_mats[0]*(A_mats[1]*[0;0;0;1])
+  
+  O_flange_wrt_base_link = A_mats[0] * (O_flange_wrt_link1)
+  y_vec = A[0]*b_vec
+  A0 = [cq0,  -sq0,  0  a0*cq0
+        sq0,   cq0,  0  a0*sq0
+        0        0   1    d0 
+        0        0   0     1  ]
+    a0== DH_a1
+    d0== DH_d1
+    bx*cq0 -by*sq0 + a0*cq0 = y_vecx
+    
+    is of the form: 
+    
+    ----------------- IK is done (though can ONLY reach Oy = -0.2) ---------
+    
+    --------test Jacobian----------
+    process:
+     1) gen random (legal) (q1, q2);
+     2) compute FK--> (x,y,z) = pvec
+     3) compute J(q1,q2)
+     4) perturb q1+= delta_q, q2+= delta_q
+     5) compute FK (q1', q2') = (x',y',z') = pvec_perturbed
+     6) dp = pvec_perturbed - pvec
+     7) J*dq = J*(delta_q,delta_q)
+     8) compare diff = (J*dq - dp).norm()
+     
+     rosrun rrbot test_rrbot_J
+     (does not require gazebo running--just some roscore)
+     shows dp from FK matches Jdq w/ diff = 1E-12 for dq = 1E-6
+     Jacobian seems to be OK
+     
+     
+     write-up:
+       go through rrbot kin model;
+       (describe controllers; illustrate joint tuning)
+       use own sin generator, or use rqt_gui
+       
+       describe in terms of DH params and A matrices (for FK)
+       
+       describe Jacobian computation? (cross products and b-vecs)
+       (KDL good for FK and Jacobian)
+       
+       IK: get elbow ang from law of cosines;
+           then get  shoulder ang from O_flange = A_base_wrt_world * A1(q1)*A2(q2)*[0;0;0;1]
+            --> solve K = A*cos(q) + B*sin(q) (get 2 solns; only 1 is correct w/ q_elbow)
+            (does angle-range checking as well)
+            
+       IK tends to be ad hoc; numerical soln w/ J as approx (limitations)
+       analytic IK desirable;
+       note: 2DOF arm can only match 2 coords (Ox and Oz of flange wrt world)
+       demo pgm: 
+            
+  ------------------planar_3rbot-----------
+  roslaunch rrbot planar_3rbot.launch 
+   
+   creates 3DOF planar manipulator (to illustrate redundant kin)
+   
+   created/tested library for fk/ik of 3-DOF planar manipulator
+   (need to test J as well)
+   
+  ------------next, generate solns sampled by q1, then plan a path-----------
+    step through dp, compute solns at each p(i) (= a "layer"); plan path through layers
+    roslaunch gazebo_ros empty_world.launch
+    roslaunch rrbot planar_3rbot.launch 
+    rosrun rqt_gui rqt_gui
+    rosrun rrbot test_planar_3rbot_fk_ik 
+
+    
+

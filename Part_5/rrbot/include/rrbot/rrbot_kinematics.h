@@ -87,39 +87,20 @@ public:
 //inner fwd-kin fnc: computes tool-flange frame w/rt base frame
     Eigen::Matrix4d fwd_kin_solve_(Eigen::VectorXd q_vec);
     
-    Eigen::Matrix4d A_mats_[NJNTS], A_mat_products_[NJNTS], A_base_link_wrt_world_; 
+    Eigen::Matrix4d A_mats_[NJNTS], A_mat_products_[NJNTS], A_base_link_wrt_world_, A_base_link_wrt_world_inv_; 
 };
 
-/*
+
 class Rrbot_IK_solver:Rrbot_fwd_solver  {
 public:
     Rrbot_IK_solver(); //constructor; 
-
-//compute elbow solutions given wrist pt w/rt base and given q_yaw (q0);
-//return "true" if at least 1 viable soln
-//solutions are put in vector q_elbow_solns    
-  bool solve_for_elbow_ang(Eigen::Vector3d w_wrt_0, double q_yaw, std::vector<double> &q_elbow_solns);
-Eigen::Vector3d get_frame2_origin_of_shoulder_yaw(double q_yaw);
-//solve the eqn r = A*cos(q) + B*sin(q) for q; return "true" if at least one soln is valid
-bool solve_K_eq_Acos_plus_Bsin(double K, double A, double B, std::vector<double> &q_solns);
-//given wrist position w/rt frame 0, and given q_yaw and q_elbow, solve for q_humerus options
-bool solve_for_humerus_ang(Eigen::Vector3d w_wrt_0, double q_yaw, double q_elbow, std::vector<double> &q_humerus_solns);
-
-bool fit_q_to_range(double q_min, double q_max, double &q);
-
-bool solve_for_shoulder_pitch_ang(Eigen::Vector3d w_wrt_0, double q_yaw, double q_humerus, double q_elbow, std::vector<double> &q_shoulder_solns);
-
-bool ik_wrist_solns_of_q0(Eigen::Vector3d wrist_pt, double q_yaw, std::vector<Eigen::VectorXd> &q_solns);
-
-Eigen::Vector3d wrist_pnt_from_flange_frame(Eigen::Affine3d affine_flange_frame);
-
-bool solve_spherical_wrist(Vectorq7x1 q_in,Eigen::Matrix3d R_des, std::vector<Vectorq7x1> &q_solns);
-
-int ik_solve_given_qs0(Eigen::Affine3d const& desired_flange_pose_wrt_base,double q_yaw, std::vector<Vectorq7x1> &q_solns);
-
-int ik_solns_sampled_qs0(Eigen::Affine3d const& desired_flange_pose_wrt_base,std::vector<Vectorq7x1> &q_solns);
+    bool fit_q_to_range(double q_min, double q_max, double &q);
+    bool solve_for_elbow_ang(Eigen::Vector3d O_flange_wrt_world, std::vector<double> &q_elbow_solns);
+    bool solve_K_eq_Acos_plus_Bsin(double K, double A, double B, std::vector<double> &q_solns);
+    bool solve_for_shoulder_ang(Eigen::Vector3d O_flange_wrt_world, double q_elbow, double &q_shoulder);
+    int ik_solve(Eigen::Affine3d desired_flange_pose_wrt_base,std::vector<Eigen::Vector2d> &q_solns);
 
 };
-*/
+
 #endif	/* RRBOT_KIN_H */
 
