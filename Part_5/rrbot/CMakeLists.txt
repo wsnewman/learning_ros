@@ -35,11 +35,13 @@ cs_add_library(planar_3rbot_fk_ik src/planar_3rbot_fk_ik.cpp)
 cs_add_executable(test_rrbot_fk src/test_rrbot_fk.cpp)
 cs_add_executable(test_rrbot_J src/test_rrbot_J.cpp)
 cs_add_executable(test_planar_3rbot_fk_ik src/test_planar_3rbot_fk_ik.cpp)
+cs_add_executable(test_planar_3rbot_fk_ik2 src/test_planar_3rbot_fk_ik2.cpp)
 #the following is required, if desire to link a node in this package with a library created in this same package
 # edit the arguments to reference the named node and named library within this package
 target_link_libraries(test_rrbot_fk rrbot_fk_ik)
 target_link_libraries(test_rrbot_J rrbot_fk_ik)
 target_link_libraries(test_planar_3rbot_fk_ik planar_3rbot_fk_ik)
+target_link_libraries(test_planar_3rbot_fk_ik2 planar_3rbot_fk_ik)
 cs_install()
 cs_export()
     
