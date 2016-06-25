@@ -1,0 +1,18 @@
+<launch>
+  <!-- Load joint controller configurations from YAML file to parameter server -->
+  <rosparam file="$(find minimal_robot_description)/control_config/one_dof_vel_ctl_params.yaml" command="load"/>
+
+  <!--param name="robot_description" 
+     textfile="$(find minimal_robot_description)/prismatic_1dof_robot_description_w_jnt_ctl.urdf"/-->
+<!-- Convert xacro model file and put on parameter server -->
+<param name="robot_description" command="$(find xacro)/xacro.py '$(find minimal_robot_description)/prismatic_1dof_robot_description_w_jnt_ctl.xacro'" />
+
+  <!-- Spawn a robot into Gazebo -->
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" 
+     args="-param robot_description -urdf -model one_DOF_robot" />
+  
+  <!--start up the controller plug-ins via the controller manager -->
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+    output="screen" ns="/one_DOF_robot" args="joint_state_controller joint1_velocity_controller"/>
+    
+</launch>

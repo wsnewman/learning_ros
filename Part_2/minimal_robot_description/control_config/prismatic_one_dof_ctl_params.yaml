@@ -6,7 +6,7 @@ one_DOF_robot:
   
   # Position Controllers ---------------------------------------
   joint1_position_controller:
-    type: effort_controllers/JointPositionController
+    type: effort_controllers/JointVelocityController
     joint: joint1
     pid: {p: 10.0, i: 10.0, d: 10.0, i_clamp_min: -10.0, i_clamp_max: 10.0}
     
