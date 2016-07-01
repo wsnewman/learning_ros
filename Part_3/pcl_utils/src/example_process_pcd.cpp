@@ -73,6 +73,7 @@ int main(int argc, char** argv) {
    point_cloud_ptr->width = (int) point_cloud_ptr->points.size ();
    point_cloud_ptr->height = 1;    
 
+   /*
    pcl::visualization::CloudViewer viewer ("Simple Cloud Viewer");
    //pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>); //color
    //pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>); //no color
@@ -88,6 +89,18 @@ int main(int argc, char** argv) {
    while (!viewer.wasStopped ())
    {
    }   
+    * */
+    ros::Publisher pubCloud = nh.advertise<sensor_msgs::PointCloud2> ("/elipse", 1);
+    sensor_msgs::PointCloud2 ros_cloud;
+    pcl::toROSMsg(*point_cloud_ptr, ros_cloud); 
+    ros_cloud.header.frame_id="camera";
+    
+    while (ros::ok()) {
+
+        pubCloud.publish(ros_cloud);
+        ros::spinOnce();
+        ros::Duration(0.1).sleep();
+    }
     return 0;
 }
     

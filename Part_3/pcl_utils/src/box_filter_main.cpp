@@ -121,10 +121,12 @@ int main(int argc, char** argv) {
     while (ros::ok()) {
        cout<<"enter dim (0,1,2): ";
        cin>>dim;
-       cout<<"enter min val: ";
-       cin>>box_pt_min(dim);
-       cout<<"enter max val: ";
-       cin>>box_pt_max(dim);
+       if ((dim>=0)&&(dim<3)) {
+        cout<<"enter min val: ";
+        cin>>box_pt_min(dim);
+        cout<<"enter max val: ";
+        cin>>box_pt_max(dim); }
+       else { ROS_WARN("index out of range"); }
 
             //find pts coplanar w/ selected patch, using PCL methods in above-defined function
             //"indices" will get filled with indices of points that are approx co-planar with the selected patch
