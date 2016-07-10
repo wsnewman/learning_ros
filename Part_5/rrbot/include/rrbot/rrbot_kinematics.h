@@ -46,8 +46,8 @@ const double DH_alpha1 = 0; //joint1 axis is parallel to joint2 axis
 const double DH_alpha2 = 0; //joint2 axis is parallel to flange z-axis
 
 //could define robot "home" angles different than DH home pose; reconcile with these offsets
-const double DH_q_offset1 = 0.0; //M_PI/2.0;
-const double DH_q_offset2 = 0.0; //-M_PI/2.0;
+const double DH_q_offset1 = 0.0; 
+const double DH_q_offset2 = 0.0; 
 
 const double deg2rad = M_PI/180.0;
 

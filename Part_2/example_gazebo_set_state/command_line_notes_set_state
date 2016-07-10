@@ -1,0 +1,72 @@
+
+this works:
+
+rosrun gazebo_ros spawn_model -file $ROS_WORKSPACE/src/learning_ros/exmpl_models/cyl_weight/model-1_4.sdf -sdf -model cyl_weight
+
+
+this works:
+rosrun gazebo_ros spawn_model -file $(rospack find exmpl_models)/cyl_weight/model-1_4.sdf -sdf -model cyl_weight
+
+or:
+roscd exmpl_models
+rosrun gazebo_ros spawn_model -file ./cyl_weight/model-1_4.sdf -sdf -model cyl_weight
+
+rosrun gazebo_ros spawn_model -file ./rect_prism/model-1_4.sdf -sdf -model cyl_weight
+
+or from directory: ~/ros_ws/src/learning_ros/exmpl_models/rect_prism
+rosrun gazebo_ros spawn_model -file model-1_4.sdf -sdf -model rect_prism
+
+rosrun gazebo_ros spawn_model -file model-1_4.sdf -sdf -model rect_prism -z 3.0
+
+see: example_gazebo_set_state within minimal_joint_controller
+
+try rosservice call 
+
+rosservice info /gazebo/set_model_state
+Node: /gazebo
+URI: rosrpc://Wall-E:51115
+Type: gazebo_msgs/SetModelState
+Args: model_state
+
+ more SetModelState.srv
+gazebo_msgs/ModelState model_state
+---
+bool success                  # return true if setting state successful
+string status_message         # comments if available
+
+rosmsg show gazebo_msgs/ModelState
+string model_name
+geometry_msgs/Pose pose
+  geometry_msgs/Point position
+    float64 x
+    float64 y
+    float64 z
+  geometry_msgs/Quaternion orientation
+    float64 x
+    float64 y
+    float64 z
+    float64 w
+geometry_msgs/Twist twist
+  geometry_msgs/Vector3 linear
+    float64 x
+    float64 y
+    float64 z
+  geometry_msgs/Vector3 angular
+    float64 x
+    float64 y
+    float64 z
+string reference_frame
+
+example from:  http://wiki.ros.org/ROS/YAMLCommandLine
+
+rostopic pub pt geometry_msgs/PointStamped '{header: {stamp: now, frame_id: base_link}, point: {x: 1.0, y: 2.0, z: 3.0}}'
+
+rosservice call /gazebo/set_model_state '{pose: {position:{x: 1.0, y: 2.0, z: 3.0}}, reference_name:rect_prism}'
+
+rostopic pub testpub gazebo_msgs/ModelState '{model_name: rect_prism, pose: {position:{x: 1.0, y: 2.0, z: 3.0}}}'
+
+this works:
+rosservice call /gazebo/set_model_state '{model_state: {model_name: rect_prism, pose: {position:{z: 4.0}}}}'
+
+this works:
+rosservice call /gazebo/set_model_state '{model_state: {model_name: rect_prism, twist: {angular:{z: 1.0}}}}'

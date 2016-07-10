@@ -1,0 +1,57 @@
+<?xml version='1.0'?>
+<sdf version='1.4'>
+  <model name="rect_prism">
+    <link name='link'>
+      <pose>0.0 0 0.0 0 0 0</pose>
+      <inertial>
+      <mass>2000</mass>
+      <inertia>
+          <ixx>3000</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>3000</iyy>
+          <iyz>0</iyz>
+          <izz>1000</izz>
+       </inertia>
+      </inertial>
+     <collision name='collision'>
+        <geometry>
+             <box>
+               <size> 2 2 4 </size> 
+             </box>
+       </geometry>
+        
+       <surface>
+            <friction>
+              <ode>
+                <mu>50.0</mu>
+                <mu2>50.0</mu2>
+              </ode>
+            </friction>
+            <contact>
+              <ode>
+                <kp>1000000.0</kp>
+                <kd>100.0</kd>
+                <max_vel>1.0</max_vel>
+                <min_depth>0.0005</min_depth>
+              </ode>
+            </contact>
+          </surface>
+      </collision>
+ 
+      <visual name='visual'>
+        <geometry>
+             <box>
+               <size> 2 2 4 </size> 
+             </box>
+       </geometry>
+  <material>
+    <ambient>1 0 0 1</ambient>
+    <diffuse>1 0 0 1</diffuse>
+    <specular>0.1 0.1 0.1 1</specular>
+    <emissive>0 0 0 0</emissive>
+  </material>
+      </visual>
+    </link>     
+  </model>
+</sdf>

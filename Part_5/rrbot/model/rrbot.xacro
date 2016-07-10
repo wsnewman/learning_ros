@@ -11,7 +11,7 @@
   <xacro:property name="height1" value="2" /> <!-- Link 1 -->
   <xacro:property name="height2" value="1" /> <!-- Link 2 -->
   <xacro:property name="height3" value="1" /> <!-- Link 3 -->
-  <xacro:property name="camera_link" value="0.05" /> <!-- Size of square 'camera' box -->
+  <!--xacro:property name="camera_link" value="0.05" /--> <!-- Size of square 'camera' box -->
   <xacro:property name="axel_offset" value="0.05" /> <!-- Space btw top of beam and the each joint -->
 
   <!-- Used for fixing robot to Gazebo 'base_link' -->
@@ -61,7 +61,7 @@
 
   <link name="link2">
     <collision>
-      <origin xyz="0 ${height2/2 - axel_offset} 0" rpy="0 0 0"/>
+      <origin xyz="${height2/2 - axel_offset} 0  0" rpy="0 0 0"/>
       <geometry>
 	<box size="${height2} ${width}  ${width} "/>
       </geometry>

@@ -1,0 +1,19 @@
+Need to reconcile these values in arm7dof_kinematics.h: 
+
+const double DH_d1 = 0.35;
+const double DH_d2 = 0.25; 
+const double DH_d3 = 1; 
+const double DH_d4 = -0.2; 
+const double DH_d5 = 1; 
+const double DH_d6 = 0.0;
+const double DH_d7 = 0.2; 
+
+with these values in arm7dof_model.xacro:
+
+<xacro:property name="DH_d1" value="0.35" />
+<xacro:property name="DH_d2" value="0.25" />
+<xacro:property name="DH_d3" value="1" />
+<xacro:property name="DH_d4" value="-0.2" />
+<xacro:property name="DH_d5" value="1" />
+<xacro:property name="DH_d6" value="0.0" />
+<xacro:property name="DH_d7" value="0.2" />

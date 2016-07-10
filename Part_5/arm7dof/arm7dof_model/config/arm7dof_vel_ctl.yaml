@@ -1,0 +1,35 @@
+arm7dof:
+  # Publish all joint states -----------------------------------
+  joint_state_controller:
+    type: joint_state_controller/JointStateController
+    publish_rate: 200  
+  
+  # Velocity Controllers ---------------------------------------
+  joint0_velocity_controller:
+    type: effort_controllers/JointVelocityController
+    joint: joint0
+    pid: {p: 5000.0, i: 0.0, d: 0.0}
+  joint1_velocity_controller:
+    type: effort_controllers/JointVelocityController
+    joint: joint1
+    pid: {p: 5000.0, i: 0.0, d: 0.0}
+  joint2_velocity_controller:
+    type: effort_controllers/JointVelocityController
+    joint: joint2
+    pid: {p: 5000.0, i: 0.0, d: 0.0}
+  joint3_velocity_controller:
+    type: effort_controllers/JointVelocityController
+    joint: joint3
+    pid: {p: 3000.0, i: 0.0, d: 0.0}
+  joint4_velocity_controller:
+    type: effort_controllers/JointVelocityController
+    joint: joint4
+    pid: {p: 1000.0, i: 0.0, d: 0.0}
+  joint5_velocity_controller:
+    type: effort_controllers/JointVelocityController
+    joint: joint5
+    pid: {p: 1000.0, i: 0.0, d: 0.0}
+  joint6_velocity_controller:
+    type: effort_controllers/JointVelocityController
+    joint: joint6
+    pid: {p: 500.0, i: 0.0, d: 0.0}

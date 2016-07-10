@@ -6,6 +6,5 @@ catkin_simple()
 
 # Executables
 cs_add_executable(minimal_joint_controller src/minimal_joint_controller.cpp)
-cs_add_executable(example_gazebo_set_state src/example_gazebo_set_state.cpp)
 cs_install()
 cs_export()

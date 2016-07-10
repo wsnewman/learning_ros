@@ -28,9 +28,10 @@ catkin_simple()
 
 # Libraries: uncomment the following and edit arguments to create a new library
 cs_add_library(cartesian_planner src/cartesian_planner.cpp)   
-
+cs_add_library(arm7dof_cartesian_planner src/arm7dof_cartesian_planner.cpp) 
 
 cs_add_executable(example_cart_path_planner_main src/example_cart_path_planner_main.cpp)
+cs_add_executable(example_arm7dof_cart_path_planner_main src/example_arm7dof_cart_path_planner_main.cpp)
 cs_add_executable(plan_playfile src/plan_playfile.cpp)
 cs_add_executable(baxter_cart_move_as src/baxter_cart_move_as.cpp)
 cs_add_executable(baxter_cart_move_action_client src/example_baxter_cart_move_action_client.cpp)
@@ -43,6 +44,7 @@ cs_add_executable(baxter_cart_move_action_client src/example_baxter_cart_move_ac
 # edit the arguments to reference the named node and named library within this package
 # target_link_libraries(example my_lib)
 target_link_libraries(example_cart_path_planner_main cartesian_planner ${catkin_LIBRARIES})
+target_link_libraries(example_arm7dof_cart_path_planner_main arm7dof_cartesian_planner ${catkin_LIBRARIES})
 target_link_libraries(plan_playfile cartesian_planner ${catkin_LIBRARIES})
 target_link_libraries(baxter_cart_move_as cartesian_planner ${catkin_LIBRARIES})
 cs_install()
