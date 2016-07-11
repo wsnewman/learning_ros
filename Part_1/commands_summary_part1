@@ -1,0 +1,185 @@
+---------roscore, messages, nodes----------
+
+try to speed up compilation in virtualbox:
+  drag all packages out of ros_ws/src  into ros_ws (except external_packages--need catkin_simple)
+  delete build and devel dirs
+  catkin_make clean
+  catkin_make
+  
+roscd
+cd src
+mkdir ros_class
+cd ros_class
+cs_create_pkg rosclass_minimal_nodes roscpp std_msgs
+cd rosclass_minimal_nodes
+ls
+
+-----------minimal publisher--------
+open editor (gedit or netbeans & disown)
+open file: .../learning_ros/Part_1/minimal_nodes/minimal_publisher.cpp
+save to directory: ros_ws/src/ros_class/rosclass_minimal_nodes/src/minimal_publisher.cpp
+
+gedit CMakeLists.txt (is better than netbeans for this type of file)
+add:
+cs_add_executable(rc_minimal_publisher src/minimal_publisher.cpp)
+in any terminal (e.g. ctl-shift-t or file-> open tab)
+ roscd
+catkin_make
+
+in a terminal, start a roscore:
+roscore
+
+in another terminal, run the new pgm:
+rosrun rosclass_minimal_nodes rc_minimal_publisher 
+
+in another terminal:
+rostopic list
+rostopic info topic1
+rosmsg show std_msgs/Float64
+rostopic echo topic1
+rostopic hz topic1
+see performance meter
+
+open:
+.../learning_ros/Part_1/minimal_nodes/sleepy_minimal_publisher.cpp
+save in: ros_ws/src/ros_class/rosclass_minimal_nodes/src/sleepy_minimal_publisher.cpp
+in CMakeLists.txt, add line:
+cs_add_executable(rc_sleepy_minimal_publisher src/sleepy_minimal_publisher.cpp)
+roscd
+catkin_make
+rosrun rosclass_minimal_nodes rc_sleepy_minimal_publisher
+rostopic echo topic1
+rostopic hz topic1
+see performance meter
+
+------minimal_subscriber--------
+edit .../learning_ros/Part_1/minimal_nodes/minimal_subscriber.cpp
+save as: ros_ws/src/ros_class/rosclass_minimal_nodes/src/minimal_subscriber.cpp
+CMakeLists.txt:
+cs_add_executable(rc_minimal_subscriber src/minimal_subscriber.cpp)
+catkin_make
+
+rosrun rosclass_minimal_nodes rc_minimal_subscriber
+(see behavior w/ and w/o minimal publisher running)
+
+rostopic pub -r 1 topic1 std_msgs/Float64 1.23
+
+rosnode list
+rosnode info minimal_subscriber
+rqt_graph
+
+----launch file----
+edit .../learning_ros/Part_1/minimal_nodes/launch/minimal_nodes.launch
+save as: ros_ws/src/ros_class/rosclass_minimal_nodes/launch/minimal_nodes.launch
+edit package name (rosclass_minimal_nodes) and executable name (rc_sleepy_minimal_publisher, etc)
+kill running nodes
+roslaunch rosclass_minimal_nodes minimal_nodes.launch
+rqt_console
+
+
+----rosbag----
+rosbag record topic1
+restart minimal subscriber
+rosbag play fname.bag
+rqt_console
+
+---minimal simulator---
+edit minimal_simulator.cpp and minimal_controller.cpp; save in rosclass_minimal_nodes/src
+edit CMakeLists.txt:
+cs_add_executable(rc_minimal_simulator src/minimal_simulator.cpp)
+cs_add_executable(rc_minimal_controller src/minimal_controller.cpp)
+catkin_make
+rosrun rosclass_minimal_nodes rc_minimal_simulator
+rostopic pub -r 10 force_cmd std_msgs/Float64 0.1 
+rqt_plot
+kill publisher
+rosrun rosclass_minimal_nodes rc_minimal_controller
+rostopic pub -r 10 vel_cmd std_msgs/Float64 1.0
+
+-------------end CH1----------
+----------CH2--------
+*custom messages
+from ros_class directory,
+  cs_create_pkg example_ros_msg roscpp std_msgs
+open .../learning_ros/Part_1/example_ros_msg/msg/ExampleMessage.msg
+save in: ...ros_class/example_ros_msg/msg/ExampleMessage.msg
+in package.xml, uncomment lines:
+ <build_depend>message_generation</build_depend>
+ <run_depend>message_runtime</run_depend> 
+catkin_make
+rosmsg show  example_ros_msg/ExampleMessage
+
+open .../learning_ros/Part_1/example_ros_msg/src/example_ros_message_publisher.cpp
+ save in ...ros_class/example_ros_msg/src/example_ros_message_publisher.cpp
+ edit CMakeLists.txt; add line:
+ cs_add_executable(rc_example_ros_message_publisher src/example_ros_message_publisher.cpp)
+ catkin_make
+ rosrun example_ros_msg rc_example_ros_message_publisher   (with roscore running)
+ rostopic echo example_topic
+
+services:
+from ros_class:
+cs_create_pkg example_ros_service roscpp std_msgs nav_msgs geometry_msgs 
+open and save under .../ros_class/example_ros_service/src:
+example_ros_service.cpp
+example_ros_client.cpp
+open and save under ../ros_class/example_ros_service/srv:
+ExampleServiceMsg.srv
+edit package.xml; uncomment:
+<build_depend>message_generation</build_depend> 
+<run_depend>message_runtime</run_depend>
+
+edit CMakeLists.txt; add:
+cs_add_executable(example_ros_service src/example_ros_service.cpp)
+cs_add_executable(example_ros_client src/example_ros_client.cpp)
+catkin_make
+rosrun example_ros_service example_ros_service
+rosservice list
+rosservice info
+rosservice call lookup_by_name 'Ted'
+rosrun example_ros_service example_ros_client 
+
+classes: see example_ros_class (pass in node handle; odd syntax for callbacks)
+
+libraries: creating_a_ros_library; 
+note CMakeLists.txt for adding a library
+where to put header file (then use <pkg/header_name.h>)
+  *the parameter server
+  *creating packages and libraries
+
+action servers: in ros_class dir, create pkg:
+cs_create_pkg example_action_server roscpp actionlib
+open and save under .../ros_class/example_action_server/action/demo.action
+open and save under .../ros_class/example_action_server/src/example_action_server.cpp
+open and save under .../ros_class/example_action_server/src/example_action_client.cpp
+edit package.xml; uncomment:
+ <build_depend>message_generation</build_depend>
+  <run_depend>message_runtime</run_depend> 
+CMakeLists.txt: 
+uncomment:
+find_package(Boost REQUIRED COMPONENTS system thread)
+add:
+cs_add_executable(example_action_server src/example_action_server.cpp)
+cs_add_executable(example_action_client src/example_action_client.cpp)
+catkin_make
+rosrun example_action_server example_action_server
+rosrun example_action_server example_action_client
+
+Parameter server:
+rosparam
+rosparam set /gains "p: 1.0
+i : 2.0
+d : 3.0"
+rosparam list
+rosparam get /gains
+from .../learning_ros/Part_1/example_parameter_server/launch:
+rosparam load jnt1_gains.yaml
+rosparam list
+rosparam get jnt1_gains
+rosparam delete jnt1_gains
+rosparam list
+(launch file option--would need to copy over package/directory)
+example read_param_from_node: uses: if ( nh.getParam ("/joint1_gains/p", P_gain))
+
+
+

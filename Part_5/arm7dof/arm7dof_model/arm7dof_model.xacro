@@ -34,7 +34,6 @@
       <origin xyz="0 0 ${L1/2}" rpy="0 0 0" />
       <geometry>
           <cylinder length="${L1}" radius="${r_base}"/>
-        <!--mesh filename="package://restore_model/Restore_EDU_Collada/EDU_base.dae"/-->
       </geometry>
     </visual>
     <collision>
