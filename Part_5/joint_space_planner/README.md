@@ -8,5 +8,5 @@ See the cartesian_planner package for example use.  The joint-space planner must
 constructor arguments consisting of a network (a vector of vectors of joint-space poses) and penalty weights
 (relative importance of delta-angle motions of each joint).
 
-## Running tests/demos
+
     

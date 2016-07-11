@@ -4,14 +4,14 @@
 using namespace std;
 
 
-Eigen::Matrix4d compute_A_of_DH(int i, double q_abb) {
+Eigen::Matrix4d compute_A_of_DH(int i, double q_ang) {
     Eigen::Matrix4d A;
     Eigen::Matrix3d R;
     Eigen::Vector3d p;
     double a = DH_a_params[i];
     double d = DH_d_params[i];
     double alpha = DH_alpha_params[i];
-    double q = q_abb + DH_q_offsets[i];
+    double q = q_ang + DH_q_offsets[i];
 
     A = Eigen::Matrix4d::Identity();
     R = Eigen::Matrix3d::Identity();
@@ -35,6 +35,8 @@ Eigen::Matrix4d compute_A_of_DH(int i, double q_abb) {
     p(2) = d;
     A.block<3, 3>(0, 0) = R;
     A.col(3).head(3) = p;
+    //cout<<"A: "<<endl;
+    //cout<<A<<endl;
     return A;
 }
 
@@ -886,7 +888,7 @@ int Arm7dof_IK_solver::ik_solve_given_qs0(Eigen::Affine3d const& desired_flange_
 int Arm7dof_IK_solver::ik_solns_sampled_qs0(Eigen::Affine3d const& desired_flange_pose_wrt_base,std::vector<Vectorq7x1> &q_solns) {
        q_solns.clear();
         int n7dof_solns;
-        for (double q_yaw_samp = 0.0; q_yaw_samp < 2.0 * M_PI; q_yaw_samp += DQ_YAW) {
+        for (double q_yaw_samp = q_lower_limits[0]; q_yaw_samp < q_upper_limits[0]; q_yaw_samp += DQ_YAW) {
             //cout << "calling ik_solve_given_qs0" << endl;
             n7dof_solns= ik_solve_given_qs0(desired_flange_pose_wrt_base, q_yaw_samp, q_solns);
             cout << "num solns found = " << n7dof_solns << " at q_yaw = " << q_yaw_samp << endl; 

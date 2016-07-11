@@ -1,4 +1,4 @@
-// example_arm7dof_cart_path_planner_main: 
+// example_arm7dof_cart_path_planner_main2:  reverse path
 // wsn, July, 2016
 // example using cartesian path planner to compute viable horizontal moves for arm7dof
 // choose: tool-flange z-axis pointing up, i.e. flange acts like platter
@@ -13,8 +13,8 @@
 
 const double z_des = 1.5;
 const double y_des = 0.3;
-const double x_start = 1.5;
-const double x_end = -1.5;
+const double x_start = -1.5;
+const double x_end = 1.5;
 const int NJNTS=7;
 
 int main(int argc, char** argv) {
@@ -25,10 +25,16 @@ int main(int argc, char** argv) {
     Eigen::Matrix3d R_gripper_horiz, R_gripper_up;
     Eigen::Vector3d gripper_n_des, gripper_t_des, gripper_b_des;
     Eigen::Vector3d flange_origin_start,flange_origin_end;
+    Vectorq7x1 q_start,q_end;
+
+    //q_end<<2.7, 0.472022, 1.00116, 1.15444, -0.39681, -1.43445, -3.59048; 
+     //q_start<<2.7,  -1.20769, -0.760996,  0.759817,  -1.93547, -0.761566, -0.317656;
+     q_start<<2.3, -1.34796, -1.00994, 1.15619, -1.57891, -0.971782, -0.376517;
+     q_end<<0.2, -0.580717, 2.56523, 0.884733, 0.308473, -1.39618, -2.89911;
     bool found_path = false;
     
     ofstream outfile; //open a file in which to save the results
-    outfile.open("arm7dof_poses.path");    
+    outfile.open("arm7dof_fwd.path");    
     
     flange_origin_start<<x_start,y_des,z_des;
     flange_origin_end<<x_end,y_des,z_des;
@@ -54,7 +60,8 @@ int main(int argc, char** argv) {
     a_tool_end.translation() = flange_origin_end;
     
     //do a Cartesian plan:
-    found_path = cartTrajPlanner.cartesian_path_planner(a_tool_start, a_tool_end, optimal_path);
+    found_path = cartTrajPlanner.cartesian_path_planner(q_start, a_tool_end, optimal_path);
+
     int nsteps = optimal_path.size();
     cout<<"there are "<<nsteps<< " layers in the computed optimal path"<<endl;
     if (found_path) {

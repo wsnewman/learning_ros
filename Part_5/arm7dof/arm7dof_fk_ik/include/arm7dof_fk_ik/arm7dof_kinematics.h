@@ -41,9 +41,9 @@ const double DH_a7=0.0; // assign final frame at flange face, z-axis pointing ou
 
 //Need to reconcile these DH values: 
 const double DH_d1 = 0.35;
-const double DH_d2 = 0.25; 
+const double DH_d2 = -0.25;  //non-obvious sign
 const double DH_d3 = 1; 
-const double DH_d4 = -0.2; 
+const double DH_d4 = 0.2; //non-obvious sign
 const double DH_d5 = 1; 
 const double DH_d6 = 0.0;
 const double DH_d7 = 0.2; 
@@ -77,26 +77,31 @@ const double DH_q_offset6 = 0.0;
 const double DH_q_offset7 = 0.0; 
 
 const double deg2rad = M_PI/180.0;
+//reconcile w/ URDF:
+//jnt0:     <limit lower="-3" upper="3" effort="1300" velocity="0.2"/>
+//jnt1:     <limit lower="-3" upper="3" effort="1300" velocity="0.2"/>
+//jnt2:     <limit lower="-3.1" upper="2.8" effort="500" velocity="0.3"/>
+//jnt3:     <limit lower="-3.1" upper="2.7" effort="500" velocity="0.3"/>
+//jnt4:     <limit lower="-4." upper="1.5" effort="100" velocity="0.400"/>
+//jnt5:     <limit lower="-3" upper="3" effort="100" velocity="0.5"/>
+//jnt6:     <limit lower="-4.5" upper="1.2" effort="70" velocity="0.4"/>
 
-//order: S0, S1, E0, E1, W0, W1, W2
-// 51, 60, 173.5, 150, 175.25, 120, 175.25
-//in simu, found right arm max angle about -1.65 to 1.65 rad...not close to spec of -141 to 51 deg
-const double DH_q_max1 = deg2rad*160; //95; //141; //51;
-const double DH_q_max2 = deg2rad*160; //60;
-const double DH_q_max3 = deg2rad*147.5; //173.5;
-const double DH_q_max4 = deg2rad*150; //150;
-const double DH_q_max5 = deg2rad*70; //175.25;
-const double DH_q_max6 = deg2rad*160; //120; //
-const double DH_q_max7 = deg2rad*67; //175.25;
+const double DH_q_max1 = 3; //deg2rad*160; //95; //141; //51;
+const double DH_q_max2 = 3; //deg2rad*160; //60;
+const double DH_q_max3 = 2.8; //deg2rad*147.5; //173.5;
+const double DH_q_max4 = 2.7; //deg2rad*150; //150;
+const double DH_q_max5 = 1.5; //deg2rad*70; //175.25;
+const double DH_q_max6 = 3; //deg2rad*160; //120; //
+const double DH_q_max7 = 1.2; //deg2rad*67; //175.25;
 
-//-141, -123, -173.5, -3, -175.25, -90, -175.25
-const double DH_q_min1 = -deg2rad*160; //51; //141;
-const double DH_q_min2 = -deg2rad*160;
-const double DH_q_min3 = -deg2rad*172.5; 
-const double DH_q_min4 = -deg2rad*170;
-const double DH_q_min5 = -deg2rad*250;
-const double DH_q_min6 = -deg2rad*160; //
-const double DH_q_min7 = -deg2rad*247;
+
+const double DH_q_min1 = -3; //-deg2rad*160; //51; //141;
+const double DH_q_min2 = -3; //-deg2rad*160;
+const double DH_q_min3 = -3.1; //-deg2rad*172.5; 
+const double DH_q_min4 = -3.1; //-deg2rad*170;
+const double DH_q_min5 = -4; //-deg2rad*250;
+const double DH_q_min6 = -3; //-deg2rad*160; //
+const double DH_q_min7 = -4.5; //-deg2rad*247;
 
 const double DH_a_params[7]={DH_a1,DH_a2,DH_a3,DH_a4,DH_a5,DH_a6,DH_a7};
 //const double DH_a_params_approx[7]={DH_a1,DH_a2,DH_a3,DH_a4,DH_a5_approx,DH_a6,DH_a7};
@@ -192,6 +197,8 @@ bool solve_spherical_wrist(Vectorq7x1 q_in,Eigen::Matrix3d R_des, std::vector<Ve
 int ik_solve_given_qs0(Eigen::Affine3d const& desired_flange_pose_wrt_base,double q_yaw, std::vector<Vectorq7x1> &q_solns);
 
 int ik_solns_sampled_qs0(Eigen::Affine3d const& desired_flange_pose_wrt_base,std::vector<Vectorq7x1> &q_solns);
+
+void test_IK_solns(std::vector<Vectorq7x1> &q_solns);
 
 };
 

@@ -6,8 +6,7 @@
 // from IK solutions
 #include <cartesian_planner/arm7dof_cartesian_planner.h>
 
-//choose cartesian-path sampling resolution, e.g. 5cm
-const double CARTESIAN_PATH_SAMPLE_SPACING= 0.05; // choose the resolution of samples along Cartesian path
+
 //constructor:
 CartTrajPlanner::CartTrajPlanner() // optionally w/ args, e.g. 
 //: as_(nh_, "CartTrajPlanner", boost::bind(&cartTrajActionServer::executeCB, this, _1), false)
@@ -126,6 +125,28 @@ bool CartTrajPlanner::cartesian_path_planner(Eigen::Affine3d a_flange_start,Eige
     return true;
 }
 
+void CartTrajPlanner::test_IK_solns(std::vector<Eigen::VectorXd> &q_solns) {
+    cout<<"testing IK solns: "<<endl;
+    int nsolns = q_solns.size();
+    Eigen::Affine3d affine_fk;
+    Eigen::Vector3d origin_fk;
+    for (int isoln = 0; isoln < nsolns; isoln++) {
+        affine_fk = arm7dof_fwd_solver_.fwd_kin_flange_wrt_base_solve(q_solns[isoln]);
+        origin_fk=affine_fk.translation();
+        cout<<origin_fk.transpose()<<endl;
+    }
+}
+//alt version for different datatype
+void CartTrajPlanner::test_IK_solns(std::vector<Vectorq7x1> &q_solns) {
+    int nsolns = q_solns.size();
+    Eigen::Affine3d affine_fk;
+    Eigen::Vector3d origin_fk;
+    for (int isoln = 0; isoln < nsolns; isoln++) {
+        affine_fk = arm7dof_fwd_solver_.fwd_kin_flange_wrt_base_solve(q_solns[isoln]);
+        origin_fk=affine_fk.translation();
+        cout<<origin_fk.transpose()<<endl;
+    }
+}
 
 // alt version: specify start as a q_vec, and goal as a Cartesian pose (w/rt torso)
 bool CartTrajPlanner::cartesian_path_planner(Vectorq7x1 q_start,Eigen::Affine3d a_tool_end, std::vector<Eigen::VectorXd> &optimal_path) {
@@ -169,7 +190,7 @@ bool CartTrajPlanner::cartesian_path_planner(Vectorq7x1 q_start,Eigen::Affine3d 
 
     std::vector<Vectorq7x1> q_solns;
     p_des = p_start;
-
+    int ans;
     for (int istep=1;istep<nsteps;istep++) 
     {
             p_des += dp_vec;
@@ -177,6 +198,11 @@ bool CartTrajPlanner::cartesian_path_planner(Vectorq7x1 q_start,Eigen::Affine3d 
             cout<<"trying: "<<p_des.transpose()<<endl;
             nsolns = arm7dof_IK_solver_.ik_solns_sampled_qs0(a_tool_des, q_solns);
             std::cout<<"nsolns = "<<nsolns<<endl;
+            //DEBUG:
+            test_IK_solns(q_solns);
+            cout<<"enter 1: ";
+            cin>>ans;
+            
             single_layer_nodes.clear();
             if (nsolns>0) {
                 single_layer_nodes.resize(nsolns);
@@ -224,6 +250,7 @@ bool CartTrajPlanner::cartesian_path_planner(Vectorq7x1 q_start,Eigen::Affine3d 
     for (int ilayer = 0; ilayer < nlayers; ilayer++) {
         cout << "ilayer: " << ilayer << " node: " << optimal_path[ilayer].transpose() << endl;
     }
+    test_IK_solns(optimal_path);
     cout << "soln min cost: " << trip_cost << endl;
     return true;
 }

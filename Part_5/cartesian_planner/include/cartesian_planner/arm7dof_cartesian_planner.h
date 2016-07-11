@@ -18,6 +18,8 @@
 
 using namespace std;
 #define VECTOR_DIM 7 // e.g., a 7-dof vector
+//choose cartesian-path sampling resolution, e.g. 5cm
+const double CARTESIAN_PATH_SAMPLE_SPACING= 0.05; // choose the resolution of samples along Cartesian path
 
 class CartTrajPlanner {
 private:
@@ -60,6 +62,8 @@ public:
     bool cartesian_path_planner_delta_p(Vectorq7x1 q_start, Eigen::Vector3d delta_p, std::vector<Eigen::VectorXd> &optimal_path);
     Eigen::Matrix3d get_R_gripper_down(void) { return R_gripper_down_;}
     Eigen::Matrix3d get_R_gripper_up(void) { return R_gripper_up_;}
+    void test_IK_solns(std::vector<Vectorq7x1> &q_solns);
+    void test_IK_solns(std::vector<Eigen::VectorXd> &q_solns);
 };
 
 #endif	
