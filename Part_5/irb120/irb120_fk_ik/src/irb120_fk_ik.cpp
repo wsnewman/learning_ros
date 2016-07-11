@@ -2,10 +2,6 @@
 
 #include <irb120_fk_ik/irb120_kinematics.h>
 
-
-
-
-
 // function for use w/ both fwd and inv kin
 // NOTE: q must be q in DH coords!!  use q_vec(i) + DH_q_offsets(i)
 

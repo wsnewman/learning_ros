@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
     //  copy traj to goal:
     goal.trajectory = des_trajectory;
 
-    //instantiate clients of the arm server:
+    //instantiate client of the arm server:
     actionlib::SimpleActionClient<arm7dof_traj_as::trajAction> arm_action_client("trajActionServer", true);
 
     // attempt to connect to the server:
