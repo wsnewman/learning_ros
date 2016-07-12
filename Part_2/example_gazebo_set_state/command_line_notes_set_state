@@ -70,3 +70,5 @@ rosservice call /gazebo/set_model_state '{model_state: {model_name: rect_prism, 
 
 this works:
 rosservice call /gazebo/set_model_state '{model_state: {model_name: rect_prism, twist: {angular:{z: 1.0}}}}'
+
+rosservice call /gazebo/set_model_state '{model_state: {model_name: rect_prism, pose: {position:{z: 4.0}}, twist: {angular:{z: 1.0}}}}'
