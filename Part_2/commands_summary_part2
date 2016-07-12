@@ -103,9 +103,7 @@ Can make interactive markers, e.g. 6DOF mouse--can be used to set attractor pose
 
 Can select pts from pointcloud; can find centroids, normals;   
   
-rosrun rqt_gui rqt_gui
-rqt_gui
- plot command, state, effort then change cmd w/ rqt_gui
+
  
 
  

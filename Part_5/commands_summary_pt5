@@ -1,0 +1,121 @@
+commands for Part5:
+package: example_controllers
+see: prismatic_1dof_robot_description_w_jnt_ctl.xacro
+
+roslaunch gazebo_ros empty_world.launch
+roslaunch example_controllers prismatic_1dof_robot_w_jnt_pos_ctl.launch
+rqt_plot
+rosrun rqt_gui rqt_gui
+  0.1*sin(i/5)-0.5
+  PID
+  
+ roslaunch gazebo_ros empty_world.launch  (lower gravity)
+ roslaunch example_controllers prismatic_1dof_robot_w_jnt_vel_ctl.launch
+ rqt_plot
+ rosrun rqt_gui rqt_gui 
+ rosrun example_controllers one_dof_sine_commander
+ 
+force ctl: see sensor in model file
+
+roslaunch example_controllers prismatic_1dof_robot_w_jnt_pos_ctl.launch
+ drop weight:  set reduced gravity, then:
+ roslaunch exmpl_models add_cylinder_weight.launch
+ 
+ NAC:
+ roslaunch gazebo_ros empty_world.launch
+ roslaunch example_controllers prismatic_1dof_robot_w_jnt_vel_ctl.launch 
+ rosrun example_controllers nac_controller
+ 
+ Ch 10: kinematics
+ rrbot model (define flange frame)
+ 
+ roslaunch gazebo_ros empty_world.launch
+ roslaunch rrbot rrbot.launch
+ 
+rrbot_fk_ik.cpp
+  fwd_kin_solve_()
+  
+roslaunch gazebo_ros empty_world.launch
+roslaunch rrbot rrbot.launch
+rosrun rrbot test_rrbot_fk
+rosrun rqt_gui rqt_gui
+rosrun tf tf_echo world flange
+
+roslaunch irb120_description irb120.launch
+rosrun irb120_fk_ik irb120_fk_ik_test_main
+rosrun rqt_gui rqt_gui
+rosrun tf tf_echo world link7
+
+ik_solve()
+solve_for_elbow_ang()
+solve_for_shoulder_ang()
+solve_K_eq_Acos_plus_Bsin(K, A, B, q_solns)
+
+see irb120 results...
+show solns
+(see restore figs)
+
+arm7dof directory:
+arm7dof_model
+arm7dof_fk_ik
+ik_wrist_solns_of_q0()
+ik_solns_sampled_qs0()
+
+roslaunch gazebo_ros empty_world.launch
+roslaunch arm7dof_model arm7dof_w_pos_controller.launch
+rosrun rqt_gui rqt_gui (to command joint angles)
+rosrun arm7dof_fk_ik arm7dof_fk_ik_test_main2
+
+cartesian_planner
+arm7dof_cartesian_planner.cpp
+see: example_arm7dof_cart_path_planner_main.cpp  
+  arm7dof_poses.path
+  
+  joint_space_planner (see network fig in text)
+  
+traj msgs:
+rosmsg show trajectory_msgs/JointTrajectory
+
+pkg: example_trajectory
+TrajAction.action
+
+roslaunch minimal_robot_description minimal_robot.launch
+rosrun example_trajectory example_trajectory_action_server
+rosrun example_trajectory example_trajectory_action_client
+
+pkg: arm7dof_traj_as
+roslaunch gazebo_ros empty_world.launch
+roslaunch arm7dof_model arm7dof_w_pos_controller.launch
+rosrun arm7dof_traj_as arm7dof_traj_as
+rosrun arm7dof_traj_as arm7dof_traj_action_client_prompter
+
+make plans with: rosrun cartesian_planner example_arm7dof_cart_path_planner_main2
+rosrun cartesian_planner example_arm7dof_cart_path_planner_main3
+(watch where these results are saved; run playfile from same dir)
+
+roslaunch gazebo_ros empty_world.launch
+rosrun arm7dof_traj_as arm7dof_traj_as (publishes to both jnt pos ctl and my successive-loop ctlr
+roslaunch arm7dof_model arm7dof_w_vel_controller.launch
+rosrun nested_loop_control inner_vel_loop
+
+move the robot back and forth with:
+rosrun arm7dof_traj_as  arm7dof_playfile_path  arm7dof_fwd.path
+rosrun arm7dof_traj_as  arm7dof_playfile_path  arm7dof_rvrs.path
+
+can run: rosrun tf tf_echo world link8 to confirm motion of end effector
+
+Start up Gazebo:
+roslaunch gazebo_ros empty_world.launch
+Bring in the robot model with joint-velocity controllers:
+roslaunch arm7dof_model arm7dof_w_vel_controller.launch
+Initialize the pose by running:
+rosrun nested_loop_control inner_vel_loop
+then kill this node.
+
+Start up the NAC controller:
+rosrun arm7dof_NAC_controller arm7dof_NAC_controller
+
+Reduce gravity to, e.g. -0.5m/sec^2, then drop a weight with:
+roslaunch exmpl_models add_cylinder_weight.launch
+
+
