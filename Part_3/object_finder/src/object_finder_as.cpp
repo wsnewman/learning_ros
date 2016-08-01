@@ -107,9 +107,9 @@ void ObjectFinder::executeCB(const actionlib::SimpleActionServer<object_finder::
 }
 
 int main(int argc, char** argv) {
-    ros::init(argc, argv, "demo_action_server_node"); // name this node 
+    ros::init(argc, argv, "object_finder_node"); // name this node 
 
-    ROS_INFO("instantiating the demo action server: ");
+    ROS_INFO("instantiating the object finder action server: ");
 
     ObjectFinder object_finder_as; // create an instance of the class "ObjectFinder"
     

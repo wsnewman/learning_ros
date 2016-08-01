@@ -1,0 +1,12 @@
+<launch>
+ 
+<node pkg="image_view" type="image_view" name="image_view_right">
+<remap from="image" to="/stereo_cam/right_camera"/>
+</node>
+
+<node pkg="example_opencv" type="find_red_pixels" name="find_red_pixels_right" output="screen">
+<remap from="/simple_camera/image_raw" to="/stereo_cam/right_camera/image_raw"/>
+</node>
+
+
+</launch>

@@ -1,0 +1,185 @@
+<?xml version="1.0" ?>
+<robot name="stereo_cam" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <!-- Macros -->
+    <xacro:property name="GazeboRed"       value="1 0 0 1"/>
+
+    <link name="world">
+        <origin xyz="0.0 0.0 0.0"/>  
+    </link>
+
+    <joint name="world_joint" type="fixed">
+        <parent link="world"/>
+        <child link="camera_mount"/>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.5"/>
+    </joint>
+    <link name="camera_mount">
+    </link>
+  
+    <joint name="right_camera_joint" type="fixed">
+        <parent link="camera_mount"/>
+        <child link="right_camera_link"/>
+        <origin rpy="0.0 1.5708 1.5708" xyz="0.02 0.0 0"/>
+    </joint>
+
+    <link name="right_camera_link">
+        <visual>
+            <origin xyz="0 0 0.0" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.03 0.01 0.01"/>
+            </geometry>
+        </visual>
+
+        <inertial>
+            <mass value="1e-5" />
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+        </inertial>
+        <!--origin rpy="0.0 0.0 0.0" xyz="0.0 0.2 0.8"/-->
+    </link>
+  
+    <joint name="left_camera_joint" type="fixed">
+        <parent link="camera_mount"/>
+        <child link="left_camera_link"/>
+        <origin rpy="0.0 1.5708 1.5708" xyz="0 0 0"/>
+    </joint>
+
+    <link name="left_camera_link">
+        <visual>
+            <origin xyz="0 0 0.0" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.03 0.01 0.01"/>
+            </geometry>
+        </visual>
+
+        <inertial>
+            <mass value="1e-5" />
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+        </inertial>
+        <!--origin rpy="0.0 0.0 0.0" xyz="0.0 0.2 0.8"/-->
+    </link>
+    <gazebo reference="left_camera_link">
+        <material>Gazebo/Red</material>
+    </gazebo>  
+
+    <link name="left_camera_optical_frame_model">
+    </link> 
+    <link name="left_camera_optical_frame_mid">
+    </link> 
+
+    <joint name="left_camera_optical_joint_mid" type="fixed">
+        <parent link="left_camera_link"/>
+        <child link="left_camera_optical_frame_mid"/>
+        <origin rpy="0 1.5708 0" xyz="0 0 0"/>   
+    </joint>   
+
+  
+    <joint name="left_camera_optical_joint" type="fixed">
+        <parent link="left_camera_optical_frame_mid"/>
+        <child link="left_camera_optical_frame_model"/>
+        <origin rpy="0 0 -1.5708" xyz="0 0 0"/>  
+    </joint>  
+ <!-- repeate for right camera -->
+    <link name="right_camera_optical_frame">
+    </link> 
+    <link name="right_camera_optical_frame_mid">
+    </link> 
+
+    <joint name="right_camera_optical_joint_mid" type="fixed">
+        <parent link="right_camera_link"/>
+        <child link="right_camera_optical_frame_mid"/>
+        <origin rpy="0 1.5708 0" xyz="0 0 0"/>   
+    </joint>   
+
+  
+    <joint name="right_camera_optical_joint" type="fixed">
+        <parent link="right_camera_optical_frame_mid"/>
+        <child link="right_camera_optical_frame"/>
+        <origin rpy="0 0 -1.5708" xyz="0 0 0"/>  
+    </joint>  
+    
+          
+    <!-- camera -->
+    <gazebo reference="right_camera_link">
+        <sensor type="camera" name="right">
+            <update_rate>30.0</update_rate>
+            <camera name="right">
+                <horizontal_fov>0.6</horizontal_fov>
+                <image>
+                    <width>640</width>
+                    <height>480</height>
+                    <format>R8G8B8</format>
+                </image>
+                <clip>
+                    <near>0.02</near>
+                    <far>0.6</far>
+                </clip>
+                <noise>
+                    <type>gaussian</type>
+                    <!-- Noise is sampled independently per pixel on each frame.
+                    That pixel's noise value is added to each of its color
+                    channels, which at that point lie in the range [0,1]. -->
+                    <mean>0.0</mean>
+                    <stddev>0.0</stddev>
+                </noise>
+            </camera>
+            <plugin name="right_camera_controller" filename="libgazebo_ros_camera.so">
+                <alwaysOn>true</alwaysOn>
+                <updateRate>0.0</updateRate>
+                <cameraName>stereo_cam/right</cameraName>
+                <imageTopicName>image_raw</imageTopicName>
+                <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+                <frameName>right_camera_optical_frame</frameName>
+                <hackBaseline>0.02</hackBaseline>
+                <distortionK1>0.0</distortionK1>
+                <distortionK2>0.0</distortionK2>
+                <distortionK3>0.0</distortionK3>
+                <distortionT1>0.0</distortionT1>
+                <distortionT2>0.0</distortionT2>
+            </plugin>
+        </sensor>
+    </gazebo>  
+    <!-- left camera -->
+    <gazebo reference="left_camera_link">
+        <sensor type="camera" name="left">
+            <update_rate>30.0</update_rate>
+            <camera name="left">
+                <horizontal_fov>0.6</horizontal_fov>
+                <image>
+                    <width>640</width>
+                    <height>480</height>
+                    <format>R8G8B8</format>
+                </image>
+                <clip>
+                    <near>0.02</near>
+                    <far>0.6</far>
+                </clip>
+                <noise>
+                    <type>gaussian</type>
+                    <!-- Noise is sampled independently per pixel on each frame.
+                    That pixel's noise value is added to each of its color
+                    channels, which at that point lie in the range [0,1]. -->
+                    <mean>0.0</mean>
+                    <stddev>0.0</stddev>
+                </noise>
+            </camera>
+            <plugin name="left_camera_controller" filename="libgazebo_ros_camera.so">
+                <alwaysOn>true</alwaysOn>
+                <updateRate>0.0</updateRate>
+                <cameraName>stereo_cam/left</cameraName>
+                <imageTopicName>image_raw</imageTopicName>
+                <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+                <!--NOTE: need a transform publisher to relate left_camera_optical_frame to left_camera_optical_frame_model-->
+                <frameName>left_camera_optical_frame</frameName>
+                <!--frameName>left_camera_link</frameName-->
+                <!--hackBaseline>0.02</hackBaseline-->
+                <distortionK1>0.0</distortionK1>
+                <distortionK2>0.0</distortionK2>
+                <distortionK3>0.0</distortionK3>
+                <distortionT1>0.0</distortionT1>
+                <distortionT2>0.0</distortionT2>
+            </plugin>
+        </sensor>
+    </gazebo>  
+</robot>

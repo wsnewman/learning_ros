@@ -33,3 +33,9 @@ Additionally, one can view the ROS publications of processed images with:
 The display via this ROS node will be identical to the open-cv viewer.  This validates
 that the ROS publication of processed images is being performed successfully.
 
+Example corner detection:
+`roslaunch simple_camera_model simple_camera_simu_w_checkerboard.launch` 
+`rosrun example_opencv harris_corners`
+
+
+

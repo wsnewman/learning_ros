@@ -13,6 +13,8 @@ in package "example_opencv")
 ## Example usage
 `roslaunch simple_camera_model simple_camera_simu.launch`
 
+`rosrun image_view image_view image:=/simple_camera/image_raw`
+
 An example that uses open_cv to process images from this camera model is in package
 "example_opencv".  E.g., launch:
 `roslaunch example_opencv find_red_pixels.launch`

@@ -4,19 +4,9 @@
   <link name="world">
       <origin xyz="0.0 0.0 0.0"/>  
   </link>
-
-  <joint name="world_joint" type="fixed">
-      <parent link="world"/>
-      <child link="camera_stand"/>
-      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
-  </joint>
-  
-  <link name="camera_stand">
-    <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.5"/>
-  </link>
   
   <joint name="camera_joint" type="fixed">
-      <parent link="camera_stand"/>
+      <parent link="world"/>
       <child link="camera_link"/>
       <origin rpy="0.0 1.5708 1.5708" xyz="0 0.0 0.5"/>
   </joint>
@@ -27,7 +17,6 @@
       <geometry>
         <box size="0.03 0.01 0.01"/>
       </geometry>
-      <material name="red"/>
     </visual>
 
     <inertial>
@@ -35,7 +24,6 @@
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
     </inertial>
-  <!--origin rpy="0.0 0.0 0.0" xyz="0.0 0.2 0.8"/-->
   </link>
 
   <!-- camera simulator plug-in -->
@@ -55,9 +43,6 @@
         </clip>
         <noise>
           <type>gaussian</type>
-          <!-- Noise is sampled independently per pixel on each frame.
-               That pixel's noise value is added to each of its color
-               channels, which at that point lie in the range [0,1]. -->
           <mean>0.0</mean>
           <stddev>0.000</stddev>
         </noise>
@@ -69,7 +54,6 @@
         <imageTopicName>image_raw</imageTopicName>
         <cameraInfoTopicName>camera_info</cameraInfoTopicName>
         <frameName>camera_link</frameName>
-        <!--hackBaseline>0.07</hackBaseline-->
         <distortionK1>0.0</distortionK1>
         <distortionK2>0.0</distortionK2>
         <distortionK3>0.0</distortionK3>

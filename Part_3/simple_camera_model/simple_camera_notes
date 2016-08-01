@@ -1,0 +1,20 @@
+roslaunch gazebo_ros empty_world.launch
+
+roslaunch simple_camera_model simple_camera_model.launch
+
+do a rostopic list;
+
+rosrun image_view image_view image:=simple_camera/image_raw
+
+
+drag in "colored block" and place it on floor at 0,0
+
+should see red rectangle in view;
+
+rosrun example_opencv find_red_pixels 
+  finds the red pixels; paints them white;
+  computes centroid of red pixels; colors a blue square about centroid
+  displays in open-cv window
+
+
+

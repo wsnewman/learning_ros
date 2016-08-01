@@ -73,15 +73,19 @@ public:
                 }
             }
         }
-        cout << "npix: " << npix << endl;
+        //cout << "npix: " << npix << endl;
         //paint in a blue square at the centroid:
         int half_box = 5; // choose size of box to paint
         int i_centroid, j_centroid;
+        double x_centroid, y_centroid;
         if (npix > 0) {
             i_centroid = isum / npix;
             j_centroid = jsum / npix;
-            cout << "i_avg: " << i_centroid << endl; //i,j centroid of red pixels
-            cout << "j_avg: " << j_centroid << endl;
+            x_centroid = ((double) isum)/((double) npix);
+            y_centroid = ((double) jsum)/((double) npix);
+            ROS_INFO("u_avg: %f; v_avg: %f",x_centroid,y_centroid);
+            //cout << "i_avg: " << i_centroid << endl; //i,j centroid of red pixels
+            //cout << "j_avg: " << j_centroid << endl;
             for (int i_box = i_centroid - half_box; i_box <= i_centroid + half_box; i_box++) {
                 for (int j_box = j_centroid - half_box; j_box <= j_centroid + half_box; j_box++) {
                     if ((i_box >= 0)&&(j_box >= 0)&&(i_box < cv_ptr->image.cols)&&(j_box < cv_ptr->image.rows)) {
@@ -109,8 +113,9 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "red_pixel_finder");
     ros::NodeHandle n; //        
     ImageConverter ic(n);
-    cout << "enter red ratio threshold: (e.g. 10) ";
-    cin >> g_redratio;
+    //cout << "enter red ratio threshold: (e.g. 10) ";
+    //cin >> g_redratio;
+    g_redratio= 10;
     ros::Duration timer(0.1);
     double x, y, z;
     while (ros::ok()) {

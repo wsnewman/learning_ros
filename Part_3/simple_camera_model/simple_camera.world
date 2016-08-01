@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<sdf version="1.4">
+  <world name="default">
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+    <include>
+      <uri>model://sun</uri>
+    </include>
+            
+    <physics type="ode">
+    <gravity>0 0 0</gravity>
+      <real_time_update_rate>1000.0</real_time_update_rate>
+    </physics>
+  </world>
+</sdf>

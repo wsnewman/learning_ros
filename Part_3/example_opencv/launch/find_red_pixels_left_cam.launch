@@ -1,0 +1,15 @@
+<launch>
+ 
+<!--node pkg="tf" type="static_transform_publisher" name="camera_frame_bdcst" args="0 0 0 -1.5708 0 -1.5708   camera_link camera_optical_frame 50"/-->
+
+<node pkg="image_view" type="image_view" name="image_view">
+<remap from="image" to="/stereo_cam/camera/left"/>
+</node>
+
+<node pkg="example_opencv" type="find_red_pixels" name="find_red_pixels" output="screen">
+<remap from="simple_camera/image_raw" to="/stereo_cam/camera/left/image_raw"/>
+</node>
+<node name="spawn_sdf" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/colored_block/model-1_4.sdf -sdf -model block -z 0.01" />
+
+
+</launch>

@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(example_opencv)
+project(example_camera_calibration)
 
 find_package(catkin_simple REQUIRED)
 
 #uncomment next line to use OpenCV library
-find_package(OpenCV REQUIRED)
+#find_package(OpenCV REQUIRED)
 
 #uncomment the next 2 lines to use the point-cloud library
 #find_package(PCL 1.7 REQUIRED)
@@ -31,8 +31,8 @@ catkin_simple()
 
 # Executables: uncomment the following and edit arguments to compile new nodes
 # may add more of these lines for more nodes from the same package
-cs_add_executable(find_red_pixels src/find_red_pixels.cpp)
-cs_add_executable(harris_corners src/harris_corners.cpp)
+cs_add_executable(move_calibration_checkerboard src/move_calibration_checkerboard.cpp)
+cs_add_executable (cameras_timesync src/cameras_timesync.cpp)
 #the following is required, if desire to link a node in this package with a library created in this same package
 # edit the arguments to reference the named node and named library within this package
 # target_link_libraries(example my_lib)
