@@ -51,7 +51,14 @@
   </link> 
   <link name="left_camera_optical_frame_mid">
   </link> 
+    <link name="left_camera_ref_frame">
+  </link> 
   
+  <joint name="left_camera_ref_joint" type="fixed">
+      <parent link="left_camera_body"/>
+      <child link="left_camera_ref_frame"/>
+      <origin rpy="-1.5708 0 0" xyz="0 0 0"/>  
+  </joint>    
   <joint name="left_camera_optical_joint" type="fixed">
       <parent link="left_camera_optical_frame_mid"/>
       <child link="left_camera_optical_frame"/>
@@ -71,7 +78,7 @@
   </joint>  
     
 <!-- start of stereo camera plug-in -->
-  <gazebo reference="left_camera_body">
+  <gazebo reference="left_camera_ref_frame">
   <!--gazebo reference="left_camera_optical_frame"-->
     <sensor type="multicamera" name="stereo_camera">
       <update_rate>30.0</update_rate>
@@ -93,7 +100,7 @@
         </noise>
       </camera>
       <camera name="right">
-        <pose>0.02 0 0 0 0 0</pose>
+        <pose>0 -0.02  0 0 0 0</pose>
         <horizontal_fov>0.6</horizontal_fov>
         <image>
           <width>640</width>

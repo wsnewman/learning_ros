@@ -39,6 +39,7 @@ cs_add_library(pcl_utils src/pcl_utils.cpp)
 #cs_add_executable(example_process_pcd src/example_process_pcd.cpp)
 cs_add_executable(display_ellipse src/display_ellipse.cpp src/make_clouds.cpp)
 cs_add_executable(pcd_snapshot src/pcd_snapshot.cpp)
+cs_add_executable(compute_selected_points_centroid src/compute_selected_points_centroid.cpp)
 #cs_add_executable(demo_pcl1 src/demo_pcl1.cpp)
 #cs_add_executable(demo_pcl2 src/demo_pcl2.cpp)
 

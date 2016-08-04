@@ -1,0 +1,79 @@
+<?xml version="1.0" ?>
+<robot name="simple_kinect" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <link name="world">
+      <origin xyz="0.0 0.0 0.0"/>  
+  </link>
+  
+  <joint name="camera_joint" type="fixed">
+      <parent link="world"/>
+      <child link="camera_link"/>
+      <origin rpy="0.0 1.5708 1.5708" xyz="0 0.0 0.5"/>
+  </joint>
+
+  <link name="camera_link">
+    <visual>
+      <origin xyz="0 0 0.0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.05 0.1 0.05"/>
+      </geometry>
+    </visual>
+
+    <inertial>
+      <mass value="1e-5" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+  </link>
+  <gazebo reference="camera_link">
+    <material>Gazebo/Red</material>
+  </gazebo>  
+  <!-- camera simulator plug-in -->
+  <gazebo reference="camera_link">
+    <sensor type="depth" name="openni_camera_camera">       
+        <always_on>1</always_on>
+        <visualize>true</visualize>             
+        <camera>
+            <horizontal_fov>1.047</horizontal_fov>  
+            <image>
+                <width>640</width>
+                <height>480</height>
+                <format>R8G8B8</format>
+            </image>
+            <depth_camera>
+
+            </depth_camera>
+            <clip>
+                <near>0.1</near>
+                <far>100</far>
+            </clip>
+        </camera>
+      <!--here is the plug-in that does the work of kinect emulation-->
+       <plugin name="camera_controller" filename="libgazebo_ros_openni_kinect.so">
+            <alwaysOn>true</alwaysOn>
+                <updateRate>10.0</updateRate>
+                <cameraName>kinect</cameraName>
+                <frameName>kinect_depth_frame</frameName>                   
+            <imageTopicName>rgb/image_raw</imageTopicName>
+            <depthImageTopicName>depth/image_raw</depthImageTopicName>
+            <pointCloudTopicName>depth/points</pointCloudTopicName>
+            <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>              
+            <depthImageCameraInfoTopicName>depth/camera_info</depthImageCameraInfoTopicName>            
+            <!--pointCloudCutoff>0.4</pointCloudCutoff--> 
+            <pointCloudCutoff>0.3</pointCloudCutoff>               
+                <hackBaseline>0.07</hackBaseline>
+                <distortionK1>0.0</distortionK1>
+                <distortionK2>0.0</distortionK2>
+                <distortionK3>0.0</distortionK3>
+                <distortionT1>0.0</distortionT1>
+                <distortionT2>0.0</distortionT2>
+            <CxPrime>0.0</CxPrime>
+            <Cx>0.0</Cx>
+            <Cy>0.0</Cy>
+            <focalLength>0.0</focalLength>
+            </plugin>
+    </sensor>
+  </gazebo>        
+
+  
+</robot>
