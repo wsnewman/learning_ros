@@ -8,7 +8,7 @@
 <remap from="image" to="/stereo_camera/left/image_raw"/>
 </node>
 
-<node pkg="example_opencv" type="find_red_pixels" name="find_red_pixels_left" output="screen">
+<node pkg="example_opencv" type="find_features" name="find_features_left" output="screen">
 <remap from="simple_camera/image_raw" to="/stereo_camera/left/image_raw"/>
 </node>
 

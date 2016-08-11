@@ -46,6 +46,9 @@ public:
             ROS_ERROR("cv_bridge exception: %s", e.what());
             return;
         }
+
+        
+        
         // look for red pixels; turn all other pixels black, and turn red pixels white
         int npix = 0; //count the red pixels
         int isum = 0; //accumulate the column values of red pixels
@@ -77,6 +80,18 @@ public:
                 }
             }
         }
+        
+
+        cv::Mat gray_image,contours;   
+        //convert the color image to grayscale:        
+        cv::cvtColor(cv_ptr->image, gray_image, CV_BGR2GRAY); 
+        //use Canny filter to find edges in grayscale image;
+        //put result in "contours"; low and high thresh are tunable params
+        cv::Canny(gray_image,// gray-level image
+        contours, // output contours
+        125,// low threshold
+        350);// high threshold
+        
         //cout << "npix: " << npix << endl;
         //paint in a blue square at the centroid:
         int half_box = 5; // choose size of box to paint
@@ -103,7 +118,9 @@ public:
 
         }
         // Update GUI Window; this will display processed images on the open-cv viewer.
-        cv::imshow(OPENCV_WINDOW, cv_ptr->image);
+        //cv::imshow(OPENCV_WINDOW, cv_ptr->image); //display processed image
+        //cv::imshow(OPENCV_WINDOW, gray_image); //display the grayscale image
+        cv::imshow(OPENCV_WINDOW, contours); //display the contours
         cv::waitKey(3); //need waitKey call to update OpenCV image window
 
         // Also, publish the processed image as a ROS message on a ROS topic

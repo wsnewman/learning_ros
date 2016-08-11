@@ -1,11 +1,13 @@
 <launch>
- 
+<!--view the ROS output images using image_view ROS node-->
+<!--rename this node, so we can run it twice, for left and right images-->
 <node pkg="image_view" type="image_view" name="image_view_right">
-<remap from="image" to="/stereo_cam/right_camera"/>
+<remap from="image" to="/stereo_camera/right/image_raw"/>
 </node>
 
+<!--also can run two instances of find_red_pixels, so rename this node-->
 <node pkg="example_opencv" type="find_red_pixels" name="find_red_pixels_right" output="screen">
-<remap from="/simple_camera/image_raw" to="/stereo_cam/right_camera/image_raw"/>
+<remap from="/simple_camera/image_raw" to="/stereo_camera/right/image_raw"/>
 </node>
 
 

@@ -1,0 +1,24 @@
+<launch>
+  <!-- Load joint controller configurations from YAML file to parameter server -->
+  <rosparam file="$(find lidar_wobbler)/config/one_dof_ctl_params.yaml" command="load"/>
+  <param name="robot_description" 
+     textfile="$(find lidar_wobbler)/model/lidar_wobbler.urdf"/>
+
+  <!-- Spawn a robot into Gazebo -->
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" 
+     args="-param robot_description -urdf -model lidar_wobbler" />
+  
+  <!--start up the controller plug-ins via the controller manager -->
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+    output="screen" ns="/lidar_wobbler" args="joint_state_controller joint1_position_controller"/>
+    
+<!-- start a robot_state_publisher -->
+<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" >  
+  <remap from="joint_states" to="/lidar_wobbler/joint_states" />  
+</node>
+
+<!-- start a joint_state_publisher -->
+<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" > 
+  <remap from="joint_states" to="/lidar_wobbler/joint_states" />  
+</node>
+</launch>

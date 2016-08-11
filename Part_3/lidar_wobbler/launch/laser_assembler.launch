@@ -1,0 +1,9 @@
+<launch>
+  <node type="laser_scan_assembler" pkg="wsn_laser_assembler"
+        name="my_assembler">
+    <remap from="scan" to="/scan"/>
+    <param name="max_scans" type="int" value="400" />
+    <param name="fixed_frame" type="string" value="world" />
+    <param name="ignore_laser_skew" type="bool" value="false" />    
+  </node>
+</launch>
