@@ -1,7 +1,7 @@
 # baxter_on_mobot
 combined Baxter robot and mobile base with LIDAR and Kinect
 Required editing Baxter model files to remove most of Baxter's sensor drivers (due to conflict with LIDAR).
-Still references libbaxter_gazebo_ros_control.so and all CAD files in baxter_description, so this could
+Still references libbaxter_gazebo_ros_control.so and all CAD files in baxter_description, so model here could
 break if these are updated incompatibly.
 
 ## Example usage
