@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<robot
+  xmlns:xacro="http://www.ros.org/wiki/xacro" name="baxter_on_mobot">
+  <xacro:include filename="$(find baxter_on_mobot)/mobot_base.xacro" />    
+
+  <xacro:include filename="$(find baxter_on_mobot)/baxter_base.urdf.xacro">
+    <xacro:arg name="gazebo" value="${gazebo}"/>
+  </xacro:include>
+  <xacro:include filename="$(find baxter_description)/urdf/left_end_effector.urdf.xacro" />
+  <xacro:include filename="$(find baxter_description)/urdf/right_end_effector.urdf.xacro" />
+  <xacro:include filename="$(find baxter_on_mobot)/kinect_link.urdf.xacro" />
+  
+  <!-- attach baxter torso to the mobile robot -->
+  <joint name="baxter_base_joint" type="fixed">
+    <parent link="mobot_top" />
+    <child link="base" />
+    <origin rpy="0 0 0 " xyz="0.1 0 0.06"/>
+  </joint>   
+  <!-- attach the kinect to the mobile robot 
+  <joint name="kinect_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="kinect_link" />  
+    <origin rpy="0 0 0 " xyz="0.1 0 0.72"/>
+  </joint-->   
+  <!-- kinect depth frame has a different viewpoint; publish it separately-->
+</robot>
