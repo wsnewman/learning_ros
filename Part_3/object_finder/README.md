@@ -19,5 +19,13 @@ bool ObjectFinder::find_upright_coke_can(float surface_height,geometry_msgs::Pos
 `rosrun object_finder object_finder_as`
 `rosrun object_finder example_object_finder_action_client`
 
+or:
+`roslaunch worlds play_pen_world.launch`
+`roslaunch simple_camera_model kinect_simu2.launch`
+`roslaunch exmpl_models add_toy_block.launch`
+`rosrun object_finder object_finder_as`
+`rosrun  example_rviz_marker triad_display`
+`rosrun object_finder example_object_finder_action_client`
+
 ## Running tests/demos
     

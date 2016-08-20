@@ -11,6 +11,8 @@
 #include <Eigen/Geometry>
 
 geometry_msgs::PoseStamped g_perceived_object_pose;
+ros::Publisher *g_pose_publisher;
+
 int g_found_object_code;
 void objectFinderDoneCb(const actionlib::SimpleClientGoalState& state,
         const object_finder::objectFinderResultConstPtr& result) {
@@ -26,6 +28,12 @@ void objectFinderDoneCb(const actionlib::SimpleClientGoalState& state,
          ROS_INFO("got pose x,y,z = %f, %f, %f",g_perceived_object_pose.pose.position.x,
                  g_perceived_object_pose.pose.position.y,
                  g_perceived_object_pose.pose.position.z);
+
+         ROS_INFO("got quaternion x,y,z, w = %f, %f, %f, %f",g_perceived_object_pose.pose.orientation.x,
+                 g_perceived_object_pose.pose.orientation.y,
+                 g_perceived_object_pose.pose.orientation.z,
+                 g_perceived_object_pose.pose.orientation.w);
+         g_pose_publisher->publish(g_perceived_object_pose);
     }
     else {
         ROS_WARN("object not found!");
@@ -49,19 +57,22 @@ int main(int argc, char** argv) {
         ROS_INFO("retrying...");
     }
     ROS_INFO("connected to object_finder action server"); // if here, then we connected to the server; 
-     
+    ros::Publisher pose_publisher = nh.advertise<geometry_msgs::PoseStamped>("triad_display_pose", 1, true); 
+    g_pose_publisher = &pose_publisher;
     object_finder::objectFinderGoal object_finder_goal;
     //object_finder::objectFinderResult object_finder_result;
     
-    object_finder_goal.object_id=object_finder::objectFinderGoal::COKE_CAN_UPRIGHT;
-    object_finder_goal.known_surface_ht=true;
+    //object_finder_goal.object_id=object_finder::objectFinderGoal::COKE_CAN_UPRIGHT;
+    object_finder_goal.object_id=object_finder::objectFinderGoal::TOY_BLOCK;
+    //object_finder_goal.known_surface_ht=true;
+    object_finder_goal.known_surface_ht=false; //require find table height
     object_finder_goal.surface_ht = 0.05;
     
     ROS_INFO("sending goal: ");
         object_finder_ac.sendGoal(object_finder_goal,&objectFinderDoneCb); // we could also name additional callback functions here, if desired
         //    action_client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb); //e.g., like this
         
-        bool finished_before_timeout = object_finder_ac.waitForResult(ros::Duration(5.0));
+        bool finished_before_timeout = object_finder_ac.waitForResult(ros::Duration(10.0));
         //bool finished_before_timeout = action_client.waitForResult(); // wait forever...
         if (!finished_before_timeout) {
             ROS_WARN("giving up waiting on result ");

@@ -1,0 +1,32 @@
+coordinator notes: navigate, find_object, grab_object, place_object
+
+make a "playfile" for actions:
+
+navigate TABLE_APPROACH_1   
+  code for TABLE_APPROACH_1 ...expands to a 3-D pose for mobot
+  subdivides: plan_path, navigate_path
+  
+find_object OBJECT_CODE_1
+  OBJECT_CODE_1 presumably points to lots of info re/ object
+  uses PCL to find table, filter object pts, fit model-> model pose
+  
+grab_object OBJECT_CODE_1
+   presumably have pose in memory
+   can look up grasp options
+   compute arm trajectory, including:
+      gross approach, gripper open, approach, close gripper, depart
+      
+navigate TABLE_APPROACH_2
+place_object OBJECT_POSE_2
+  OBJECT_POSE_2 lookup: perhaps relative to local features? sub-assembly? table coords?
+     e.g. dishwasher, cupboard, closet, bin, box, ...
+  compute Cartesian approach to goal pose, open gripper, depart
+
+...........alternative:
+discover_object
+store_object  (driven by context)
+  look up object home instructions, navigate, drop-off
+  
+  
+  
+  

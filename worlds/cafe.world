@@ -1,0 +1,36 @@
+<?xml version="1.0" ?>
+<sdf version="1.4">
+  <world name="default">
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <include>
+        <uri>model://cafe_table</uri>
+        <pose>0.756237 -0.288636 0 0 -0 0</pose>
+    </include>
+    <!--include>
+        <uri>model://beer</uri>
+         <pose>0.69112 0 0.775 0 0 0</pose>
+    </include-->   
+    <!--include>
+        <uri>model://worlds/toy_block</uri>
+         <pose>0.69112 0 0.775 0 0 0</pose>
+    </include-->   
+ 
+     <include>
+        <uri>model://starting_pen</uri>
+         <pose>0.0 -5 0 0 0 0</pose>
+    </include>      
+    
+    <physics type="ode">
+      <real_time_update_rate>1000.0</real_time_update_rate>
+      <gravity>
+	0.0 0.0 -9.81
+      </gravity>
+    </physics>
+  </world>
+</sdf>

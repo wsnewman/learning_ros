@@ -1,0 +1,102 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="kinect_link">
+ <!-- ADD a Kinect sensor: first the visual/collision/inertial box -->
+  <link name="world">
+      <origin xyz="0.0 0.0 0.0"/>  
+  </link>
+    <link name="base_link">
+  </link>
+  
+  <joint name="kinect_jnt" type="fixed">
+      <parent link="base_link"/>
+      <child link="kinect_link"/>
+      <!--origin rpy="0.0 1.5708 1.5708" xyz="0 0.0 0.5"/-->
+      <axis xyz="0 1 0" />
+      <origin xyz="0.027 0.0 1.810" rpy="0.0 1.2 0"/>       
+  </joint>
+  
+    <joint name="world_jnt" type="fixed">
+      <parent link="world"/>
+      <child link="base_link"/>   
+  </joint>
+
+    <link name="kinect_link">
+      <collision>
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <geometry>
+              <!-- coarse model; a simple box -->
+              <box size="0.05 0.2 0.05"/>
+          </geometry>
+      </collision>
+
+      <visual>
+          <origin xyz="0 0 0" rpy="0 0 0" />
+          <geometry>
+              <box size="0.05 0.2 0.05" />
+          </geometry>
+          <material name="kinect_gray">
+              <color rgba="0.2 0.2 0.2 1.0"/>
+          </material>
+      </visual>
+
+      <inertial>
+          <mass value="0.1" />
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+      </inertial>
+  </link>
+  <!--the above displays a box meant to imply Kinect-->
+  <!--now set the position/orientation of the above box: -->
+  <!--joint name="kinect_joint" type="fixed">
+      <axis xyz="0 1 0" />
+      <origin xyz="0.2 0.0 1.9" rpy="0.0 1.2 0"/> 
+      <parent link="kinect_stand"/>
+      <child link="kinect_link"/>
+  </joint-->
+<!-- end wsn adding kinect link; -->
+ 
+  <!-- wsn: add kinect sensor emulation -->
+<gazebo reference="kinect_link">
+    <sensor type="depth" name="openni_camera_camera">       
+        <always_on>1</always_on>
+        <visualize>true</visualize>             
+        <camera>
+            <horizontal_fov>1.047</horizontal_fov>  
+            <image>
+                <width>640</width>
+                <height>480</height>
+                <format>R8G8B8</format>
+            </image>
+            <depth_camera>
+
+            </depth_camera>
+            <clip>
+                <near>0.1</near>
+                <far>100</far>
+            </clip>
+        </camera>
+        <plugin name="camera_controller" filename="libgazebo_ros_openni_kinect.so">
+            <alwaysOn>true</alwaysOn>
+                <updateRate>10.0</updateRate>
+                <cameraName>kinect</cameraName>
+                <frameName>kinect_pc_frame</frameName>                   
+            <imageTopicName>rgb/image_raw</imageTopicName>
+            <depthImageTopicName>depth/image_raw</depthImageTopicName>
+            <pointCloudTopicName>depth/points</pointCloudTopicName>
+            <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>              
+            <depthImageCameraInfoTopicName>depth/camera_info</depthImageCameraInfoTopicName>            
+            <pointCloudCutoff>0.4</pointCloudCutoff>                
+                <hackBaseline>0.07</hackBaseline>
+                <distortionK1>0.0</distortionK1>
+                <distortionK2>0.0</distortionK2>
+                <distortionK3>0.0</distortionK3>
+                <distortionT1>0.0</distortionT1>
+                <distortionT2>0.0</distortionT2>
+            <CxPrime>0.0</CxPrime>
+            <Cx>0.0</Cx>
+            <Cy>0.0</Cy>
+            <focalLength>0.0</focalLength>
+            </plugin>
+    </sensor>
+</gazebo>
+</robot>

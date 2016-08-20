@@ -1,0 +1,19 @@
+<launch>
+ <!-- add kinect model to the parameter server-->   
+<param name="robot_description" command="$(find xacro)/xacro.py '$(find simple_camera_model)/simple_kinect_model2.xacro'" />
+
+<!-- Spawn the model into Gazebo -->
+<node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model simple_kinect" />
+
+<!--publish the transform between camera body and optical frame-->
+<node pkg="tf" type="static_transform_publisher" name="rcamera_frame_bdcst" args="0 0 0 -1.5708 0 -1.5708   camera_link kinect_depth_frame 50"/>
+
+<!--Kinect pointClouds are with respect to kinect_pc_frame; define this frame-->
+<node pkg="tf" type="static_transform_publisher" name="kinect_broadcaster2" args="0 0 0 -0.5 0.5 -0.5 0.5 kinect_link kinect_pc_frame 100" /> 
+
+<!--publish transforms for use by rviz and tf_listeners--> 
+<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+
+<!-- launch rviz using a specific config file -->
+ <node pkg="rviz" type="rviz" name="rviz" args="-d $(find simple_camera_model)/kinect_simu.rviz"/> 
+</launch>

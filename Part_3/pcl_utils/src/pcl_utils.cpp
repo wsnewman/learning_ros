@@ -14,8 +14,9 @@ pclTransformedSelectedPoints_ptr_(new PointCloud<pcl::PointXYZ>),pclGenPurposeCl
     
     initializeSubscribers();
     initializePublishers();
-    got_kinect_cloud_ = false;
+    got_kinect_cloud_ = true; // don't take a snapshot until this flag is set to false
     got_selected_points_ = false;
+    take_snapshot_ = false;
 }
 
 //fnc to read a pcd file and put contents in pclKinect_ptr_: color version
@@ -212,7 +213,8 @@ void PclUtils::fit_points_to_plane(Eigen::MatrixXf points_mat, Eigen::Vector3f &
     //cout<<"est plane distance from origin = "<<est_dist<<endl;
     //cout<<"correct answer is: "<<dist<<endl;
     //cout<<endl<<endl;    
-
+    ROS_INFO("major_axis: %f, %f, %f",major_axis_(0),major_axis_(1),major_axis_(2));
+    ROS_INFO("plane normal: %f, %f, %f",plane_normal(0),plane_normal(1),plane_normal(2));
 }
 
 //get pts from cloud, pack the points into an Eigen::MatrixXf, then use above
@@ -502,7 +504,7 @@ void PclUtils::example_pcl_operation() {
     }    
 } 
 
-//This fnc populates and output cloud of type XYZRGB extracted from the full Kinect cloud (in Kinect frame)
+//This fnc populates an output cloud of type XYZRGB extracted from the full Kinect cloud (in Kinect frame)
 // provide a vector of indices and a holder for the output cloud, which gets populated
 void PclUtils::copy_indexed_pts_to_output_cloud(vector<int> &indices,PointCloud<pcl::PointXYZRGB> &outputCloud) {
     int npts = indices.size(); //how many points to extract?
@@ -612,6 +614,125 @@ void PclUtils::filter_cloud_z(double z_nom, double z_eps,
 //operate on transformed Kinect pointcloud:
 void PclUtils::find_coplanar_pts_z_height(double plane_height,double z_eps,vector<int> &indices) {
     filter_cloud_z(pclTransformed_ptr_,plane_height,z_eps,indices);
+}
+
+//operate on transformed Kinect pointcloud using PCL passthrough filter
+int PclUtils::box_filter_z_transformed_cloud(double z_min,double z_max,vector<int> &indices) {
+    pcl::PassThrough<pcl::PointXYZ> pass; //create a pass-through object    
+    pass.setInputCloud(pclTransformed_ptr_); //set the cloud we want to operate on--pass via a pointer
+    pass.setFilterFieldName("z"); // we will "filter" based on points that lie within some range of z-value
+    pass.setFilterLimits(z_min, z_max); //here is the range: z value near zero, -0.02<z<0.02
+    pass.filter(indices); //  this will return the indices of the points in   transformed_cloud_ptr that pass our test
+    int npts = indices.size();
+    ROS_DEBUG("number of points passing the filter = %d",npts);
+    return npts;
+}
+
+//function to find a table height by sampling how many points in a slab from z_min to z_max
+//operates on transformed cloud
+//uses passthrough filter, which is MUCH faster!!
+double PclUtils::find_table_height(double z_min, double z_max, double dz) {
+    vector<int> indices;
+    pcl::PassThrough<pcl::PointXYZ> pass; //create a pass-through object    
+    pass.setInputCloud(pclTransformed_ptr_); //set the cloud we want to operate on--pass via a pointer
+    pass.setFilterFieldName("z"); // we will "filter" based on points that lie within some range of z-value
+    double z_table = 0.0;
+    int npts_max = 0;
+    int npts;
+    for (double z = z_min; z < z_max; z += dz) {
+        pass.setFilterLimits(z, z + dz);
+        pass.filter(indices); //  this will return the indices of the points in   transformed_cloud_ptr that pass our test
+        npts = indices.size();
+        ROS_INFO("z=%f; npts = %d",z,npts);
+        if (npts > npts_max) {
+            npts_max = npts;
+            z_table = z + 0.5 * dz;
+        }
+    }
+    return z_table;
+}
+
+//version that includes x, y and z limits
+double PclUtils::find_table_height(double x_min, double x_max, double y_min, double y_max, double z_min, double z_max, double dz_tol) {
+    vector<int> indices;
+    pcl::PointIndices::Ptr inliers (new pcl::PointIndices ());
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::PassThrough<pcl::PointXYZ> pass; //create a pass-through object    
+    pass.setInputCloud(pclTransformed_ptr_); //set the cloud we want to operate on--pass via a pointer
+    pass.setFilterFieldName("x"); // we will "filter" based on points that lie within some range of z-value
+    pass.setFilterLimits(x_min, x_max);
+    pass.filter(*cloud_filtered); //fill this cloud with result
+    int n_filtered = cloud_filtered->points.size();
+    ROS_INFO("num x-filtered pts = %d",n_filtered);
+    //pass.filter(*inliers);
+    //pass.setIndices(inliers);
+    pass.setInputCloud(cloud_filtered);
+    pass.setFilterFieldName("y"); // we will "filter" based on points that lie within some range of z-value
+    pass.setFilterLimits(y_min, y_max);
+    pass.filter(*cloud_filtered);
+    n_filtered = cloud_filtered->points.size();
+    ROS_INFO("num y-filtered pts = %d",n_filtered);
+    //pass.setIndices(indices);
+
+    pass.setInputCloud(cloud_filtered);
+    pass.setFilterFieldName("z"); // we will "filter" based on points that lie within some range of z-value
+    pass.setFilterLimits(z_min, z_max);
+    pass.filter(*cloud_filtered);
+    n_filtered = cloud_filtered->points.size();
+    ROS_INFO("num z-filtered pts = %d",n_filtered);
+    
+    pass.setInputCloud(cloud_filtered);    
+    double z_table = 0.0;
+    int npts_max = 0;
+    int npts;
+    for (double z = z_min; z < z_max; z += dz_tol) {
+        pass.setFilterLimits(z, z + dz_tol);
+        pass.filter(indices); //  this will return the indices of the points in   transformed_cloud_ptr that pass our test
+        npts = indices.size();
+        ROS_INFO("z=%f; npts = %d",z,npts);
+        if (npts > npts_max) {
+            npts_max = npts;
+            z_table = z + 0.5 * dz_tol;
+        }
+        ROS_DEBUG("number of points passing the filter = %d", npts);
+    }
+   return z_table;
+}
+
+//given table height and known object height, filter transformed points to find points within x, y and z bounds,
+// presumably extracting points on the top surface of the object of interest
+// fit a plane to the surviving points and find normal and major axis
+void PclUtils::find_plane_fit(double x_min, double x_max, double y_min, double y_max, double z_min, double z_max, double dz_tol,
+     Eigen::Vector3f &plane_normal, double &plane_dist, Eigen::Vector3f &major_axis, Eigen::Vector3f  &centroid) { 
+    vector<int> indices;
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::PassThrough<pcl::PointXYZ> pass; //create a pass-through object    
+    pass.setInputCloud(pclTransformed_ptr_); //set the cloud we want to operate on--pass via a pointer
+    pass.setFilterFieldName("x"); // we will "filter" based on points that lie within some range of z-value
+    pass.setFilterLimits(x_min, x_max);
+    pass.filter(*cloud_filtered); //fill this cloud with result
+    int n_filtered = cloud_filtered->points.size();
+    ROS_INFO("num x-filtered pts = %d",n_filtered);
+    //pass.filter(*inliers);
+    //pass.setIndices(inliers);
+    pass.setInputCloud(cloud_filtered);
+    pass.setFilterFieldName("y"); // we will "filter" based on points that lie within some range of z-value
+    pass.setFilterLimits(y_min, y_max);
+    pass.filter(*cloud_filtered);
+    n_filtered = cloud_filtered->points.size();
+    ROS_INFO("num y-filtered pts = %d",n_filtered);
+    //pass.setIndices(indices);
+
+    pass.setInputCloud(cloud_filtered);
+    pass.setFilterFieldName("z"); // we will "filter" based on points that lie within some range of z-value
+    pass.setFilterLimits(z_min, z_max);
+    pass.filter(*cloud_filtered);
+    n_filtered = cloud_filtered->points.size();
+    ROS_INFO("num z-filtered pts = %d",n_filtered);
+    
+    fit_points_to_plane(cloud_filtered, plane_normal, plane_dist);    
+    major_axis = major_axis_;
+    centroid = centroid_;
 }
 
 void PclUtils::filter_cloud_z(PointCloud<pcl::PointXYZ>::Ptr inputCloud, double z_nom, double z_eps, vector<int> &indices) {
@@ -862,6 +983,10 @@ void PclUtils::initializePublishers() {
  * callback fnc: receives transmissions of Kinect data; if got_kinect_cloud is false, copy current transmission to internal variable
  * @param cloud [in] messages received from Kinect
  */
+
+//logic: set got_kinect_cloud_= false to trigger acquiring a new cloud;
+//  callback will set this flag to "true" when cloud is acquired
+// note: this callback is only activated when a pointcloud message comes in
 void PclUtils::kinectCB(const sensor_msgs::PointCloud2ConstPtr& cloud) {
     //cout<<"callback from kinect pointcloud pub"<<endl;
     // convert/copy the cloud only if desired
@@ -908,6 +1033,7 @@ void PclUtils::selectCB(const sensor_msgs::PointCloud2ConstPtr& cloud) {
     fit_points_to_plane(pclSelectedPoints_ptr_, plane_normal, plane_dist);
     ROS_INFO("plane dist = %f",plane_dist);
     ROS_INFO("plane normal = (%f, %f, %f)",plane_normal(0),plane_normal(1),plane_normal(2));
+    
     patch_normal_ = plane_normal;
     patch_dist_ = plane_dist;
  

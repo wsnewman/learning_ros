@@ -38,6 +38,9 @@
 #include <pcl_ros/transforms.h>
 #include <pcl-1.7/pcl/impl/point_types.hpp>
 
+#include <pcl/filters/passthrough.h>
+#include <pcl/filters/voxel_grid.h> 
+
 using namespace std;  //just to avoid requiring std::, Eigen:: ...
 using namespace Eigen;
 using namespace pcl;
@@ -100,7 +103,8 @@ public:
     void transform_cloud(Eigen::Affine3f A, pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud_ptr,
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr output_cloud_ptr);
     void reset_got_kinect_cloud() {got_kinect_cloud_= false;};
-    void reset_got_selected_points() {got_selected_points_= false;};    
+    void reset_got_selected_points() {got_selected_points_= false;}; 
+    //void take_snapshot() {take_snapshot_= true;}; 
     bool got_kinect_cloud() { return got_kinect_cloud_; };
     bool got_selected_points() {return got_selected_points_;};
     void save_kinect_snapshot() {    pcl::io::savePCDFileASCII ("kinect_snapshot.pcd", *pclKinect_ptr_);}; //B/W
@@ -141,11 +145,19 @@ public:
                 double radius, Eigen::Vector3f centroid, vector<int> &indices);
     //same as above, but specifically operates on transformed kinect cloud
     void filter_cloud_z(double z_nom, double z_eps, 
-                double radius, Eigen::Vector3f centroid, vector<int> &indices);   
+                double radius, Eigen::Vector3f centroid, vector<int> &indices); 
+    int box_filter_z_transformed_cloud(double z_min,double z_max,vector<int> &indices);
+    
+    //using passthrough filter is MUCH faster!!
+    double find_table_height(double z_min, double z_max, double dz); //op on xformed cloud; uses pcl passthru filter
+    //another fnc using passthru filter--with x, y and z limits
+    double find_table_height(double x_min, double x_max, double y_min, double y_max, double z_min, double z_max, double dz_tol);
+
     void box_filter(PointCloud<pcl::PointXYZ>::Ptr inputCloud, Eigen::Vector3f pt_min, Eigen::Vector3f pt_max, 
                 vector<int> &indices);
     void box_filter(Eigen::Vector3f pt_min, Eigen::Vector3f pt_max, vector<int> &indices);
-    
+    void find_plane_fit(double x_min, double x_max, double y_min, double y_max, double z_min, double z_max, double dz_tol,
+      Eigen::Vector3f &plane_normal, double &plane_dist, Eigen::Vector3f &major_axis, Eigen::Vector3f  &centroid);
     
     void analyze_selected_points_color();
     
@@ -181,9 +193,10 @@ private:
     pcl::PointCloud<pcl::PointXYZ>::Ptr pclSelectedPoints_ptr_;
     pcl::PointCloud<pcl::PointXYZ>::Ptr pclTransformedSelectedPoints_ptr_;
     pcl::PointCloud<pcl::PointXYZ>::Ptr pclGenPurposeCloud_ptr_;
-    
+    pcl::PassThrough<pcl::PointXYZ> pass; //create a pass-through object
     bool got_kinect_cloud_;
     bool got_selected_points_;
+    bool take_snapshot_;
     // member methods as well:
     void initializeSubscribers(); // we will define some helper methods to encapsulate the gory details of initializing subscribers, publishers and services
     void initializePublishers();

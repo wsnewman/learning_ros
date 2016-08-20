@@ -1,0 +1,6 @@
+<launch>
+<!--env name="GAZEBO_MODEL_PATH" value="$(find exmpl_models)"/-->
+<env name="GAZEBO_RESOURCE_PATH" value="$(find exmpl_models)"/>
+<node name="spawn_sdf" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/flat_beer/flat_beer.sdf -sdf -model flat_beer -x 0 -y 0 -z 0.0" />
+    
+</launch>

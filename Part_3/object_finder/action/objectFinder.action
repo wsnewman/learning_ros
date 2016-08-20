@@ -11,6 +11,7 @@ int32 SPHERE = 5
 #some very specific objects...add more!
 #better: read these in from a database that is more easily augmented
 int32 COKE_CAN_UPRIGHT=100
+int32 TOY_BLOCK=101
 
 #goal fields to fill in:
 #identify the object, along with its stable pose type (e.g., upright, horizontal, on faceN)

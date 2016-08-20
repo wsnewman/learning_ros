@@ -29,7 +29,7 @@ find_package(Boost REQUIRED COMPONENTS system thread)
 # Libraries: uncomment the following and edit arguments to create a new library
 # cs_add_library(my_lib src/my_lib.cpp)   
 cs_add_library(pcl_utils src/pcl_utils.cpp)  
-
+cs_add_library(xform_utils src/xform_utils.cpp) 
 # Executables: uncomment the following and edit arguments to compile new nodes
 # may add more of these lines for more nodes from the same package
 # cs_add_executable(example src/example.cpp)

@@ -1,0 +1,43 @@
+#ifndef XFORM_UTILS_H_
+#define XFORM_UTILS_H_
+
+#include <Eigen/Eigen> //for the Eigen library
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
+#include <Eigen/Eigenvalues>
+#include <geometry_msgs/TransformStamped.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string>
+#include <vector>
+
+#include <ros/ros.h> //ALWAYS need to include this
+
+#include <geometry_msgs/Twist.h>
+#include <geometry_msgs/TwistStamped.h>
+#include <geometry_msgs/Point.h>
+#include <geometry_msgs/PointStamped.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <nav_msgs/Odometry.h>
+#include <std_msgs/Float64.h>
+ #include <tf/transform_listener.h>
+#include <tf/LinearMath/Vector3.h>
+#include <tf/LinearMath/QuadWord.h>
+#include <tf/transform_broadcaster.h>
+
+class XformUtils {
+public:
+   Eigen::Affine3f transformTFToAffine3f(const tf::Transform &t);
+   double convertPlanarQuat2Phi(geometry_msgs::Quaternion quaternion);
+   tf::Transform get_tf_from_stamped_tf(tf::StampedTransform sTf);
+   geometry_msgs::PoseStamped get_pose_from_stamped_tf(tf::StampedTransform sTf);
+   bool multiply_stamped_tfs(tf::StampedTransform A_stf,
+        tf::StampedTransform B_stf, tf::StampedTransform &C_stf);
+   tf::StampedTransform stamped_transform_inverse(tf::StampedTransform sTf);
+   void printTf(tf::Transform tf);
+   void printStampedTf(tf::StampedTransform sTf);
+   void printStampedPose(geometry_msgs::PoseStamped stPose); 
+};
+
+#endif
