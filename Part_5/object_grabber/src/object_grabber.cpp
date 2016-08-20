@@ -73,6 +73,11 @@ ObjectGrabber::ObjectGrabber(ros::NodeHandle* nodehandle): nh_(*nodehandle),
 
     object_grabber_as_.start(); //start the server running
 }
+//void ObjectGrabber::grasp_block_from_above(geometry_msgs::PoseStamped object_pose, double grasp_descent_dist) {
+// assume object pose is z "up" and x along the major axis and origin is on top surface of object    
+// descend by grasp_descent_dist, e.g. 0.04 should work for toy_block
+// start from safe distance above, descend to approach pose, descend further to grasp pose, depart by same pre-approach dist
+//}
 
 void ObjectGrabber::vertical_cylinder_power_grasp(geometry_msgs::PoseStamped object_pose) {
    geometry_msgs::PoseStamped des_gripper_grasp_pose, des_gripper_approach_pose, des_gripper_depart_pose;
