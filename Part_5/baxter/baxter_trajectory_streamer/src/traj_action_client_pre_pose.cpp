@@ -10,17 +10,19 @@
 using namespace std;
 #define VECTOR_DIM 7 // e.g., a 7-dof vector
 
-
+int g_done_count=0;
 void rightArmDoneCb(const actionlib::SimpleClientGoalState& state,
         const baxter_trajectory_streamer::trajResultConstPtr& result) {
     ROS_INFO(" rtArmDoneCb: server responded with state [%s]", state.toString().c_str());
     ROS_INFO("got return val = %d", result->return_val);
+    g_done_count++;
 }
 
 void leftArmDoneCb(const actionlib::SimpleClientGoalState& state,
         const baxter_trajectory_streamer::trajResultConstPtr& result) {
     ROS_INFO(" leftArmDoneCb: server responded with state [%s]", state.toString().c_str());
     ROS_INFO("got return val = %d", result->return_val);
+        g_done_count++;
 }
 
 int main(int argc, char** argv) {
@@ -36,7 +38,8 @@ int main(int argc, char** argv) {
     cout<<"setting pre-poses: "<<endl;
     q_pre_pose_right.resize(7);
     q_pre_pose_left.resize(7);
-    q_pre_pose_right << -0.907528, -0.111813, 2.06622, 1.8737, -1.295, 2.00164, -2.87179;
+    q_pre_pose_right << -0.907528, -0.111813, 2.06622, 1.8737, -1.295, 2.00164, 0; 
+    //q_pre_pose_right << -0.907528, -0.111813, 2.06622, 1.8737, -1.295, 2.00164, -2.87179;   
     //corresponding values to mirror the left arm pose:
     q_pre_pose_left  <<  0.907528, 0.111813, -2.06622, 1.8737, 1.295, 2.00164, -2.87179;
     cout<<"pre-pose right: "<<q_pre_pose_right.transpose()<<endl;
@@ -108,6 +111,14 @@ int main(int argc, char** argv) {
     ROS_INFO("sending goals to left and right arms: ");
     right_arm_action_client.sendGoal(goal_right, &rightArmDoneCb); 
     left_arm_action_client.sendGoal(goal_left, &leftArmDoneCb); 
+    while (g_done_count<2) {
+       ROS_INFO("waiting to finish pre-pose..");
+       ros::Duration(1.0).sleep();
+    }
+    
+            ros::spinOnce();
+            cout<<"right arm is at: "<<baxter_traj_streamer.get_q_vec_right_arm_Xd().transpose()<<endl;
+
     
     return 0;
 }

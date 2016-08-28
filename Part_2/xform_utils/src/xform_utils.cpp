@@ -1,4 +1,4 @@
-//wsn started 8/16--finish making this into a library of useful transforms
+//wsn started 8/16: a library of useful transforms; add more here
 #include <xform_utils/xform_utils.h>
 using namespace std;
 /*
@@ -20,8 +20,69 @@ class XformUtils {
 };
 */
 
+geometry_msgs::Pose XformUtils::transformEigenAffine3dToPose(Eigen::Affine3d e) {
+    Eigen::Vector3d Oe;
+    Eigen::Matrix3d Re;
+    geometry_msgs::Pose pose;
+    Oe = e.translation();
+    Re = e.linear();
+    //cout<<"affine R: "<<endl;
+    //cout<<Re<<endl;
+    
+    Eigen::Quaterniond q(Re); // convert rotation matrix Re to a quaternion, q
+    //cout<<"q: "<<q.x()<<", "<<q.y()<<", "<<q.z()<<", "<<q.w()<<endl;
+    pose.position.x = Oe(0);
+    pose.position.y = Oe(1);
+    pose.position.z = Oe(2);
+
+    pose.orientation.x = q.x();
+    pose.orientation.y = q.y();
+    pose.orientation.z = q.z();
+    pose.orientation.w = q.w();
+
+    return pose;
+}
+
+Eigen::Affine3d XformUtils::transformPoseToEigenAffine3d(geometry_msgs::Pose pose) {
+    Eigen::Affine3d affine;
+
+    Eigen::Vector3d Oe;
+
+    Oe(0) = pose.position.x;
+    Oe(1) = pose.position.y;
+    Oe(2) = pose.position.z;
+    affine.translation() = Oe;
+    
+    Eigen::Quaterniond q;
+    q.x() = pose.orientation.x;
+    q.y() = pose.orientation.y;
+    q.z() = pose.orientation.z;
+    q.w() = pose.orientation.w;
+    Eigen::Matrix3d Re(q);
+
+    affine.linear() = Re;
+
+    return affine;
+}
+
 Eigen::Affine3f XformUtils::transformTFToAffine3f(const tf::Transform &t) {
     Eigen::Affine3f e;
+    // treat the Eigen::Affine as a 4x4 matrix:
+    for (int i = 0; i < 3; i++) {
+        e.matrix()(i, 3) = t.getOrigin()[i]; //copy the origin from tf to Eigen
+        for (int j = 0; j < 3; j++) {
+            e.matrix()(i, j) = t.getBasis()[i][j]; //and copy 3x3 rotation matrix
+        }
+    }
+    // Fill in identity in last row
+    for (int col = 0; col < 3; col++)
+        e.matrix()(3, col) = 0;
+    e.matrix()(3, 3) = 1;
+    return e;
+}
+
+Eigen::Affine3d XformUtils::transformTFToAffine3d(const tf::Transform &t) {
+    Eigen::Affine3d e;
     // treat the Eigen::Affine as a 4x4 matrix:
     for (int i = 0; i < 3; i++) {
         e.matrix()(i, 3) = t.getOrigin()[i]; //copy the origin from tf to Eigen
@@ -155,6 +216,12 @@ void XformUtils::printStampedTf(tf::StampedTransform sTf) {
     printTf(tf); //and print its components      
 }
 
+//fnc to print out a pose:
+void XformUtils::printPose(geometry_msgs::Pose pose) {
+    ROS_INFO_STREAM("origin: " << pose.position.x << ", " << pose.position.y << ", " << pose.position.z << endl);
+    ROS_INFO_STREAM("quaternion: " << pose.orientation.x << ", " << pose.orientation.y << ", "
+            << pose.orientation.z << ", " << pose.orientation.w << endl);    
+}
 //fnc to print components of a stamped pose
 
 void XformUtils::printStampedPose(geometry_msgs::PoseStamped stPose) {

@@ -178,8 +178,16 @@ public:
 
     // these fncs also include transform from flange to tool frame
     Eigen::Affine3d fwd_kin_tool_wrt_r_arm_mount_solve(const Vectorq7x1& q_vec); // given vector of q angles, compute fwd kin of tool w/rt right-arm mount 
+    //in this case, provide the tool transform to be used:
+    Eigen::Affine3d fwd_kin_tool_wrt_r_arm_mount_solve(const Vectorq7x1& q_vec, Eigen::Affine3d A_tool_wrt_flange);
+
     Eigen::Affine3d fwd_kin_tool_wrt_r_arm_mount_solve_approx(const Vectorq7x1& q_vec);//version w/ spherical-wrist approx
-    Eigen::Affine3d fwd_kin_tool_wrt_torso_solve(const Vectorq7x1& q_vec); //rtns pose w/rt torso frame (base frame)    
+    //option to provide tool-transform to be used
+    Eigen::Affine3d fwd_kin_tool_wrt_r_arm_mount_solve_approx(const Vectorq7x1& q_vec, Eigen::Affine3d A_tool_wrt_flange);//version w/ spherical-wrist approx    
+    
+    Eigen::Affine3d fwd_kin_tool_wrt_torso_solve(const Vectorq7x1& q_vec); //rtns pose w/rt torso frame (base frame)  
+    //option to provide the tool transform to use:
+    Eigen::Affine3d fwd_kin_tool_wrt_torso_solve(const Vectorq7x1& q_vec, Eigen::Affine3d A_tool_wrt_flange); //rtns pose w/rt torso frame (base frame) 
     
     // these are all w/rt right-arm mount, not torso
     Eigen::Matrix4d get_wrist_frame();
@@ -197,11 +205,14 @@ public:
     //this fnc casts an affine matrix w/rt torso frame into an affine matrix w/rt right-arm mount frame, so can use fncs above
     Eigen::Affine3d transform_affine_from_torso_frame_to_arm_mount_frame(Eigen::Affine3d pose_wrt_torso);    
     Eigen::Affine3d get_affine_tool_wrt_flange() { return A_tool_wrt_flange_;}
+    void set_affine_tool_wrt_flange(Eigen::Affine3d A_tool_wrt_flange) { 
+        A_tool_wrt_flange_=A_tool_wrt_flange;
+        A_tool_wrt_flange_inv_ = A_tool_wrt_flange_.inverse();
+    }
     
 //private: do not make these private, so IK can access them
     // these member vars are for RIGHT ARM
-//inner fwd-kin fnc: computes tool-flange frame w/rt right_arm_mount frame
-//return soln out to tool flange; would still need to account for tool transform for gripper    
+  
     Eigen::Matrix4d fwd_kin_solve_(const Vectorq7x1& q_vec);
 // same as above, but w/ spherical wrist approx
     Eigen::Matrix4d fwd_kin_solve_approx_(const Vectorq7x1& q_vec);  
@@ -246,6 +257,9 @@ public:
     
     // this version takes arm of desired hand pose w/rt torso frame
     int ik_solve_approx_wrt_torso(Eigen::Affine3d const& desired_flange_pose,std::vector<Vectorq7x1> &q_solns);
+    int ik_solve_approx_wrt_torso(Eigen::Affine3d const desired_tool_pose_wrt_torso,
+          Eigen::Affine3d A_tool_wrt_flange, std::vector<Vectorq7x1> &q_solns);
+    
     int ik_wristpt_solve_approx_wrt_torso(Eigen::Affine3d const& desired_flange_pose_wrt_torso,std::vector<Vectorq7x1> &q_solns); 
     
     int ik_solve_approx_elbow_orbit_from_flange_pose_wrt_torso(Eigen::Affine3d const& desired_flange_pose_wrt_torso,std::vector<std::vector<Eigen::VectorXd> > &path_options);
@@ -279,7 +293,8 @@ public:
     bool solve_spherical_wrist(Vectorq7x1 q_in,Eigen::Matrix3d R_des, std::vector<Vectorq7x1> &q_solns);  
     bool update_spherical_wrist(Vectorq7x1 q_in,Eigen::Matrix3d R_des, Vectorq7x1 &q_precise);
     bool improve_7dof_soln(Eigen::Affine3d const& desired_flange_pose_wrt_arm_mount, Vectorq7x1 q_in, Vectorq7x1 &q_7dof_precise);
-   
+    bool improve_7dof_soln_wrt_torso(Eigen::Affine3d const& desired_flange_pose_wrt_torso, Vectorq7x1 q_in, Vectorq7x1 &q_7dof_precise);
+
 private:
     bool fit_q_to_range(double q_min, double q_max, double &q);    
     std::vector<Vectorq7x1> q7dof_solns;

@@ -2,7 +2,7 @@
 <robot 
      xmlns:xacro="http://www.ros.org/wiki/xacro" name="example_kinect">
  
-  <!-- add a simulated Kinecct camera, including visual, collision and inertial properties, and physics simulation-->
+  <!-- add a simulated Kinect camera, including visual, collision and inertial properties, and physics simulation-->
   <link name="kinect_link">
       <!-- here is the physical body (case) of the camera-->
       <collision>

@@ -4,6 +4,9 @@
 #returns codes regarding outcome
 
 int32 COKE_CAN = 1
+int32 TOY_BLOCK = 2
+float64 TOY_BLOCK_APPROACH_DIST = 0.03
+float64 TOY_BLOCK_FINGER_OPENING = 80.0 #expect gripper closed on toy block has this much finger separation
 #add more objects here...
 
 #goal:
@@ -12,12 +15,14 @@ geometry_msgs/PoseStamped object_frame
 ---
 #result definition
 #  response codes...
+int32 SUCCESS=0
 int32 OBJECT_ACQUIRED=0
 int32 FAILED_CANNOT_REACH=1
 int32 FAILED_CANNOT_APPROACH=2
-int32 FAILED_CANNOT_GRASP=3
-int32 FAILED_DROPPED=4
-int32 FAILED_OBJECT_UNKNOWN=5
+int32 FAILED_CANNOT_REACH_GRASP_POSE=3
+int32 FAILED_CANNOT_REACH_DEPART_POSE=4
+int32 FAILED_OBJECT_NOT_IN_GRIPPER=5
+int32 FAILED_OBJECT_UNKNOWN=6
 int32 return_code
 ---
 #feedback: optional; 

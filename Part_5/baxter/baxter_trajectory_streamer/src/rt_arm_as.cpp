@@ -65,7 +65,7 @@ bool update_trajectory(double traj_clock, trajectory_msgs::JointTrajectory traje
     return true;
 }
 
-class trajActionServer {
+class TrajActionServer {
 private:
 
     ros::NodeHandle nh_; // we'll need a node handle; get one upon instantiation
@@ -86,9 +86,9 @@ private:
     bool working_on_trajectory; // = false;
     void cmd_pose_right(Vectorq7x1 qvec);
 public:
-    trajActionServer(); //define the body of the constructor outside of class definition
+    TrajActionServer(); //define the body of the constructor outside of class definition
 
-    ~trajActionServer(void) {
+    ~TrajActionServer(void) {
     }
     // Action Interface
     void executeCB(const actionlib::SimpleActionServer<baxter_trajectory_streamer::trajAction>::GoalConstPtr& goal);
@@ -100,8 +100,8 @@ public:
 // for every command message.  Further, a fixed order of joints is assumed: from base to tip.
 // This actually makes the joint naming irrelevant, but the joint-command message will nonetheless be fully
 // populated according to the message type: baxter_core_msgs::JointCommand
-trajActionServer::trajActionServer() :
-as_(nh_, "rightArmTrajActionServer", boost::bind(&trajActionServer::executeCB, this, _1), false)
+TrajActionServer::TrajActionServer() :
+as_(nh_, "rightArmTrajActionServer", boost::bind(&TrajActionServer::executeCB, this, _1), false)
 // in the above initialization, we name the server "example_action"
 //  clients will need to refer to this name to connect with this server
 {
@@ -128,7 +128,7 @@ as_(nh_, "rightArmTrajActionServer", boost::bind(&trajActionServer::executeCB, t
 
 //helper function: needs to convert Eigen-type vector into a C++ "vector" (variable-length array)
 // within a field of a baxter_core_msgs::JointCommand message
-void trajActionServer::cmd_pose_right(Vectorq7x1 qvec) {
+void TrajActionServer::cmd_pose_right(Vectorq7x1 qvec) {
     //member var right_cmd_ already has joint names populated; just need to update the joint-angle commands
     for (int i = 0; i < 7; i++) {
         right_cmd.command[i] = qvec[i];
@@ -138,7 +138,7 @@ void trajActionServer::cmd_pose_right(Vectorq7x1 qvec) {
 
 //this is where the bulk of the work is done, interpolating between potentially coarse joint-space poses
 // using the specified arrival times
-void trajActionServer::executeCB(const actionlib::SimpleActionServer<baxter_trajectory_streamer::trajAction>::GoalConstPtr& goal) {
+void TrajActionServer::executeCB(const actionlib::SimpleActionServer<baxter_trajectory_streamer::trajAction>::GoalConstPtr& goal) {
     double traj_clock, dt_segment, dq_segment, delta_q_segment, traj_final_time;
     int isegment;
     trajectory_msgs::JointTrajectoryPoint trajectory_point0;
@@ -211,7 +211,7 @@ int main(int argc, char** argv) {
 
    
     ROS_INFO("instantiating the trajectory interpolator action server: ");
-    trajActionServer as; // create an instance of the class "trajActionServer"  
+    TrajActionServer trajActionServer; // create an instance of the class "trajActionServer"  
 
     ROS_INFO("ready to receive/execute trajectories");
     //main loop:

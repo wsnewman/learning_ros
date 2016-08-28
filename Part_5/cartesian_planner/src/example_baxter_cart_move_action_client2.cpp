@@ -1,3 +1,15 @@
+// example_baxter_cart_move_action_client: 
+// wsn, April, 2016
+// illustrates use of baxter_cart_move_as, action server called "cartMoveActionServer"
+
+#include<ros/ros.h>
+#include <actionlib/client/simple_action_client.h>
+#include <actionlib/client/terminal_state.h>
+#include <cartesian_planner/baxter_cart_moveAction.h>
+#include <Eigen/Eigen>
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
+
 //define a class to encapsulate some of the tedium of populating and sending goals,
 // and interpreting responses
 class ArmMotionCommander {
@@ -44,7 +56,7 @@ cart_move_action_client_("cartMoveActionServer", true) { // constructor
     ROS_INFO("in constructor of ArmMotionInterface");
 
     // attempt to connect to the server:
-    ROS_INFO("waiting for cartMoveActionServer server: ");
+    ROS_INFO("waiting for server: ");
     bool server_exists = false;
     while ((!server_exists)&&(ros::ok())) {
         server_exists = cart_move_action_client_.waitForServer(ros::Duration(0.5)); // 
@@ -52,7 +64,7 @@ cart_move_action_client_("cartMoveActionServer", true) { // constructor
         ros::Duration(0.5).sleep();
         ROS_INFO("retrying...");
     }
-    ROS_INFO("connected to cartMoveActionServer action server"); // if here, then we connected to the server; 
+    ROS_INFO("connected to action server"); // if here, then we connected to the server; 
     
 }
 // This function will be called once when the goal completes
@@ -127,7 +139,7 @@ int ArmMotionCommander::plan_move_to_pre_pose(void) {
     ROS_INFO("requesting a joint-space motion plan");
     cart_goal_.command_code = cartesian_planner::baxter_cart_moveGoal::RT_ARM_PLAN_JSPACE_PATH_CURRENT_TO_PRE_POSE;
     cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&ArmMotionCommander::doneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired
-    finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(10.0));
+    finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(2.0));
     ROS_INFO("return code: %d",cart_result_.return_code);
     if (!finished_before_timeout_) {
             ROS_WARN("giving up waiting on result");
@@ -249,7 +261,7 @@ int ArmMotionCommander::rt_arm_execute_planned_path(void) {
     ROS_INFO("requesting execution of planned path");
     cart_goal_.command_code = cartesian_planner::baxter_cart_moveGoal::RT_ARM_EXECUTE_PLANNED_PATH;
     cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&ArmMotionCommander::doneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired
-    finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(computed_arrival_time_+5.0));
+    finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(computed_arrival_time_+2.0));
     if (!finished_before_timeout_) {
         ROS_WARN("did not complete move in expected time");
         return (int) cartesian_planner::baxter_cart_moveResult::NOT_FINISHED_BEFORE_TIMEOUT;  
@@ -319,3 +331,78 @@ int ArmMotionCommander::rt_arm_request_tool_pose_wrt_torso(void) {
                 tool_pose_stamped_.pose.orientation.w);
   return (int) cart_result_.return_code;
 }
+
+
+
+int main(int argc, char** argv) {
+    ros::init(argc, argv, "example_cart_move_action_client"); // name this node 
+    ros::NodeHandle nh; //standard ros node handle     
+    ArmMotionCommander arm_motion_commander(&nh);
+    Eigen::VectorXd right_arm_joint_angles;
+    Eigen::Vector3d dp_displacement;
+    int rtn_val;
+    geometry_msgs::PoseStamped rt_tool_pose;
+    
+    arm_motion_commander.send_test_goal(); // send a test command
+    
+    //send a command to plan a joint-space move to pre-defined pose:
+    rtn_val=arm_motion_commander.plan_move_to_pre_pose();
+    
+    //send command to execute planned motion
+    rtn_val=arm_motion_commander.rt_arm_execute_planned_path();
+    
+    //inquire re/ right-arm joint angles:
+    rtn_val=arm_motion_commander.rt_arm_request_q_data();
+    
+    //inquire re/ right-arm tool pose w/rt torso:    
+    rtn_val=arm_motion_commander.rt_arm_request_tool_pose_wrt_torso();
+    
+    //do a joint-space move; get the start angles:
+    right_arm_joint_angles = arm_motion_commander.get_right_arm_joint_angles();
+    
+    //increment all of the joint angles by a fixed amt:
+    for (int i=0;i<7;i++) right_arm_joint_angles[i]+=0.2;
+    
+    //try planning a joint-space motion to this new joint-space pose:
+    rtn_val=arm_motion_commander.rt_arm_plan_jspace_path_current_to_qgoal(right_arm_joint_angles);
+
+    //send command to execute planned motion
+    rtn_val=arm_motion_commander.rt_arm_execute_planned_path();   
+    
+    //let's see where we ended up...should match goal request
+    rtn_val=arm_motion_commander.rt_arm_request_q_data();
+    
+    //return to pre-defined pose:
+    rtn_val=arm_motion_commander.plan_move_to_pre_pose();
+    rtn_val=arm_motion_commander.rt_arm_execute_planned_path();    
+
+    //get tool pose
+    rtn_val = arm_motion_commander.rt_arm_request_tool_pose_wrt_torso();
+    rt_tool_pose = arm_motion_commander.get_rt_tool_pose_stamped();
+    //alter the tool pose:
+    std::cout<<"enter 1: ";
+    int ans;
+    std::cin>>ans;
+    //rt_tool_pose.pose.position.z -= 0.2; // descend 20cm, along z in torso frame
+    ROS_INFO("translating specified dp");
+    rt_tool_pose.pose.position.y += 0.5; // move 20cm, along y in torso frame
+    rt_tool_pose.pose.position.x += 0.2; // move 20cm, along x in torso frame
+    // send move plan request:
+    rtn_val=arm_motion_commander.rt_arm_plan_path_current_to_goal_pose(rt_tool_pose);
+    //send command to execute planned motion
+    rtn_val=arm_motion_commander.rt_arm_execute_planned_path();
+    
+    //try vector cartesian displacement at fixed orientation:
+    std::cout<<"enter delta-z: ";
+    double delta_z;
+    std::cin>>delta_z;    
+    ROS_INFO("moving dz = %f",delta_z);
+    dp_displacement<<0,0,delta_z;
+    rtn_val = arm_motion_commander.rt_arm_plan_path_current_to_goal_dp_xyz(dp_displacement);
+    if (rtn_val == cartesian_planner::baxter_cart_moveResult::SUCCESS)  { 
+            //send command to execute planned motion
+           rtn_val=arm_motion_commander.rt_arm_execute_planned_path();
+    }
+    return 0;
+}
+

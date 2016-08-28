@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>test_baxter_gripper</name>
+  <name>xform_utils</name>
   <version>0.0.0</version>
-  <description>The test_baxter_gripper package</description>
+  <description>The xform_utils package</description>
   
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
@@ -42,10 +42,12 @@
   <buildtool_depend>catkin_simple</buildtool_depend>
   <build_depend>roscpp</build_depend>
 <build_depend>std_msgs</build_depend>
-<build_depend>baxter_core_msgs</build_depend>
+<build_depend>tf</build_depend>
+<build_depend>geometry_msgs</build_depend>
   <run_depend>roscpp</run_depend>
 <run_depend>std_msgs</run_depend>
-<run_depend>baxter_core_msgs</run_depend>
+<run_depend>tf</run_depend>
+<run_depend>geometry_msgs</run_depend>
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- You can specify that this package is a metapackage here: -->

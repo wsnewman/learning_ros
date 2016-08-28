@@ -1,0 +1,14 @@
+ <launch>
+ <!-- gripper and kinect frames -->
+  <include file="$(find baxter_launch_files)/launch/yale_gripper_xform.launch"/>
+  <include file="$(find baxter_launch_files)/launch/kinect_transform.launch"/>
+  <node pkg="baxter_trajectory_streamer" type="rt_arm_as" name="rt_arm_as"  output="screen"/>
+  <node pkg="baxter_trajectory_streamer" type="left_arm_as" name="left_arm_as"  output="screen"/> 
+  <node pkg="cartesian_planner" type="baxter_cart_move_as" name="baxter_cart_move_as" output="screen"/>
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find baxter_launch_files)/rviz_config/baxter.rviz"/> 
+  <node pkg="baxter_trajectory_streamer" type="pre_pose" name="pre_pose"/>
+  <node pkg="object_grabber" type="object_grabber_as" name="object_grabber_as"  output="screen"/> 
+  <node pkg="object_finder" type="object_finder_as" name="object_finder_as"  output="screen"/> 
+  <node pkg="navigator" type="navigator" name="navigator"  output="screen"/> 
+  <node pkg="coordinator" type="coordinator" name="coordinator"  output="screen"/> 
+</launch>

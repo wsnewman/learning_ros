@@ -1,6 +1,6 @@
 <?xml version='1.0'?>
 <sdf version='1.4'>
-  <model name="toy_block">
+  <model name="small_cylinder">
     <link name='link'>
       <pose>0.0 0 0.0 0 0 0</pose>
       <inertial>
@@ -16,10 +16,12 @@
       </inertial>
      <collision name='collision'>
         <geometry>
-          <box>
-            <size>0.04 0.2 0.04</size>
-          </box>
+          <cylinder>
+            <radius>0.02</radius>
+            <length>0.15</length>
+          </cylinder>
         </geometry>
+        
        <surface>
             <friction>
               <ode>
@@ -40,9 +42,10 @@
  
       <visual name='visual'>
         <geometry>
-          <box>
-            <size>0.04 0.2 0.04</size>
-          </box>
+          <cylinder>
+            <radius>0.02</radius>
+            <length>0.15</length>
+          </cylinder>
         </geometry>
   <material>
     <ambient>1 0 0 1</ambient>

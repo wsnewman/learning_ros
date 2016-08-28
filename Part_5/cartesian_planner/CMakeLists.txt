@@ -27,17 +27,21 @@ catkin_simple()
 # SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 # Libraries: uncomment the following and edit arguments to create a new library
-cs_add_library(cartesian_planner src/cartesian_planner.cpp)   
+#cs_add_library(cartesian_planner src/cartesian_planner.cpp)   
+cs_add_library(baxter_cartesian_planner src/baxter_cartesian_planner.cpp) 
 cs_add_library(arm7dof_cartesian_planner src/arm7dof_cartesian_planner.cpp) 
+cs_add_library(baxter_arm_motion_commander src/baxter_arm_motion_commander.cpp) 
 
-cs_add_executable(example_cart_path_planner_main src/example_cart_path_planner_main.cpp)
+#cs_add_executable(example_cart_path_planner_main src/example_cart_path_planner_main.cpp)
 cs_add_executable(example_arm7dof_cart_path_planner_main src/example_arm7dof_cart_path_planner_main.cpp)
 cs_add_executable(example_arm7dof_cart_path_planner_main2 src/example_arm7dof_cart_path_planner_main2.cpp)
 cs_add_executable(example_arm7dof_cart_path_planner_main3 src/example_arm7dof_cart_path_planner_main3.cpp)
-cs_add_executable(plan_playfile src/plan_playfile.cpp)
+#cs_add_executable(plan_playfile src/plan_playfile.cpp)
 cs_add_executable(baxter_cart_move_as src/baxter_cart_move_as.cpp)
 cs_add_executable(baxter_cart_move_action_client src/example_baxter_cart_move_action_client.cpp)
-
+#cs_add_executable(baxter_cart_move_action_client2 src/example_baxter_cart_move_action_client2.cpp)
+#cs_add_executable(baxter_cart_move_action_client3 src/example_baxter_cart_move_action_client3.cpp)
+cs_add_executable(baxter_cart_move_action_client_w_gripper src/example_baxter_cart_move_action_client_w_gripper.cpp)
 # Executables: uncomment the following and edit arguments to compile new nodes
 # may add more of these lines for more nodes from the same package
 # cs_add_executable(example src/example.cpp)
@@ -45,12 +49,16 @@ cs_add_executable(baxter_cart_move_action_client src/example_baxter_cart_move_ac
 #the following is required, if desire to link a node in this package with a library created in this same package
 # edit the arguments to reference the named node and named library within this package
 # target_link_libraries(example my_lib)
-target_link_libraries(example_cart_path_planner_main cartesian_planner ${catkin_LIBRARIES})
+#target_link_libraries(example_cart_path_planner_main cartesian_planner ${catkin_LIBRARIES})
 target_link_libraries(example_arm7dof_cart_path_planner_main arm7dof_cartesian_planner ${catkin_LIBRARIES})
 target_link_libraries(example_arm7dof_cart_path_planner_main2 arm7dof_cartesian_planner ${catkin_LIBRARIES})
 target_link_libraries(example_arm7dof_cart_path_planner_main3 arm7dof_cartesian_planner ${catkin_LIBRARIES})
-target_link_libraries(plan_playfile cartesian_planner ${catkin_LIBRARIES})
-target_link_libraries(baxter_cart_move_as cartesian_planner ${catkin_LIBRARIES})
+#target_link_libraries(plan_playfile cartesian_planner ${catkin_LIBRARIES})
+target_link_libraries(baxter_cart_move_as baxter_cartesian_planner ${catkin_LIBRARIES})
+target_link_libraries(baxter_cart_move_action_client baxter_arm_motion_commander ${catkin_LIBRARIES})
+#target_link_libraries(baxter_cart_move_action_client2 baxter_arm_motion_commander ${catkin_LIBRARIES})
+#target_link_libraries(baxter_cart_move_action_client3 baxter_arm_motion_commander ${catkin_LIBRARIES})
+target_link_libraries(baxter_cart_move_action_client_w_gripper baxter_arm_motion_commander ${catkin_LIBRARIES})
 cs_install()
 cs_export()
     

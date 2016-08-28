@@ -29,15 +29,20 @@
 class XformUtils {
 public:
    Eigen::Affine3f transformTFToAffine3f(const tf::Transform &t);
+   Eigen::Affine3d transformTFToAffine3d(const tf::Transform &t);
    double convertPlanarQuat2Phi(geometry_msgs::Quaternion quaternion);
    tf::Transform get_tf_from_stamped_tf(tf::StampedTransform sTf);
    geometry_msgs::PoseStamped get_pose_from_stamped_tf(tf::StampedTransform sTf);
    bool multiply_stamped_tfs(tf::StampedTransform A_stf,
         tf::StampedTransform B_stf, tf::StampedTransform &C_stf);
    tf::StampedTransform stamped_transform_inverse(tf::StampedTransform sTf);
+   geometry_msgs::Pose transformEigenAffine3dToPose(Eigen::Affine3d e);
+   Eigen::Affine3d transformPoseToEigenAffine3d(geometry_msgs::Pose pose);
+
    void printTf(tf::Transform tf);
    void printStampedTf(tf::StampedTransform sTf);
    void printStampedPose(geometry_msgs::PoseStamped stPose); 
+   void printPose(geometry_msgs::Pose pose);
 };
 
 #endif

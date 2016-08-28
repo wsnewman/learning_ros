@@ -51,6 +51,9 @@
         <build_depend>message_generation</build_depend>
     <build_depend>actionlib</build_depend>
     <build_depend>tf</build_depend>
+    <build_depend>xform_utils</build_depend>
+    <build_depend>simple_baxter_gripper_interface</build_depend>
+
   <run_depend>roscpp</run_depend>
 <run_depend>baxter_fk_ik</run_depend>
 <run_depend>arm7dof</run_depend>
@@ -62,6 +65,8 @@
     <run_depend>message_runtime</run_depend>
     <run_depend>baxter_trajectory_streamer</run_depend>
 <run_depend>tf</run_depend>
+<run_depend>xform_utils</run_depend>
+<run_depend>simple_baxter_gripper_interface</run_depend>
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- You can specify that this package is a metapackage here: -->
