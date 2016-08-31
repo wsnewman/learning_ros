@@ -11,7 +11,8 @@ Then, from a terminal, navigate to ~/ros_ws and compile the code with the comman
 `catkin_make`
 
 If you are installing ROS for the first time, see the instructions here:
-//github.com/wsnewman/learning_ros_setup_scripts
+[installation scripts](//github.com/wsnewman/learning_ros_setup_scripts)
+
 The scripts located at this site automate installation of ROS (consistent with the version and packages used with the learning-ROS code examples).  These scripts also install a variety of useful tools.
 
 
