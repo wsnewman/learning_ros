@@ -184,8 +184,8 @@ public:
 
     // for RT_ARM_PLAN_PATH_CURRENT_TO_GOAL_POSE
     bool rt_arm_plan_path_current_to_goal_pose(); //uses goal.des_pose_gripper_right to plan a cartesian path
-    bool rt_arm_plan_path_current_to_goal_flange_pose(); //interprets goal.des_pose_gripper_right as a des FLANGE pose to plan a cartesian path
-    bool rt_arm_plan_fine_path_current_to_goal_flange_pose(); //interprets goal.des_pose_gripper_right as a des FLANGE pose to plan a cartesian path
+    bool rt_arm_plan_path_current_to_goal_flange_pose(); //interprets goal.des_pose_flange_right as a des FLANGE pose to plan a cartesian path
+    bool rt_arm_plan_fine_path_current_to_goal_flange_pose(); //interprets goal.des_pose_flange_right as a des FLANGE pose to plan a cartesian path
 
     //for RT_ARM_PLAN_PATH_CURRENT_TO_GOAL_DP_XYZ
     bool rt_arm_plan_path_current_to_goal_dp_xyz(); //plans cartesian motion by specified 3-D displacement at fixed orientation
@@ -668,7 +668,7 @@ bool ArmMotionInterface::rt_arm_plan_path_current_to_goal_pose() {
     return path_is_valid_;
 }
 
-//in this version interpret des_pose_gripper_right as desired FLANGE pose
+//this version uses des_pose_flange_right as desired FLANGE pose
 
 bool ArmMotionInterface::rt_arm_plan_path_current_to_goal_flange_pose() {
     ROS_INFO("computing a cartesian trajectory to right-arm flange goal pose");
@@ -700,7 +700,7 @@ bool ArmMotionInterface::rt_arm_plan_path_current_to_goal_flange_pose() {
 bool ArmMotionInterface::rt_arm_plan_fine_path_current_to_goal_flange_pose() {
     ROS_INFO("computing a hi-res cartesian trajectory to right-arm flange goal pose");
     //unpack the goal pose:
-    goal_flange_affine_right_ = transformPoseToEigenAffine3d(cart_goal_.des_pose_gripper_right.pose);
+    goal_flange_affine_right_ = transformPoseToEigenAffine3d(cart_goal_.des_pose_flange_right.pose);
 
     ROS_INFO("flange goal");
     display_affine(goal_flange_affine_right_);
