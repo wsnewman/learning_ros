@@ -1,21 +1,20 @@
 ---------roscore, messages, nodes----------
-
-try to speed up compilation in virtualbox:
-  drag all packages out of ros_ws/src  into ros_ws (except external_packages--need catkin_simple)
-  delete build and devel dirs
-  catkin_make clean
-  catkin_make
-  
+catkin_make
+  (if problems, do:
+     delete ros_ws/build and ros_ws/devel dirs
+     catkin_make clean 
+     catkin_make)
 roscd
 cd src
 mkdir ros_class
 cd ros_class
 cs_create_pkg rosclass_minimal_nodes roscpp std_msgs
+(note: cs_create_pkg uses "catkin simple", which is easier than catkin_create_pkg)
 cd rosclass_minimal_nodes
 ls
 
 -----------minimal publisher--------
-open editor (gedit or netbeans & disown)
+open editor (gedit or: netbeans & disown)
 open file: .../learning_ros/Part_1/minimal_nodes/minimal_publisher.cpp
 save to directory: ros_ws/src/ros_class/rosclass_minimal_nodes/src/minimal_publisher.cpp
 
