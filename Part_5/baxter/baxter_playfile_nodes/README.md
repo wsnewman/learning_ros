@@ -21,11 +21,10 @@ Be careful to rename "baxter_r_arm_traj.jsp" and "baxter_l_arm_traj.jsp" to avoi
 When ready to record, start:
 `rosrun baxter_playfile_nodes baxter_recorder`
 enter "1" at the program prompt, then move the arms in the desired trajectory (path and speed).
-When done with recording, ctl-C.  The results will be in "merry_r_arm_traj.jsp" and "merry_l_arm_traj.jsp".
+When done with recording, ctl-C.  The results will be in "baxter_r_arm_traj.jsp" and "baxter_l_arm_traj.jsp".
 
 To play back joint-space trajectory files, start up the robot and enable it.  Start up the trajectory
 interpolation action servers:
-Start the trajectory-interpolation action servers:
 `rosrun baxter_trajectory_streamer rt_arm_as`
 `rosrun baxter_trajectory_streamer left_arm_as`
 
@@ -36,6 +35,19 @@ Run the playback node, with command-line arguments for the right-arm trajectory 
 (to move just the right arm).  Or,
 `rosrun baxter_playfile_nodes baxter_playback baxter_r_arm_traj.jsp baxter_l_arm_traj.jsp`
 to move both arms.
+
+The node baxter_multitraj_player is an alternative playfile node, which can be run as:
+`rosrun baxter_playfile_nodes baxter_multitraj_player`
+This node can be run from any directory, but it will always look for pre-recorded jsp playfiles in
+the baxter_playfile_nodes package directory.  Consequently, it can be started conveniently
+within a launch file.  (see baxter_launch_files/launch/baxter_playfile_nodes.launch, which simplifies
+launching nodes needed to execute playfiles).  The multitraj player listens on topic playfile_codes
+for a code number from 0 through 6, and maps these onto execution of corresponding existing playfiles.
+For example, running:
+`rostopic pub playfile_codes std_msgs/UInt32 2`
+invokes execution of the playfile ``shy.jsp''  With the multitraj player running, one can invoke
+pre-recorded moves from other programs by merely publishing a playfile code to the playfile_codes
+topic.
 
 
 
