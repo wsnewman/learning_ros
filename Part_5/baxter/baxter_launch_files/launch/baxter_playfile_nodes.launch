@@ -1,9 +1,8 @@
  <launch>
-   <node pkg="baxter_tools" type="enable_robot.py" name="enable" args="-e" output="screen"/>
+  <node pkg="baxter_tools" type="enable_robot.py" name="enable" args="-e" output="screen"/>
   <node pkg="baxter_trajectory_streamer" type="rt_arm_as" name="rt_arm_as"  output="screen"/>
   <node pkg="baxter_trajectory_streamer" type="left_arm_as" name="left_arm_as"  output="screen"/> 
-  <node pkg="cartesian_planner" type="baxter_cart_move_as" name="baxter_cart_move_as" output="screen"/>
   <node pkg="rviz" type="rviz" name="rviz" args="-d $(find baxter_launch_files)/rviz_config/baxter.rviz"/> 
   <node pkg="baxter_playfile_nodes" type="baxter_playback" name="baxter_playback" args="$(find baxter_playfile_nodes)/pre_pose_right.jsp $(find baxter_playfile_nodes)/pre_pose_left.jsp" output="screen"/> 
-  <node pkg="object_grabber" type="object_grabber_as" name="object_grabber_as"  output="screen"/> 
+  <node pkg="baxter_playfile_nodes" type="baxter_multitraj_player" name="baxter_multitraj_player"  output="screen"/> 
 </launch>

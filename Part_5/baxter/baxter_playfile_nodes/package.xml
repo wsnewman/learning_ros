@@ -44,8 +44,6 @@
 <build_depend>std_msgs</build_depend>
 <build_depend>baxter_trajectory_streamer</build_depend>
 <build_depend>baxter_core_msgs</build_depend>
-<build_depend>cwru_action</build_depend>
-<build_depend>cwru_srv</build_depend>
 <build_depend>actionlib_msgs</build_depend>
 <build_depend>actionlib</build_depend>
 <build_depend>simple_action_client</build_depend>
@@ -53,8 +51,6 @@
 <run_depend>std_msgs</run_depend>
 <run_depend>baxter_trajectory_streamer</run_depend>
 <run_depend>baxter_core_msgs</run_depend>
-<run_depend>cwru_action</run_depend>
-<run_depend>cwru_srv</run_depend>
 <run_depend>actionlib_msgs</run_depend>
 <run_depend>actionlib</run_depend>
 <run_depend>simple_action_client</run_depend>

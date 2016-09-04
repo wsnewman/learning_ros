@@ -8,19 +8,17 @@
 // 
 
 #include<ros/ros.h>
+#include <stdlib.h>     /* getenv */
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
-#include <baxter_traj_streamer/baxter_traj_streamer.h>
+#include <baxter_trajectory_streamer/baxter_trajectory_streamer.h>
+
 #include <std_msgs/UInt32.h>
+#include<baxter_trajectory_streamer/trajAction.h>
 //this #include refers to the new "action" message defined for this package
 // the action message can be found in: .../baxter_traj_streamer/action/traj.action
-// automated header generation creates multiple headers for message I/O
-// these are referred to by the root name (traj) and appended name (Action)
-// If you write a new client of the server in this package, you will need to include baxter_traj_streamer in your package.xml,
-// and include the header file below
-// Nov 3, 2015 update: moved action message to cwru_action...
-// all code using this streamer will need to include cwru_action and use action message here
-#include<cwru_action/trajAction.h>
+
+//#include<cwru_action/trajAction.h>
 using namespace std;
 #define VECTOR_DIM 7 // e.g., a 7-dof vector
 
@@ -37,6 +35,8 @@ using namespace std;
 using namespace std;
 typedef vector <double> record_t;
 typedef vector <record_t> data_t;
+
+string g_ros_ws_path; // global string object
 
 // see: http://www.cplusplus.com/forum/general/17771/
 //-----------------------------------------------------------------------------
@@ -90,22 +90,32 @@ istream& operator >>(istream& ins, data_t& data) {
     return ins;
 }
 
-// This function will be called once when the goal completes
-// this is optional, but it is a convenient way to get access to the "result" message sent by the server
+bool g_got_code_trigger = false;
+int g_playfile_code = 0;
+bool g_got_good_traj_right = false;
+bool g_got_good_traj_left = false;
+bool g_right_arm_done = false;
+bool g_left_arm_done = false;
 
-void doneCb(const actionlib::SimpleClientGoalState& state,
-        const cwru_action::trajResultConstPtr& result) {
-    ROS_INFO(" doneCb: server responded with state [%s]", state.toString().c_str());
+void rightArmDoneCb(const actionlib::SimpleClientGoalState& state,
+        const baxter_trajectory_streamer::trajResultConstPtr & result) {
+
+    ROS_INFO(" rtArmDoneCb: server responded with state [%s]", state.toString().c_str());
     ROS_INFO("got return val = %d", result->return_val);
+    g_right_arm_done = true;
 }
 
-bool g_got_code_trigger = false;
-int g_alexa_code = 0;
-bool g_got_good_traj = false;
+void leftArmDoneCb(const actionlib::SimpleClientGoalState& state,
+        const baxter_trajectory_streamer::trajResultConstPtr & result) {
 
-void alexaCB(const std_msgs::UInt32& code_msg) {
-    g_alexa_code = code_msg.data;
-    ROS_INFO("received code: %d", g_alexa_code);
+    ROS_INFO(" leftArmDoneCb: server responded with state [%s]", state.toString().c_str());
+    ROS_INFO("got return val = %d", result->return_val);
+    g_left_arm_done = true;
+}
+
+void playfileCB(const std_msgs::UInt32& code_msg) {
+    g_playfile_code = code_msg.data;
+    ROS_INFO("received code: %d", g_playfile_code);
     g_got_code_trigger = true;
 }
 
@@ -115,13 +125,15 @@ void alexaCB(const std_msgs::UInt32& code_msg) {
 int read_traj_file(string fname, trajectory_msgs::JointTrajectory &des_trajectory) {
     //open the trajectory file:
     ifstream infile(fname.c_str());
-    if (infile.is_open()) { ROS_INFO("opened file"); }
+    if (infile.is_open()) {
+        ROS_INFO("opened file");
+    }
     if (!infile) // file couldn't be opened
     {
-        cerr << "Error: file "<<fname<<" could not be opened; halting" << endl;
-        exit(1);
+        cerr << "Error: file " << fname << " could not be opened" << endl;
+        return 1;
     }
-    cout<<"opened file "<<fname<<endl;
+    cout << "opened file " << fname << endl;
 
     // define a vector of desired joint displacements...w/o linkage redundancies
     //7'th angle is related to jaw opening--but not well handled yet
@@ -142,7 +154,7 @@ int read_traj_file(string fname, trajectory_msgs::JointTrajectory &des_trajector
     }
 
     infile.close();
-    
+
 
     // Otherwise, list some basic information about the file.
     cout << "CSV file contains " << data.size() << " records.\n";
@@ -193,31 +205,33 @@ int read_traj_file(string fname, trajectory_msgs::JointTrajectory &des_trajector
 }
 
 int main(int argc, char** argv) {
-    ros::init(argc, argv, "playfile_jointspace"); //node name
+    ros::init(argc, argv, "multitraj_player"); //node name
     ros::NodeHandle nh; // create a node handle; need to pass this to the class constructor
-    //instantiate a DavinciJointPublisher object and pass in pointer to nodehandle for constructor to use
-
-    ros::Subscriber traj_code = nh.subscribe("/Alexa_codes", 1, alexaCB);
+    
+    std::string ros_ws_path = getenv("ROS_WORKSPACE"); //get the ros-workspace path
+    //append path to playfiles relative to ros_ws:
+    std::string path_to_playfiles= ros_ws_path+"/src/learning_ros/Part_5/baxter/baxter_playfile_nodes/";
+    std::string fname_full_path; 
+    ROS_INFO("using path to jsp files: %s",path_to_playfiles.c_str());
+    ros::Subscriber traj_code = nh.subscribe("/playfile_codes", 1, playfileCB);
     int g_count = 0;
     int ans;
-    Vectorq7x1 q_pre_pose;
-    //q_in << 0, 0, 0, 0, 0, 0, 0;  
-    q_pre_pose << -0.907528, -0.111813, 2.06622, 1.8737, -1.295, 2.00164, -2.87179;
-    Eigen::VectorXd q_in_vecxd;
-    Vectorq7x1 q_vec_right_arm;
+
+    Eigen::VectorXd q_right_state, q_right_firstpoint, q_left_state, q_left_firstpoint;
+    q_right_firstpoint.resize(7);
+    q_left_firstpoint.resize(7);
+    Eigen::VectorXd dqvec;
+    dqvec.resize(7);
+    Vectorq7x1 q_vec_right_arm, q_vec_left_arm;
 
 
-    std::vector<Eigen::VectorXd> des_path;
-    // cout<<"creating des_path vector; enter 1:";
-    //cin>>ans;
-    // here is a "goal" object compatible with the server, as defined in example_action_server/action    
-    // copy traj to goal:   
-    // here is a "goal" object compatible with the server, as defined in example_action_server/action
-    cwru_action::trajGoal goal;
+    std::vector<Eigen::VectorXd> des_path_right, des_path_left;
 
-    trajectory_msgs::JointTrajectory des_trajectory; // an empty trajectory 
-    cout << "instantiating a traj streamer" << endl; // enter 1:";
-    //cin>>ans;
+    trajectory_msgs::JointTrajectory des_trajectory_right, des_trajectory_left; // objects to hold trajectories
+    trajectory_msgs::JointTrajectory approach_trajectory_right, approach_trajectory_left; // objects to hold trajectories    
+    trajectory_msgs::JointTrajectoryPoint trajectory_point0;
+
+    cout << "instantiating a traj streamer" << endl;
     Baxter_traj_streamer baxter_traj_streamer(&nh); //instantiate a Baxter_traj_streamer object and pass in pointer to nodehandle for constructor to use  
     // warm up the joint-state callbacks;
     cout << "warming up callbacks..." << endl;
@@ -226,87 +240,191 @@ int main(int argc, char** argv) {
         //cout<<"spin "<<i<<endl;
         ros::Duration(0.01).sleep();
     }
-    cout << "getting current right-arm pose:" << endl;
-    q_vec_right_arm = baxter_traj_streamer.get_qvec_right_arm();
-    cout << "r_arm state:" << q_vec_right_arm.transpose() << endl;
-    q_in_vecxd = q_vec_right_arm; // start from here;
-    des_path.push_back(q_in_vecxd); //put all zeros here
-    q_in_vecxd = q_pre_pose; // conversion; not sure why I needed to do this...but des_path.push_back(q_in_vecxd) likes it
-    des_path.push_back(q_in_vecxd); //twice, to define a trajectory  
 
-    /*
-    if (argc!=2) {
-      ROS_INFO("argc= %d; missing file command-line argument; halting",argc);
-    return 0;
+    baxter_trajectory_streamer::trajGoal goal_right, goal_left;
+
+    //instantiate clients of the two arm servers:
+    actionlib::SimpleActionClient<baxter_trajectory_streamer::trajAction> right_arm_action_client("rightArmTrajActionServer", true);
+    actionlib::SimpleActionClient<baxter_trajectory_streamer::trajAction> left_arm_action_client("leftArmTrajActionServer", true);
+
+    // attempt to connect to the servers:
+    ROS_INFO("waiting for right-arm server: ");
+    bool server_exists = right_arm_action_client.waitForServer(ros::Duration(1.0));
+    while (!server_exists) {
+        ROS_WARN("waiting on right-arm server...");
+        ros::spinOnce();
+        ros::Duration(1.0).sleep();
+        server_exists = right_arm_action_client.waitForServer(ros::Duration(1.0));
     }
-     * */
-
-    // use the name of our server, which is: trajActionServer (named in traj_interpolator_as.cpp)
-    actionlib::SimpleActionClient<cwru_action::trajAction> action_client("trajActionServer", true);
-
-    // attempt to connect to the server:
-    ROS_INFO("waiting for server: ");
-    bool server_exists = action_client.waitForServer(ros::Duration(5.0)); // wait for up to 5 seconds
-    // something odd in above: does not seem to wait for 5 seconds, but returns rapidly if server not running
+    ROS_INFO("connected to right-arm action server"); // if here, then we connected to the server;  
 
 
-    if (!server_exists) {
-        ROS_WARN("could not connect to server; will wait forever");
-        return 0; // bail out; optionally, could print a warning message and retry
+    ROS_INFO("waiting for left-arm server: ");
+    server_exists = left_arm_action_client.waitForServer(ros::Duration(1.0));
+    while (!server_exists) {
+        ROS_WARN("waiting on left-arm server...");
+        ros::spinOnce();
+        ros::Duration(1.0).sleep();
+        server_exists = left_arm_action_client.waitForServer(ros::Duration(1.0));
     }
-    server_exists = action_client.waitForServer(); //wait forever 
+    ROS_INFO("connected to left-arm action server"); // if here, then we connected to the server; 
 
 
-    ROS_INFO("connected to action server"); // if here, then we connected to the server; 
-    
-    
+
     //here's the main loop:
     while (ros::ok()) {
         ros::spinOnce();
         if (g_got_code_trigger) {
-            g_got_code_trigger = false;
-            switch (g_alexa_code) {
+            g_got_code_trigger = false; //reset the trigger for new playfile code
+            //get right and left arm angles; start motion from here
+            q_vec_right_arm = baxter_traj_streamer.get_qvec_right_arm();
+            q_right_state = q_vec_right_arm; // start from here;
+            q_vec_left_arm = baxter_traj_streamer.get_qvec_left_arm();
+            q_left_state = q_vec_left_arm; // start from here;  
+            des_path_right.clear();
+            des_path_right.push_back(q_right_state);
+            des_path_left.clear();
+            des_path_left.push_back(q_left_state);
+
+            
+            g_got_good_traj_right = false;
+            g_got_good_traj_left = false;
+            switch (g_playfile_code) {
+                case 0:
+                    ROS_INFO("case 0:  pre-pose");
+                    //construct the full path to the filename:
+                    fname_full_path = path_to_playfiles + "pre_pose_right.jsp"; 
+                    //test if this file can be opened and parsed:
+                    if (0 == read_traj_file(fname_full_path.c_str(), des_trajectory_right)) {
+                        ROS_INFO("read right-arm file OK");
+                        g_got_good_traj_right = true;
+                    } else ROS_ERROR("could not read right-arm file");
+                    //repeat for left arm file
+                    fname_full_path = path_to_playfiles + "pre_pose_left.jsp"; 
+                    if (0 == read_traj_file(fname_full_path.c_str(), des_trajectory_left)) {
+                        ROS_INFO("read left-arm file OK");
+                        g_got_good_traj_left = true;
+                    } else ROS_ERROR("could not read left-arm file");
+
+                    break;                
                 case 1:
-                    ROS_INFO("case 1:  merry_r_arm_traj.jsp");
-                    if (0 == read_traj_file("merry_r_arm_traj.jsp", des_trajectory)) {
-                        ROS_INFO("read file OK");
-                        g_got_good_traj = true;}
-                    else ROS_ERROR("could not read file");
+                    fname_full_path = path_to_playfiles + "baxter_r_arm_traj.jsp"; 
+                                        
+                    ROS_INFO("case 1:  baxter_r_arm_traj.jsp and baxter_l_arm_traj.jsp");
+                    if (0 == read_traj_file(fname_full_path.c_str(), des_trajectory_right)) {
+                        ROS_INFO("read right-arm file OK");
+                        g_got_good_traj_right = true;
+                    } else ROS_ERROR("could not read right-arm file");
+
+                    fname_full_path = path_to_playfiles + "baxter_l_arm_traj.jsp";
+                    if (0 == read_traj_file(fname_full_path.c_str(), des_trajectory_left)) {
+                        ROS_INFO("read left-arm file OK");
+                        g_got_good_traj_left = true;
+                    } else ROS_ERROR("could not read left-arm file");
+
                     break;
                 case 2:
-                    ROS_INFO("case 2: ");
-                    if (0 == read_traj_file("merry_r_arm_traj2.jsp", des_trajectory))
-                    g_got_good_traj = true;
+                    //this case only controls the right arm
+                    ROS_INFO("case 2: shy");
+                    fname_full_path = path_to_playfiles + "shy.jsp";
+                    if (0 == read_traj_file(fname_full_path.c_str(), des_trajectory_right))
+                        g_got_good_traj_right = true;
                     break;
+                case 3:
+                    ROS_INFO("case 3: hug");
+                    fname_full_path = path_to_playfiles + "hug.jsp";
+                    if (0 == read_traj_file(fname_full_path.c_str(), des_trajectory_right))                    
+                        g_got_good_traj_right = true;
+                    break;                    
+                case 4:
+                    ROS_INFO("case 4: shake");
+                    fname_full_path = path_to_playfiles + "shake.jsp";
+                    if (0 == read_traj_file(fname_full_path.c_str(), des_trajectory_right))                     
+                        g_got_good_traj_right = true;
+                    break;       
+                case 5:
+                    ROS_INFO("case 5: stick_em_up");
+                     fname_full_path = path_to_playfiles + "stick_em_up.jsp";
+                    if (0 == read_traj_file(fname_full_path.c_str(), des_trajectory_right))                    
+                        g_got_good_traj_right = true;
+                    break;                      
+                case 6:
+                    ROS_INFO("case 6:wave");
+                     fname_full_path = path_to_playfiles + "wave.jsp";
+                    if (0 == read_traj_file(fname_full_path.c_str(), des_trajectory_right))                    
+                        g_got_good_traj_right = true;
+                    break;                    
                 default:
                     ROS_INFO("unknown case");
                     break;
             }
 
         }
-
-
-        //now have the data in a trajectory; send it to the trajectory streamer action server to execute
-
-        //  copy traj to goal:
-        if (g_got_good_traj) {
-            goal.trajectory = des_trajectory;
-            //cout<<"ready to connect to action server; enter 1: ";
-            //cin>>ans;
-
-
-            action_client.sendGoal(goal, &doneCb); // we could also name additional callback functions here, if desired
-            //    action_client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb); //e.g., like this
-
-            bool finished_before_timeout = action_client.waitForResult(ros::Duration(20.0));
-            //bool finished_before_timeout = action_client.waitForResult(); // wait forever...
-            if (!finished_before_timeout) {
-                ROS_WARN("giving up waiting on result for goal number %d", g_count);
-            } else {
-                ROS_INFO("finished before timeout");
+        //now have current arm poses and desired trajectories; splice in a motion from current arm pose
+        // to first point of desired trajectory;
+        if (g_got_good_traj_right) {
+            //get first pt of traj: q_right_firstpoint
+            trajectory_point0 = des_trajectory_right.points[0];
+            for (int i = 0; i < 7; i++) { //copy from traj point to Eigen-type vector
+                q_right_firstpoint[i] = trajectory_point0.positions[i];
             }
-            g_got_good_traj = false;
+            //add this pt to path from current pose:
+            des_path_right.push_back(q_right_firstpoint);
+            //use traj stuffer to find build trajectory from current pose to first point of recorded traj
+            baxter_traj_streamer.stuff_trajectory_right_arm(des_path_right, approach_trajectory_right);
         }
+        if (g_got_good_traj_left) {
+            trajectory_point0 = des_trajectory_left.points[0];
+            for (int i = 0; i < 7; i++) { //copy from traj point to Eigen-type vector
+                q_left_firstpoint[i] = trajectory_point0.positions[i];
+            }
+            //add this pt to path from current pose:
+            des_path_left.push_back(q_left_firstpoint);
+            //use traj stuffer to find build trajectory from current pose to first point of recorded traj
+            baxter_traj_streamer.stuff_trajectory_left_arm(des_path_left, approach_trajectory_left);
+        }
+
+        //command the approach trajectory/trajectories and wait for conclusion   
+        g_right_arm_done = true;
+
+        if (g_got_good_traj_right) {
+            goal_right.trajectory = approach_trajectory_right;
+            g_right_arm_done = false; //reset status trigger, so can check when done
+            right_arm_action_client.sendGoal(goal_right, &rightArmDoneCb); // we could also name additional callback functions here, if desired
+            //    right_arm_action_client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb); //e.g., like this
+        }
+        g_left_arm_done = true;
+        if (g_got_good_traj_left) {
+            goal_left.trajectory = approach_trajectory_left;
+            g_left_arm_done = false;
+            left_arm_action_client.sendGoal(goal_left, &leftArmDoneCb); // we could also name additional callback functions here, if desired
+        }
+        while (!g_right_arm_done || !g_left_arm_done) {
+            ROS_INFO("waiting on arm server(s) to approach start of traj");
+            ros::Duration(0.5).sleep();
+            ros::spinOnce();
+        }
+        // now send the desired trajectory from file, if there are any points left to execute
+        if (g_got_good_traj_right&&(des_trajectory_right.points.size()>1)) {
+            goal_right.trajectory = des_trajectory_right;
+            g_right_arm_done = false; //reset status trigger, so can check when done
+            right_arm_action_client.sendGoal(goal_right, &rightArmDoneCb); // we could also name additional callback functions here, if desired
+            //    right_arm_action_client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb); //e.g., like this
+        }
+        if (g_got_good_traj_left&&(des_trajectory_left.points.size()>1)) {
+            goal_left.trajectory = des_trajectory_left;
+            g_left_arm_done = false; //reset status trigger, so can check when done
+            left_arm_action_client.sendGoal(goal_left, &leftArmDoneCb); // we could also name additional callback functions here, if desired
+        }
+
+        while (!g_right_arm_done || !g_left_arm_done) {
+            ROS_INFO("waiting on arm server(s) to execute playfile(s)");
+            ros::Duration(0.5).sleep();
+            ros::spinOnce();
+        }
+        //reset status flag of new traj to execute
+        g_got_good_traj_right = false;
+        g_got_good_traj_left = false;
     }
 
     return 0;

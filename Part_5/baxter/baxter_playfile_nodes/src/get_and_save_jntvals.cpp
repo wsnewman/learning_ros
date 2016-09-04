@@ -1,7 +1,8 @@
 // get_and_save_r_arm_pose: 
 // wsn, April, 2016
-// uses traj_interpolator_as to get r_arm joint angles; move merry's arm; enter "1" to save to disk, enter "0" to quit the pgm
-// saves joint angles to file "merry_r_arm_angs.txt"
+// uses baxter_traj_streamer to get r_arm and l_arm joint angles; 
+// move merry's arms; enter "1" to save to disk, enter "0" to quit the pgm
+// saves joint angles to files "baxter_r_arm_angs.txt" and "baxter_l_arm_angs.txt"
 
 #include<ros/ros.h>
 #include <baxter_trajectory_streamer/baxter_trajectory_streamer.h>
