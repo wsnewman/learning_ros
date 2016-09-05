@@ -1,0 +1,6 @@
+ <launch>
+  <node pkg="baxter_tools" type="enable_robot.py" name="enable" args="-e" output="screen"/>
+  <node pkg="baxter_trajectory_streamer" type="rt_arm_as" name="rt_arm_as"  output="screen"/>
+  <node pkg="baxter_trajectory_streamer" type="left_arm_as" name="left_arm_as"  output="screen"/> 
+  <node pkg="baxter_playfile_nodes" type="baxter_playfile_service" name="baxter_playfile_service"  output="screen"/> 
+</launch>

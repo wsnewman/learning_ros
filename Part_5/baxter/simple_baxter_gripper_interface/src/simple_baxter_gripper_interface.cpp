@@ -15,7 +15,7 @@ BaxterGripper::BaxterGripper(ros::NodeHandle* nodehandle): nh_(*nodehandle) {
     gripper_pos_filter_val_ = 0.1;
     right_gripper_pos_ = -1;
     left_gripper_pos_ = -1;
-    initializeSubscribers(); // package up the messy work of creating subscribers; do this overhead in constructor
+    initializeSubscribers(); 
     initializePublishers();
 }
 void BaxterGripper::initializeSubscribers()
@@ -23,7 +23,6 @@ void BaxterGripper::initializeSubscribers()
     ROS_INFO("Initializing Subscribers");
     gripper_subscriber_right_ = nh_.subscribe("/robot/end_effector/right_gripper/state", 1, &BaxterGripper::right_gripper_CB,this); 
     gripper_subscriber_left_ = nh_.subscribe("/robot/end_effector/left_gripper/state", 1, &BaxterGripper::left_gripper_CB,this);     
-    // add more subscribers here, as needed
 }
 
 void BaxterGripper::initializePublishers()
@@ -31,15 +30,12 @@ void BaxterGripper::initializePublishers()
     ROS_INFO("Initializing Publishers");
     gripper_publisher_right_ = nh_.advertise<baxter_core_msgs::EndEffectorCommand>("/robot/end_effector/right_gripper/command", 1, true); 
     gripper_publisher_left_ = nh_.advertise<baxter_core_msgs::EndEffectorCommand>("/robot/end_effector/left_gripper/command", 1, true); 
-
-    //add more publishers, as needed
-    // note: COULD make minimal_publisher_ a public member function, if want to use it within "main()"
 }
 void BaxterGripper::right_gripper_CB(const baxter_core_msgs::EndEffectorState& gripper_state) {
-     //believe only this much of new values
+     //low-pass filter the gripper position for more reliable threshold tests
     right_gripper_pos_ = (1.0- gripper_pos_filter_val_)*right_gripper_pos_ + gripper_pos_filter_val_*gripper_state.position; 
 } 
 void BaxterGripper::left_gripper_CB(const baxter_core_msgs::EndEffectorState& gripper_state) {
-     //believe only this much of new values
+     //low-pass filter the gripper position for more reliable threshold tests
     left_gripper_pos_ = (1.0- gripper_pos_filter_val_)*left_gripper_pos_ + gripper_pos_filter_val_*gripper_state.position; 
 } 

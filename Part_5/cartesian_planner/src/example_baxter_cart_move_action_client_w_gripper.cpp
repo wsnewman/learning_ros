@@ -13,9 +13,11 @@
 #include <Eigen/Geometry>
 #include <xform_utils/xform_utils.h>
 #include <std_msgs/Bool.h>
+#include <std_msgs/UInt32.h>
 #include <baxter_core_msgs/EndEffectorState.h>
 #include <baxter_core_msgs/EndEffectorCommand.h>
 #include<simple_baxter_gripper_interface/simple_baxter_gripper_interface.h>
+#include<baxter_playfile_nodes/playfileSrv.h>
 using namespace std;
 
 class InitVars {
@@ -130,6 +132,10 @@ int main(int argc, char** argv) {
     ArmMotionCommander arm_motion_commander(&nh);
     InitVars initVars;
     BaxterGripper baxterGripper(&nh); 
+    ros::ServiceClient client = nh.serviceClient<baxter_playfile_nodes::playfileSrv>("playfile_service");
+    baxter_playfile_nodes::playfileSrv playfile_srv_msg;
+    playfile_srv_msg.request.playfile_code = baxter_playfile_nodes::playfileSrvRequest::PRE_POSE;
+
 
     
     while(baxterGripper.get_right_gripper_pos()<-0.5) {
@@ -154,13 +160,9 @@ int main(int argc, char** argv) {
         ros::Duration(0.01).sleep();
     }        
     
-    //send a command to plan a joint-space move to pre-defined pose:
-    ROS_INFO("planning move to pre-pose:");
-    rtn_val=arm_motion_commander.plan_move_to_pre_pose();
-    
-    //send command to execute planned motion
-    ROS_INFO("sending command to execute planned path");
-    rtn_val=arm_motion_commander.rt_arm_execute_planned_path();
+    ROS_INFO("sending pre-pose command to playfile service: ");
+    client.call(playfile_srv_msg);
+    //blocks here until service call completes...
     
     //plan a path from current pose to specified, desired flange pose
     ROS_INFO("planning path");   
