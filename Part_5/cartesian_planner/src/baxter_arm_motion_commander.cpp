@@ -107,7 +107,7 @@ int ArmMotionCommander::rt_arm_plan_path_current_to_goal_pose(geometry_msgs::Pos
 
     ROS_INFO("requesting a cartesian-space motion plan");
     cart_goal_.command_code = cartesian_planner::baxter_cart_moveGoal::RT_ARM_PLAN_PATH_CURRENT_TO_GOAL_POSE;
-    cart_goal_.des_pose_gripper_right = des_pose;
+    cart_goal_.des_pose_flange_right = des_pose;
     cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&ArmMotionCommander::doneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired
     finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(2.0));
     ROS_INFO("return code: %d", cart_result_.return_code);
@@ -169,7 +169,7 @@ int ArmMotionCommander::rt_arm_plan_fine_path_current_to_goal_flange_pose(geomet
 
     ROS_INFO("requesting a hi-res cartesian-space motion plan w/ flange pose goal");
     cart_goal_.command_code = cartesian_planner::baxter_cart_moveGoal::RT_ARM_PLAN_FINE_PATH_CURRENT_TO_GOAL_FLANGE_POSE;
-    cart_goal_.des_pose_gripper_right = des_pose;
+    cart_goal_.des_pose_flange_right = des_pose;
     cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&ArmMotionCommander::doneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired
     finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(5.0));
     ROS_INFO("return code: %d", cart_result_.return_code);
@@ -372,7 +372,7 @@ int ArmMotionCommander::rt_arm_request_flange_pose_wrt_torso(void) {
 }
 
 //these are repeats--should use fncs from xform_utils library
-
+/* 
 Eigen::Affine3d ArmMotionCommander::transformPoseToEigenAffine3d(geometry_msgs::Pose pose) {
     Eigen::Affine3d affine;
 
@@ -391,7 +391,7 @@ Eigen::Affine3d ArmMotionCommander::transformPoseToEigenAffine3d(geometry_msgs::
     Eigen::Matrix3d Re(q);
 
     affine.linear() = Re;
-
+ affine.translation()= Oe;
     return affine;
 }
 
@@ -414,4 +414,4 @@ geometry_msgs::Pose ArmMotionCommander::transformEigenAffine3dToPose(Eigen::Affi
 
     return pose;
 }
-
+*/

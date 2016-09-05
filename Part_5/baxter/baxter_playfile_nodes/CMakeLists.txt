@@ -34,7 +34,8 @@ catkin_simple()
 cs_add_executable(get_and_save_jntvals src/get_and_save_jntvals.cpp)
 cs_add_executable(baxter_recorder src/baxter_record_trajectory.cpp)
 cs_add_executable(baxter_playback src/baxter_playfile_jointspace.cpp)
-#cs_add_executable(baxter_multitraj_player src/baxter_multitraj_player.cpp)
+cs_add_executable(baxter_multitraj_player src/baxter_multitraj_player.cpp)
+#cs_add_executable(getenv_test src/getenv_test.cpp) 
 #the following is required, if desire to link a node in this package with a library created in this same package
 # edit the arguments to reference the named node and named library within this package
 # target_link_library(example my_lib)

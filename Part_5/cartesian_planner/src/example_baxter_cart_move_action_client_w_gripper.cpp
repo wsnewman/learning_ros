@@ -130,6 +130,7 @@ int main(int argc, char** argv) {
     ArmMotionCommander arm_motion_commander(&nh);
     InitVars initVars;
     BaxterGripper baxterGripper(&nh); 
+
     
     while(baxterGripper.get_right_gripper_pos()<-0.5) {
         ros::spinOnce();
@@ -169,7 +170,8 @@ int main(int argc, char** argv) {
            rtn_val=arm_motion_commander.rt_arm_execute_planned_path();
 
      //plan path to grasp pose:
-        ROS_INFO("planning hi-res descent to grasp pose");
+        ROS_INFO("planning hi-res descent to grasp pose, origin (%f, %f, %f)",initVars.desired_toolflange_poseStamped.pose.position.x,
+        initVars.desired_toolflange_poseStamped.pose.position.y,initVars.desired_toolflange_poseStamped.pose.position.z);
     rtn_val=arm_motion_commander.rt_arm_plan_fine_path_current_to_goal_flange_pose(initVars.desired_toolflange_poseStamped);
     
     if (rtn_val == cartesian_planner::baxter_cart_moveResult::SUCCESS)  { 
@@ -184,6 +186,7 @@ int main(int argc, char** argv) {
     }
     else {
         ROS_WARN("desired motion is not feasible");
+        return 0;
     }
     ROS_INFO("closing gripper");   
     baxterGripper.right_gripper_close();

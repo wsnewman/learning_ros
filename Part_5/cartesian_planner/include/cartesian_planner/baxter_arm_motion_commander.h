@@ -9,6 +9,7 @@
 #include <Eigen/Eigen>
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
+#include <xform_utils/xform_utils.h>
 ////define a class to encapsulate some of the tedium of populating and sending goals,
 // and interpreting responses
 
@@ -30,6 +31,7 @@ private:
     //callback fnc for cartesian action server to return result to this node:
     void doneCb_(const actionlib::SimpleClientGoalState& state,
     const cartesian_planner::baxter_cart_moveResultConstPtr& result);
+    XformUtils xformUtils;
 public:
         ArmMotionCommander(ros::NodeHandle* nodehandle); //define the body of the constructor outside of class definition
 
@@ -56,8 +58,8 @@ public:
     int rt_arm_plan_path_current_to_goal_dp_xyz(Eigen::Vector3d dp_displacement);
 
     //utilities to convert between affine and pose
-    Eigen::Affine3d transformPoseToEigenAffine3d(geometry_msgs::Pose pose); 
-    geometry_msgs::Pose transformEigenAffine3dToPose(Eigen::Affine3d e);
+    //Eigen::Affine3d transformPoseToEigenAffine3d(geometry_msgs::Pose pose); 
+    //geometry_msgs::Pose transformEigenAffine3dToPose(Eigen::Affine3d e);
 
 }; 
 

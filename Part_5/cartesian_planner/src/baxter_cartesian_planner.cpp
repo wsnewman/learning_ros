@@ -99,6 +99,9 @@ bool CartTrajPlanner::cartesian_path_planner(Eigen::Affine3d a_flange_start, Eig
 
             path_options.push_back(single_layer_nodes);
         }
+        else {
+            return false;
+        }
         p_des += dp_vec;
     }
 

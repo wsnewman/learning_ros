@@ -32,6 +32,7 @@
 #include<sensor_msgs/JointState.h>
 #include<moveit_msgs/DisplayTrajectory.h>
 #include <tf/transform_listener.h>
+#include <xform_utils/xform_utils.h>
 
 const double ARM_ERR_TOL = 0.1; // tolerance btwn last joint commands and current arm pose
 // used to decide if last command is good start point for new path
@@ -41,7 +42,7 @@ int g_right_js_doneCb_flag = 0;
 class ArmMotionInterface {
 private:
     ros::NodeHandle nh_; // we will need this, to pass between "main" and constructor
-
+    XformUtils xformUtils;
     //create an action server, which will be called "cartMoveActionServer"
     //this service will accept goals in Cartesian coordinates
     actionlib::SimpleActionServer<cartesian_planner::baxter_cart_moveAction> cart_move_as_;
@@ -164,9 +165,9 @@ public:
     }
 
     //handy utilities, primarily used internally, but publicly accessible
-    Eigen::Affine3d transformTFToEigen(const tf::Transform &t);
-    Eigen::Affine3d transformPoseToEigenAffine3d(geometry_msgs::Pose pose);
-    geometry_msgs::Pose transformEigenAffine3dToPose(Eigen::Affine3d e);
+    //Eigen::Affine3d transformTFToEigen(const tf::Transform &t);
+    //Eigen::Affine3d transformPoseToEigenAffine3d(geometry_msgs::Pose pose);
+    //geometry_msgs::Pose transformEigenAffine3dToPose(Eigen::Affine3d e);
     void display_affine(Eigen::Affine3d affine);
 
 
@@ -363,8 +364,8 @@ void ArmMotionInterface::js_doneCb_(const actionlib::SimpleClientGoalState& stat
 }
 
 //handy utility: convert from a tf::Transform object to an Eigen::Affine3d
-//not used in this node
-
+//not used in this node; obsolete--use XformUtils instead
+/*
 Eigen::Affine3d ArmMotionInterface::transformTFToEigen(const tf::Transform &t) {
     Eigen::Affine3d e;
     for (int i = 0; i < 3; i++) {
@@ -379,9 +380,10 @@ Eigen::Affine3d ArmMotionInterface::transformTFToEigen(const tf::Transform &t) {
     e.matrix()(3, 3) = 1;
     return e;
 }
-
+*/
 //handy utility: convert from geometry_msgs::Pose to an Eigen::Affine3d
-
+//should instead use fncs in xformUtils package
+/*
 Eigen::Affine3d ArmMotionInterface::transformPoseToEigenAffine3d(geometry_msgs::Pose pose) {
     Eigen::Affine3d affine;
 
@@ -400,12 +402,13 @@ Eigen::Affine3d ArmMotionInterface::transformPoseToEigenAffine3d(geometry_msgs::
     Eigen::Matrix3d Re(q);
 
     affine.linear() = Re;
-
+    affine.translation()= Oe;
     return affine;
 }
-
+*/
 //handy utility: convert from Eigen::Affine3d to a geometry_msgs::Pose
-
+//obsolete: uses XformUtils
+/*
 geometry_msgs::Pose ArmMotionInterface::transformEigenAffine3dToPose(Eigen::Affine3d e) {
     Eigen::Vector3d Oe;
     Eigen::Matrix3d Re;
@@ -425,7 +428,7 @@ geometry_msgs::Pose ArmMotionInterface::transformEigenAffine3dToPose(Eigen::Affi
 
     return pose;
 }
-
+*/
 //handy utility, just to print data to screen for Affine objects
 
 void ArmMotionInterface::display_affine(Eigen::Affine3d affine) {
@@ -479,7 +482,7 @@ void ArmMotionInterface::compute_right_tool_stamped_pose(void) {
     //fwd_kin_flange_wrt_torso_solve
     affine_rt_arm_tool_wrt_torso_ =
             baxter_fwd_solver_.fwd_kin_tool_wrt_torso_solve(q_vec_right_arm_); //rtns pose w/rt torso frame (base frame)
-    current_gripper_pose_right_ = transformEigenAffine3dToPose(affine_rt_arm_tool_wrt_torso_);
+    current_gripper_pose_right_ = xformUtils.transformEigenAffine3dToPose(affine_rt_arm_tool_wrt_torso_);
     current_gripper_stamped_pose_right_.pose = current_gripper_pose_right_;
     current_gripper_stamped_pose_right_.header.stamp = ros::Time::now();
     current_gripper_stamped_pose_right_.header.frame_id = "torso";
@@ -490,7 +493,7 @@ void ArmMotionInterface::compute_right_flange_stamped_pose(void) {
     //fwd_kin_flange_wrt_torso_solve
     affine_rt_arm_flange_wrt_torso_ =
             baxter_fwd_solver_.fwd_kin_flange_wrt_torso_solve(q_vec_right_arm_); //rtns pose w/rt torso frame (base frame)
-    current_flange_pose_right_ = transformEigenAffine3dToPose(affine_rt_arm_flange_wrt_torso_);
+    current_flange_pose_right_ = xformUtils.transformEigenAffine3dToPose(affine_rt_arm_flange_wrt_torso_);
     current_flange_stamped_pose_right_.pose = current_flange_pose_right_;
     current_flange_stamped_pose_right_.header.stamp = ros::Time::now();
     current_flange_stamped_pose_right_.header.frame_id = "torso";
@@ -643,7 +646,7 @@ bool ArmMotionInterface::rt_arm_plan_path_current_to_goal_pose() {
     //unpack the goal pose:
     goal_gripper_pose_right_ = cart_goal_.des_pose_gripper_right;
 
-    goal_gripper_affine_right_ = transformPoseToEigenAffine3d(goal_gripper_pose_right_.pose);
+    goal_gripper_affine_right_ = xformUtils.transformPoseToEigenAffine3d(goal_gripper_pose_right_.pose);
     ROS_INFO("tool frame goal: ");
     display_affine(goal_gripper_affine_right_);
     goal_flange_affine_right_ = goal_gripper_affine_right_ * A_tool_wrt_flange_.inverse();
@@ -673,7 +676,7 @@ bool ArmMotionInterface::rt_arm_plan_path_current_to_goal_pose() {
 bool ArmMotionInterface::rt_arm_plan_path_current_to_goal_flange_pose() {
     ROS_INFO("computing a cartesian trajectory to right-arm flange goal pose");
     //unpack the goal pose:
-    goal_flange_affine_right_ = transformPoseToEigenAffine3d(cart_goal_.des_pose_flange_right.pose);
+    goal_flange_affine_right_ = xformUtils.transformPoseToEigenAffine3d(cart_goal_.des_pose_flange_right.pose);
 
     ROS_INFO("flange goal");
     display_affine(goal_flange_affine_right_);
@@ -700,7 +703,7 @@ bool ArmMotionInterface::rt_arm_plan_path_current_to_goal_flange_pose() {
 bool ArmMotionInterface::rt_arm_plan_fine_path_current_to_goal_flange_pose() {
     ROS_INFO("computing a hi-res cartesian trajectory to right-arm flange goal pose");
     //unpack the goal pose:
-    goal_flange_affine_right_ = transformPoseToEigenAffine3d(cart_goal_.des_pose_flange_right.pose);
+    goal_flange_affine_right_ = xformUtils.transformPoseToEigenAffine3d(cart_goal_.des_pose_flange_right.pose);
 
     ROS_INFO("flange goal");
     display_affine(goal_flange_affine_right_);

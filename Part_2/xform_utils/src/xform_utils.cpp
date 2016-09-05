@@ -61,7 +61,7 @@ Eigen::Affine3d XformUtils::transformPoseToEigenAffine3d(geometry_msgs::Pose pos
     Eigen::Matrix3d Re(q);
 
     affine.linear() = Re;
-
+    affine.translation() = Oe;
     return affine;
 }
 
