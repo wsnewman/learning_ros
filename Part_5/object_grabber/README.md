@@ -7,16 +7,10 @@ sequence of actions to acquire the specified object at the specified location.
 
 Start up the simulator with:
 `roslaunch baxter_gazebo baxter_world.launch`
-Enable the robot with:
-`rosrun baxter_tools enable_robot.py -e`
 Add a table with:
 `roslaunch exmpl_models add_cafe_table.launch`
-Add a toy block with:
-`roslaunch exmpl_models add_toy_block.launch`
-Add a small, upright cylinder with:
-`roslaunch exmpl_models add_small_cylinder.launch`
-Start up CWRU nodes with:
-`roslaunch baxter_launch_files baxter_nodes.launch`
+Wait for robot to finish starting up, then run:
+`roslaunch baxter_launch_files baxter_object_grabber_nodes.launch`
 
 ## Using the object-grabber action server:
 Start up a client (e.g., the example client in this package):
