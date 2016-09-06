@@ -384,7 +384,7 @@ void ObjectGrabber::executeCB(const actionlib::SimpleActionServer<object_grabber
 
     int object_grabber_rtn_code;
     switch (object_code) {
-        case object_grabber::object_grabberGoal::COKE_CAN:
+        case object_grabber::object_grabberGoal::UPRIGHT_CYLINDER:
             object_grabber_rtn_code= vertical_cylinder_power_grasp(object_pose_stamped_wrt_torso_);
             grab_result_.return_code = object_grabber_rtn_code;
             object_grabber_as_.setSucceeded(grab_result_);

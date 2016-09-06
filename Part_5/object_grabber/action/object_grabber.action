@@ -3,7 +3,7 @@
 #object_grabber will plan approach, grasp and lift of object
 #returns codes regarding outcome
 
-int32 COKE_CAN = 1
+int32 UPRIGHT_CYLINDER = 1
 int32 TOY_BLOCK = 2
 float64 TOY_BLOCK_APPROACH_DIST = 0.03
 float64 TOY_BLOCK_FINGER_OPENING = 80.0 #expect gripper closed on toy block has this much finger separation

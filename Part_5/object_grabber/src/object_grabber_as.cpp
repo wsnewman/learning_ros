@@ -1,7 +1,6 @@
 // object_grabber_as: 
 // wsn, August, 2016
-// illustrates use of baxter_cart_move_as, action server called "cartMoveActionServer"
-// uses baxter_arm_motion_commander to encapsulate action client/server interactions
+// illustrates use of ObjectGrabber action server
 
 #include<ros/ros.h>
 #include <object_grabber/object_grabber.h>
