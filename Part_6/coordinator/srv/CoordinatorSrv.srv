@@ -1,0 +1,11 @@
+int32 FIND_BLOCK = 100
+int32 GRAB_BLOCK = 101
+int32 NAVIGATE = 102
+int32 DO_NOTHING = 0
+int32 ABORT = 1
+int32 BUSY_FINDER = 200
+int32 BUSY_GRABBER = 201
+
+int32 action_code
+---
+int32 rtn_code
