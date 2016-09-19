@@ -33,6 +33,8 @@ float32 object_dimension3
 int32 OBJECT_NOT_FOUND=0
 int32 OBJECT_FOUND=1
 int32 OBJECT_CODE_NOT_RECOGNIZED=2
+int32 OBJECT_FINDER_BUSY=3
+int32 OBJECT_FINDER_CANCELLED=4
 #return the identified pose here:
 int32 found_object_code
 geometry_msgs/PoseStamped object_pose

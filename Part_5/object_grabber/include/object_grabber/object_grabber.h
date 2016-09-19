@@ -19,6 +19,7 @@
 #include <baxter_fk_ik/baxter_kinematics.h> 
 #include <std_msgs/Bool.h>
 #include "tf/transform_listener.h"
+double GRIPPER_TIMEOUT=5.0; //max waiting time for gripper open/close
 
 class ObjectGrabber {
 private:
@@ -33,6 +34,9 @@ private:
     object_grabber::object_grabberFeedback grab_fdbk_;
     geometry_msgs::PoseStamped object_pose_stamped_;
     geometry_msgs::PoseStamped object_pose_stamped_wrt_torso_;    
+    geometry_msgs::PoseStamped des_flange_pose_stamped_;
+    geometry_msgs::PoseStamped des_flange_pose_stamped_wrt_torso_;  
+    geometry_msgs::PoseStamped des_gripper_pose_stamped_wrt_torso_;
     int object_code_;
     //std_msgs::Bool gripper_open,gripper_close;
 
@@ -56,10 +60,24 @@ private:
     void executeCB(const actionlib::SimpleActionServer<object_grabber::object_grabberAction>::GoalConstPtr& goal);
 
     int vertical_cylinder_power_grasp(geometry_msgs::PoseStamped object_pose);
-    int grasp_from_above(geometry_msgs::PoseStamped block_pose, double approach_dist);
+    int grasp_from_above(geometry_msgs::PoseStamped des_flange_grasp_pose, double approach_dist);
+    int dropoff_from_above(geometry_msgs::PoseStamped gripper_pose_wrt_torso, double approach_dist);
+    int move_flange_to(geometry_msgs::PoseStamped flange_pose_wrt_torso);
+    int fine_move_flange_to(geometry_msgs::PoseStamped des_flange_pose_wrt_torso);
+    geometry_msgs::PoseStamped convert_pose_to_torso_frame(geometry_msgs::PoseStamped pose_stamped);
+    
+    //specialized fncs: describes a grasp transform for a specific object (TOY_BLOCK)
+    Eigen::Affine3d block_grasp_transform(Eigen::Affine3d block_affine);
+    geometry_msgs::PoseStamped block_grasp_transform(geometry_msgs::PoseStamped block_pose);
+    geometry_msgs::PoseStamped block_to_flange_grasp_transform(geometry_msgs::PoseStamped block_pose);
+
 public:
 
     ObjectGrabber(ros::NodeHandle* nodehandle); //define the body of the constructor outside of class definition
+    //command open gripper, and wait for opening to exceed "open_val_test" (e.g. 95.0)
+    int open_gripper(double open_val_test);
+    //command close gripper, and wait for opening to be less than "close_val_test" (e.g. 90.0, for block)
+    int close_gripper(double close_val_test);
 
     void set_right_tool_xform(Eigen::Affine3d xform) {
         a_right_gripper_frame_wrt_flange = xform;

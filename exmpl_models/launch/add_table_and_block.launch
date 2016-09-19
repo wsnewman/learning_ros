@@ -1,0 +1,4 @@
+ <launch>
+   <include file="$(find exmpl_models)/launch/add_table.launch"> </include>
+   <include file="$(find exmpl_models)/launch/add_toy_block.launch"> </include>
+</launch>

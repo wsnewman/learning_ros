@@ -245,7 +245,7 @@ int main(int argc, char** argv) {
                 g_object_grabber_return_code = object_grabber::object_grabberResult::OBJECT_GRABBER_BUSY;
                 //populate a goal message to grab TOY_BLOCK
                 object_grabber_goal.object_code = object_grabber::object_grabberGoal::TOY_BLOCK; //specify the object to be grabbed
-                object_grabber_goal.object_frame = g_perceived_object_pose;
+                object_grabber_goal.desired_frame = g_perceived_object_pose;
 
                 object_grabber_ac.sendGoal(object_grabber_goal, &objectGrabberDoneCb);
                 g_action_code = BUSY_GRABBER;

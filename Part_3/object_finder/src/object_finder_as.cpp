@@ -70,7 +70,8 @@ bool ObjectFinder::find_toy_block(float surface_height, geometry_msgs::PoseStamp
     Eigen::Vector3f major_axis;
     Eigen::Vector3f centroid;
     bool found_object = true; //should verify this
-    pclUtils_.find_plane_fit(0, 1, -0.5, 0.5, surface_height + 0.045, surface_height + 0.06, 0.001,
+    double block_height = 0.04; //this height is specific to the TOY_BLOCK model
+    pclUtils_.find_plane_fit(0, 1, -0.5, 0.5, surface_height + 0.035, surface_height + 0.06, 0.001,
             plane_normal, plane_dist, major_axis, centroid);
     if (plane_normal(2) < 0) plane_normal(2) *= -1.0; //in world frame, normal must point UP
     Eigen::Matrix3f R;
@@ -82,7 +83,9 @@ bool ObjectFinder::find_toy_block(float surface_height, geometry_msgs::PoseStamp
     object_pose.header.frame_id = "base_link";
     object_pose.pose.position.x = centroid(0);
     object_pose.pose.position.y = centroid(1);
-    object_pose.pose.position.z = centroid(2);
+    //the TOY_BLOCK model has its origin in the middle of the block, not the top surface
+    //so lower the block model origin by half the block height from upper surface
+    object_pose.pose.position.z = centroid(2)-0.5*block_height;
     //create R from normal and major axis, then convert R to quaternion
 
     object_pose.pose.orientation.x = quat.x();
@@ -152,11 +155,6 @@ void ObjectFinder::executeCB(const actionlib::SimpleActionServer<object_finder::
         surface_height = table_ht;
     }
 
-    //double block_ht = pclUtils_.find_table_height(0.0, 1, -0.5, 0.5, table_ht+0.005, table_ht+0.08, 0.002); 
-    //ROS_INFO("block top ht = %f",block_ht);
-
-
-    //Eigen::Vector3f get_major_axis() { return major_axis_; };
 
     switch (object_id) {
         case object_finder::objectFinderGoal::COKE_CAN_UPRIGHT:

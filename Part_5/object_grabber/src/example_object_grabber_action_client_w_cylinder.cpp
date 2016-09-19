@@ -22,22 +22,27 @@ int main(int argc, char** argv) {
     ros::NodeHandle nh;
     XformUtils xformUtils;
     actionlib::SimpleActionClient<object_grabber::object_grabberAction> object_grabber_ac("objectGrabberActionServer", true);
-    geometry_msgs::PoseStamped toy_block_poseStamped;
-    geometry_msgs::PoseStamped toy_block_dropoff_poseStamped;
+    geometry_msgs::PoseStamped toy_block_poseStamped, cylinder_poseStamped, desired_toolflange_poseStamped;
     //hard code an object pose; later, this will come from perception
     toy_block_poseStamped.header.frame_id = "torso"; //set approach pose for toy block
     toy_block_poseStamped.pose.position.x = 0.5;
     toy_block_poseStamped.pose.position.y = -0.35;
-    toy_block_poseStamped.pose.position.z = -0.125; //specify block frame w/rt torso frame
+    toy_block_poseStamped.pose.position.z = -0.105; //should be top of block; decide top surface vs object frame origin (in center)
     toy_block_poseStamped.pose.orientation.x = 0;
     toy_block_poseStamped.pose.orientation.y = 0;
     toy_block_poseStamped.pose.orientation.z = 0.842;
     toy_block_poseStamped.pose.orientation.w = 0.54;
     toy_block_poseStamped.header.stamp = ros::Time::now();
 
-    toy_block_dropoff_poseStamped = toy_block_poseStamped; //specify desired drop-off pose of block
-    toy_block_dropoff_poseStamped.pose.orientation.z = 1;
-    toy_block_dropoff_poseStamped.pose.orientation.w = 0;
+    cylinder_poseStamped.header.frame_id = "torso"; //set approach pose for cylinder
+    cylinder_poseStamped.pose.position.x = 0.8;
+    cylinder_poseStamped.pose.position.y = 0;
+    cylinder_poseStamped.pose.position.z = -0.05; //should be center of upright cylinder
+    cylinder_poseStamped.pose.orientation.x = 0;
+    cylinder_poseStamped.pose.orientation.y = 0;
+    cylinder_poseStamped.pose.orientation.z = 0.0;
+    cylinder_poseStamped.pose.orientation.w = 1;
+    cylinder_poseStamped.header.stamp = ros::Time::now();
 
     ROS_INFO("waiting for server: ");
     bool server_exists = false;
@@ -50,12 +55,11 @@ int main(int argc, char** argv) {
     ROS_INFO("connected to object_grabber action server"); // if here, then we connected to the server; 
 
     object_grabber::object_grabberGoal object_grabber_goal;
+
     bool finished_before_timeout;
-
-    //stuff a goal message:  set action code to grab block and provide block's pose
-    object_grabber_goal.object_code = object_grabber::object_grabberGoal::GRAB_TOY_BLOCK; //specify the object to be grabbed
-    object_grabber_goal.desired_frame = toy_block_poseStamped;
-
+    //stuff a goal message:
+    object_grabber_goal.object_code = object_grabber::object_grabberGoal::TOY_BLOCK; //specify the object to be grabbed
+    object_grabber_goal.object_frame = toy_block_poseStamped;
     ROS_INFO("attempt to grab toy block at object pose: ");
     xformUtils.printStampedPose(toy_block_poseStamped);
     ROS_INFO("sending goal: ");
@@ -65,14 +69,16 @@ int main(int argc, char** argv) {
         ROS_WARN("giving up waiting on result ");
         return 1;
     }
-    //drop off the block at specified coordinates
-    //stuff a goal message with action code and goal pose
-    object_grabber_goal.object_code = object_grabber::object_grabberGoal::PLACE_TOY_BLOCK;
-    object_grabber_goal.desired_frame = toy_block_dropoff_poseStamped; //des pose
-    ROS_INFO("attempting to place toy block at object pose: ");
-    xformUtils.printStampedPose(toy_block_dropoff_poseStamped);
+
+    //next,  upright cylinder:
+    object_grabber_goal.object_code = object_grabber::object_grabberGoal::UPRIGHT_CYLINDER; //specify the object to be grabbed
+    object_grabber_goal.object_frame = cylinder_poseStamped;
+    ROS_INFO("attempt to grab upright cylinder at object pose: ");
+    xformUtils.printStampedPose(cylinder_poseStamped);
     ROS_INFO("sending goal: ");
-    object_grabber_ac.sendGoal(object_grabber_goal, &objectGrabberDoneCb);
+    object_grabber_ac.sendGoal(object_grabber_goal, &objectGrabberDoneCb); // we could also name additional callback functions here, if desired
+    //    action_client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb); //e.g., like this
+
     finished_before_timeout = object_grabber_ac.waitForResult(ros::Duration(30.0));
     if (!finished_before_timeout) {
         ROS_WARN("giving up waiting on result ");
@@ -80,3 +86,4 @@ int main(int argc, char** argv) {
     }
     return 0;
 }
+

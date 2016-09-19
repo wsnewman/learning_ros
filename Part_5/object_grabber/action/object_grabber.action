@@ -4,14 +4,29 @@
 #returns codes regarding outcome
 
 int32 UPRIGHT_CYLINDER = 1
+int32 GRAB_UPRIGHT_CYLINDER = 1 #synonym
 int32 TOY_BLOCK = 2
-float64 TOY_BLOCK_APPROACH_DIST = 0.03
+int32 GRAB_TOY_BLOCK = 2 #synonym
+int32 PLACE_UPRIGHT_CYLINDER = 3 #new drop-off command
+int32 PLACE_TOY_BLOCK = 4 #drop-off toy block
+
+int32 MOVE_FLANGE_TO = 5 #specify flange pose to reach
+int32 FINE_MOVE_FLANGE_TO = 6 #precision move to specified flange pose
+
+int32 CLOSE_GRIPPER = 100  #commands to open/close gripper; should specify test value
+int32 OPEN_GRIPPER = 101
+
+float64 TOY_BLOCK_APPROACH_DIST = 0.05
 float64 TOY_BLOCK_FINGER_OPENING = 80.0 #expect gripper closed on toy block has this much finger separation
 #add more objects here...
 
+
+
 #goal:
 int32 object_code
-geometry_msgs/PoseStamped object_frame
+geometry_msgs/PoseStamped desired_frame  
+float64 gripper_test_val
+
 ---
 #result definition
 #  response codes...
@@ -23,6 +38,15 @@ int32 FAILED_CANNOT_REACH_GRASP_POSE=3
 int32 FAILED_CANNOT_REACH_DEPART_POSE=4
 int32 FAILED_OBJECT_NOT_IN_GRIPPER=5
 int32 FAILED_OBJECT_UNKNOWN=6
+int32 OBJECT_GRABBER_BUSY=7
+int32 OBJECT_GRABBER_CANCELLED=8
+int32 FAILED_CANNOT_REACH_DROPOFF_POSE=9
+int32 FAILED_CANNOT_REACH_DROPOFF_APPROACH=10
+int32 FAILED_CANNOT_REACH_POSE_CARTESIAN_MOVE=11
+int32 ACTION_CODE_UNKNOWN=12
+int32 GRIPPER_IS_OPEN=13
+int32 GRIPPER_IS_CLOSED=14
+int32 GRIPPER_FAILURE=15
 int32 return_code
 ---
 #feedback: optional; 
