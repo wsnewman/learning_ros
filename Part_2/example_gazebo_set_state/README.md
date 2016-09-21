@@ -41,4 +41,15 @@ Adding an additional model--a cylinder--can be performed with:
 With the prism translating and rotating, the prism and the cylinder will eventually collide, resulting in changes
 to the linear and angular momenta of both objects.
 
+A set of N (currently N=11) blocks can be added to a world with the launch file:
+`roslaunch exmpl_models add_blocks.launch`
+The blocks will be known as "block0", "block1", etc.
+
+The node:
+`rosrun example_gazebo_set_state set_block_state`
+will start a node with a service that will place named (by number) blocks at (constrained) random poses.
+E.g., command with:
+`rosservice call set_block_state 5`
+which will place block5 in a randomized pose (chosen to be on the cafe table, reachable by Baxter).
+
     
