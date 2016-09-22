@@ -4,6 +4,7 @@ Top-level node that is a client of: navigator, object_grabber, and object_finder
 Waits for an Alexa trigger, then starts entire process of: navigation to table,
 recognition of object, grasp of object, return to home
 
+THIS NEEDS UPDATING
 ## Example usage
 Start up the simulator with:
 `roslaunch baxter_launch beer_world.launch`

@@ -1,0 +1,57 @@
+#goal: specify object code, perception type (incl blind), dropoff location, optional pickup location
+#task codes:
+int32 TOY_BLOCK = 2 #add more object-type codes here
+
+int32 PCL_VISION = 1 # could have more camera sources to refer to
+int32 BLIND_MANIP = 2 #expect pose specified in pickup_location field
+
+#action codes:
+int32 GET_PICKUP_POSE = 1 #low level ops; maybe don't implement
+int32 WAIT_FOR_FINDER = 101
+int32 RETRACT_ARM = 2
+int32 GRAB_OBJECT = 3 #assumes use of current pickup pose,
+                      #whether provided for "blind" manip, or found
+                      #from use of PCL_VISION
+int32 WAIT_FOR_GRAB_OBJECT = 103                     
+int32 DROPOFF_OBJECT = 4 #must provide dropoff_frame in goal msg
+int32 WAIT_FOR_DROPOFF_OBJECT = 104
+
+int32 MANIP_OBJECT = 5 #macro: does perception, grab, and dropoff
+                       #MUST provide dropoff frame, and means to
+                       #get pickup_frame
+                       
+int32 NO_CURRENT_TASK = 6
+int32 ABORT= 666
+
+#goal specification:
+int32 object_code #refer to a-priori known object types by object-ID codes
+int32 action_code #what should we do with the named object?
+int32 perception_source  #could name camera source, or specify blind manip (and provide pickup coords)
+geometry_msgs/PoseStamped dropoff_frame #specify desired drop-off coords of object's frame
+geometry_msgs/PoseStamped pickup_frame #optionally, for blind-manip as perception source, specify pickup frame
+---
+#return codes:
+int32 MANIP_SUCCESS = 0
+int32 FAILED_PERCEPTION = 1
+int32 FAILED_PICKUP_PLAN =2 
+int32 FAILED_DROPOFF_PLAN=3
+int32 FAILED_PICKUP=4
+int32 DROPPED_OBJECT = 5
+int32 ABORTED = 5
+
+int32 manip_return_code
+---
+#feedback codes:  perception_busy; planning_busy; pickup_busy; dropoff_busy
+int32 RECEIVED_NEW_TASK = 0
+int32 PERCEPTION_BUSY = 1
+int32 PICKUP_PLANNING_BUSY = 2
+int32 PICKUP_MOTION_BUSY = 3
+int32 PICKUP_SUCCESSFUL = 103
+int32 DROPOFF_PLANNING_BUSY = 4
+int32 DROPOFF_MOTION_BUSY = 5
+int32 NO_CURRENT_TASK = 6
+int32 ABORTED = 7
+int32 COMPLETED_DROPOFF = 8
+
+
+int32 feedback_status
