@@ -46,8 +46,8 @@ CartTrajPlanner::CartTrajPlanner() // optionally w/ args, e.g.
     //penalize elbow and wrist less
     jspace_planner_weights_[3] = 0.5;
     jspace_planner_weights_[4] = 0.2;
-    jspace_planner_weights_[5] = 0.1;
-    jspace_planner_weights_[6] = 0.1;    
+    jspace_planner_weights_[5] = 0.2;
+    jspace_planner_weights_[6] = 0.2;    
 }
 
 
@@ -178,6 +178,7 @@ bool CartTrajPlanner::cartesian_path_planner(Vectorq7x1 q_start, Eigen::Affine3d
     path_options.push_back(single_layer_nodes);
 
     std::vector<Vectorq7x1> q_solns;
+    
     p_des = p_start;
     cartesian_affine_samples_.push_back(a_flange_start);
 
@@ -497,6 +498,90 @@ bool CartTrajPlanner::jspace_trivial_path_planner(Vectorq7x1 q_start, Vectorq7x1
     optimal_path.push_back(qx_end);
     return true;
 }
+
+bool CartTrajPlanner::jspace_path_planner_to_affine_goal(Vectorq7x1 q_start, Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path) {
+    Eigen::VectorXd qx_start(7), qx_end(7); // need to convert to this type
+    std::vector<Vectorq7x1> q_solns;
+    std::vector<std::vector<Eigen::VectorXd> > path_options;
+    path_options.clear();
+    std::vector<Eigen::VectorXd> single_layer_nodes;
+    Eigen::VectorXd node, precise_node; 
+    Vectorq7x1 q_approx,q_refined;
+    single_layer_nodes.clear();
+    node = q_start;
+    single_layer_nodes.push_back(node);
+    
+    for (int i = 0; i < 7; i++) {
+        qx_start[i] = q_start[i];
+    }
+    cout << "jspace planner to Cartesian goal: " << endl;
+    
+    int nsolns = baxter_IK_solver_.ik_solve_approx_wrt_torso(a_flange_end, q_solns);
+    std::cout << "nsolns at goal pose = " << nsolns << endl;
+    single_layer_nodes.clear();
+    if (nsolns<1) return false; // give up
+    //else power on...
+    single_layer_nodes.resize(nsolns);
+    for (int isoln = 0; isoln < nsolns; isoln++) {
+         q_approx = q_solns[isoln];
+        if (baxter_IK_solver_.improve_7dof_soln_wrt_torso(a_flange_end, q_approx, q_refined)) {
+            precise_node = q_refined; //convert to Eigen::VectorXd
+            single_layer_nodes.push_back(precise_node);
+        }
+    }
+    nsolns = single_layer_nodes.size();
+    ROS_INFO("found %d refined goal IK solns",nsolns);
+    if (nsolns <1) {
+        return false; //no solns
+    }
+
+    //ok--we have at least one precise soln;
+    // 
+    optimal_path.clear();
+    optimal_path.push_back(qx_start);
+    //here is where we pick which of the joint-space goal solns is best:
+    // note: baxter's joints all include "0" within the reachable range
+    // and all solns must pass through 0.  Therefore, qx_end-qx_start is an appropriate metric
+    // and motion THRU zero is appropriate (not shortest periodic distance)
+    
+    //note: prepose hard-code defined in baxter_cart_move_as;
+    //q_pre_pose_ << -0.907528, -0.111813, 2.06622, 1.8737, -1.295, 2.00164, 0;
+    // should move this to a header;  want shoulder elevation near zero to elevate elbow
+    Eigen::VectorXd dq_move, q_modified_start;
+    q_modified_start = qx_start;
+    q_modified_start[1] = 0; // bias preference for shoulder elevation near zero,
+                             // regardless of start pose
+    //from baxter_traj_streamer.h:
+    //const double q0dotmax = 0.5;
+    //const double q1dotmax = 0.5;
+    //const double q2dotmax = 0.5;
+    //const double q3dotmax = 0.5;
+    //const double q4dotmax = 1;
+    //const double q5dotmax = 1;
+    //const double q6dotmax = 1;
+    // should make these speed limits more accessible
+    //jspace_planner_weights_ are defined here, above
+    double penalty_best = 1000000;
+    double penalty;
+    qx_end = single_layer_nodes[0]; //default: first soln    
+    for (int i=0;i<nsolns;i++) {
+        dq_move = q_modified_start-single_layer_nodes[i];
+        penalty=0.0;
+        for (int j=0;j<7;j++) {
+            penalty+= jspace_planner_weights_[i]*fabs(dq_move[i]); //should scale by speed limits
+        }
+        if (penalty<penalty_best) {
+            penalty_best = penalty;
+            qx_end = single_layer_nodes[i];
+        }
+    }
+   
+    optimal_path.push_back(qx_end);
+    return true;
+    //return false; // not debugged, so don't trust!
+}
+
+
 
 // use this classes baxter fk solver to compute and return tool-flange pose w/rt torso, given right-arm joint angles
 

@@ -66,7 +66,7 @@ public:
     bool cartesian_path_planner_wrist(Vectorq7x1 q_start, Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path);
 
     bool jspace_trivial_path_planner(Vectorq7x1 q_start, Vectorq7x1 q_end, std::vector<Eigen::VectorXd> &optimal_path);
-
+    bool jspace_path_planner_to_affine_goal(Vectorq7x1 q_start, Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path);
     ///alt version: compute path from current pose with cartesian move of delta_p with R fixed
     /// return "true" if successful
     bool cartesian_path_planner_delta_p(Vectorq7x1 q_start, Eigen::Vector3d delta_p, std::vector<Eigen::VectorXd> &optimal_path);

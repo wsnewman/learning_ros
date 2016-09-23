@@ -103,6 +103,36 @@ int ArmMotionCommander::rt_arm_plan_jspace_path_current_to_qgoal(Eigen::VectorXd
 
 }
 
+//plans a joint-space path from current pose to some IK soln of cartesian goal pose of tool flange
+int ArmMotionCommander::rt_arm_plan_jspace_path_current_to_flange_pose(geometry_msgs::PoseStamped des_pose) {
+    ROS_INFO("ArmMotionCommander requesting a joint-space motion plan to Cartesian goal");
+    cart_goal_.command_code = cartesian_planner::baxter_cart_moveGoal::RT_ARM_PLAN_JSPACE_PATH_CURRENT_TO_CART_POSE;
+    cart_goal_.des_pose_flange_right = des_pose;
+    cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&ArmMotionCommander::doneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired
+    finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(2.0));
+    ROS_INFO("return code: %d", cart_result_.return_code);   
+    if (!finished_before_timeout_) {
+        ROS_WARN("giving up waiting on result");
+        return (int) cartesian_planner::baxter_cart_moveResult::NOT_FINISHED_BEFORE_TIMEOUT;
+    }
+   ROS_INFO("finished before timeout");
+    if (cart_result_.return_code == cartesian_planner::baxter_cart_moveResult::RT_ARM_PATH_NOT_VALID) {
+        ROS_WARN("right arm plan not valid");
+        return (int) cart_result_.return_code;
+    }
+    if (cart_result_.return_code != cartesian_planner::baxter_cart_moveResult::SUCCESS) {
+        ROS_WARN("unknown return code... not SUCCESS");
+        return (int) cart_result_.return_code;
+    }
+
+    //here if success return code
+    ROS_INFO("returned SUCCESS from planning request");
+    computed_arrival_time_ = cart_result_.computed_arrival_time; //action_client.get_computed_arrival_time();
+    ROS_INFO("computed move time: %f", computed_arrival_time_);
+    return (int) cart_result_.return_code;
+    
+}
+
 int ArmMotionCommander::rt_arm_plan_path_current_to_goal_pose(geometry_msgs::PoseStamped des_pose) {
 
     ROS_INFO("requesting a cartesian-space motion plan");
@@ -132,6 +162,8 @@ int ArmMotionCommander::rt_arm_plan_path_current_to_goal_pose(geometry_msgs::Pos
     ROS_INFO("computed move time: %f", computed_arrival_time_);
     return (int) cart_result_.return_code;
 }
+
+// bool ArmMotionInterface::jspace_path_planner_current_to_affine_goal(Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path)
 
 //same as above, but assumes tool-flange pose specification, not gripper-finger-frame specification
 

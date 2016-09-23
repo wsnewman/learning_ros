@@ -51,7 +51,10 @@ public:
     int rt_arm_plan_jspace_path_current_to_qgoal(Eigen::VectorXd q_des_vec); 
     
     int rt_arm_plan_path_current_to_goal_pose(geometry_msgs::PoseStamped des_pose); //do not use; needs work
-    
+    // plan right-arm path in joint space from current pose to some specified desired flange pose
+    // will pick an IK solution for the goal pose
+    int rt_arm_plan_jspace_path_current_to_flange_pose(geometry_msgs::PoseStamped des_pose); //use this one
+
     //here are the main useful functions: plan cartesian-space paths using tool-flange desired poses
     int rt_arm_plan_path_current_to_goal_flange_pose(geometry_msgs::PoseStamped des_pose); 
     int rt_arm_plan_fine_path_current_to_goal_flange_pose(geometry_msgs::PoseStamped des_pose);     

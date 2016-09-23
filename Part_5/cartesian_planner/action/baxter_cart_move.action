@@ -39,9 +39,12 @@ uint8 RT_ARM_PLAN_PATH_CURRENT_TO_GOAL_DP_XYZ = 27 #rectilinear translation w/ f
 
 uint8 RT_ARM_PLAN_PATH_CURRENT_TO_GOAL_FLANGE_POSE = 28 #plan path to specified FLANGE pose
 uint8 RT_ARM_PLAN_FINE_PATH_CURRENT_TO_GOAL_FLANGE_POSE = 29 #plan path to specified FLANGE pose #as above, but hi-res
+uint8 RT_ARM_PLAN_JSPACE_PATH_CURRENT_TO_CART_POSE = 30 #plan a joint-space path from current arm pose to some IK soln of Cartesian goal
 
 uint8 RT_ARM_TIME_RESCALE_PLANNED_TRAJECTORY = 40 #can make arm go slower/faster with provided time-stretch factor
 uint8 RT_ARM_REFINE_PLANNED_TRAJECTORY = 41 #for each sample point of planned trajectory, do iterations to get more precise IK
+
+
 
 
 # request to preview plan:

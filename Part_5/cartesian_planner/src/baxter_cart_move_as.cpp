@@ -196,6 +196,8 @@ public:
     // and RT_ARM_PLAN_JSPACE_PATH_CURRENT_TO_QGOAL
     bool plan_jspace_path_qstart_to_qend(Vectorq7x1 q_start, Vectorq7x1 q_goal);
     bool plan_jspace_path_qstart_to_qend(Eigen::VectorXd q_start_Xd, Eigen::VectorXd q_goal_Xd);
+    //plan a joint-space path from current jspace pose to some soln of desired toolflange cartesian pose
+    bool jspace_path_planner_current_to_affine_goal(Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path);
     void rescale_planned_trajectory_time(double time_stretch_factor);
     bool refine_cartesian_path_soln();
 
@@ -635,6 +637,30 @@ bool ArmMotionInterface::plan_jspace_path_qstart_to_qend(Eigen::VectorXd q_start
 
     return path_is_valid_;
 
+}
+
+    bool ArmMotionInterface::jspace_path_planner_current_to_affine_goal(Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path) {
+    ROS_INFO("planning a joint-space path to a Cartesian goal");
+    //set q_start to current arm pose;
+    Vectorq7x1 q_start;
+    q_start = get_jspace_start_right_arm_(); // current joint angles
+    //bool CartTrajPlanner::jspace_path_planner_to_affine_goal(Vectorq7x1 q_start, Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path) {
+
+    path_is_valid_ = cartTrajPlanner_.jspace_path_planner_to_affine_goal(q_start, a_flange_end, optimal_path_);
+    if (path_is_valid_) {
+        //void Baxter_traj_streamer::stuff_trajectory_right_arm( std::vector<Eigen::VectorXd> qvecs, trajectory_msgs::JointTrajectory &new_trajectory) {
+
+        baxter_traj_streamer_.stuff_trajectory_right_arm(optimal_path_, des_trajectory_); //convert from vector of poses to trajectory message   
+        computed_arrival_time_ = des_trajectory_.points.back().time_from_start.toSec();
+        cart_result_.return_code = cartesian_planner::baxter_cart_moveResult::SUCCESS;
+        cart_result_.computed_arrival_time = computed_arrival_time_;
+        cart_move_as_.setSucceeded(cart_result_);
+    } else {
+        cart_result_.return_code = cartesian_planner::baxter_cart_moveResult::RT_ARM_PATH_NOT_VALID;
+        cart_result_.computed_arrival_time = -1.0; //impossible arrival time        
+        cart_move_as_.setSucceeded(cart_result_); //the communication was a success, but not the computation 
+    }
+    return path_is_valid_;
 }
 
 //this is a pretty general function:
