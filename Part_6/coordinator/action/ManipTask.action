@@ -21,6 +21,8 @@ int32 MANIP_OBJECT = 5 #macro: does perception, grab, and dropoff
                        #get pickup_frame
                        
 int32 NO_CURRENT_TASK = 6
+int32 MOVE_TO_PRE_POSE = 7
+int32 WAIT_FOR_MOVE_TO_PREPOSE = 107
 int32 ABORT= 666
 
 #goal specification:
@@ -37,7 +39,8 @@ int32 FAILED_PICKUP_PLAN =2
 int32 FAILED_DROPOFF_PLAN=3
 int32 FAILED_PICKUP=4
 int32 DROPPED_OBJECT = 5
-int32 ABORTED = 5
+int32 ABORTED = 6
+int32 PENDING = 7
 
 int32 manip_return_code
 ---
@@ -52,6 +55,7 @@ int32 DROPOFF_MOTION_BUSY = 5
 int32 NO_CURRENT_TASK = 6
 int32 ABORTED = 7
 int32 COMPLETED_DROPOFF = 8
+int32 PREPOSE_MOVE_BUSY = 9
 
 
 int32 feedback_status

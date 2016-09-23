@@ -43,7 +43,7 @@ ObjectFinder::ObjectFinder() :
 object_finder_as_(nh_, "objectFinderActionServer", boost::bind(&ObjectFinder::executeCB, this, _1), false), pclUtils_(&nh_) {
     ROS_INFO("in constructor of ObjectFinder...");
     // do any other desired initializations here...specific to your implementation
-
+ 
     object_finder_as_.start(); //start the server running
     tfListener_ = new tf::TransformListener; //create a transform listener
 }
@@ -67,12 +67,17 @@ bool ObjectFinder::find_upright_coke_can(float surface_height, geometry_msgs::Po
 bool ObjectFinder::find_toy_block(float surface_height, geometry_msgs::PoseStamped &object_pose) {
     Eigen::Vector3f plane_normal;
     double plane_dist;
+    //bool valid_plane;
     Eigen::Vector3f major_axis;
     Eigen::Vector3f centroid;
     bool found_object = true; //should verify this
     double block_height = 0.04; //this height is specific to the TOY_BLOCK model
-    pclUtils_.find_plane_fit(0, 1, -0.5, 0.5, surface_height + 0.035, surface_height + 0.06, 0.001,
+    //if insufficient points in plane, find_plane_fit returns "false"
+    //should do more sanity testing on found_object status
+    found_object = pclUtils_.find_plane_fit(0, 1, -0.5, 0.5, surface_height + 0.035, surface_height + 0.06, 0.001,
             plane_normal, plane_dist, major_axis, centroid);
+    //should have put a return value on find_plane_fit;
+    //
     if (plane_normal(2) < 0) plane_normal(2) *= -1.0; //in world frame, normal must point UP
     Eigen::Matrix3f R;
     Eigen::Vector3f y_vec;
@@ -180,6 +185,7 @@ void ObjectFinder::executeCB(const actionlib::SimpleActionServer<object_finder::
                 object_finder_as_.setSucceeded(result_);
             } else {
                 ROS_WARN("could not find requested object");
+                result_.found_object_code = object_finder::objectFinderResult::OBJECT_NOT_FOUND;
                 object_finder_as_.setAborted(result_);
             }
             break;

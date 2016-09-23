@@ -12,6 +12,7 @@ int32 PLACE_TOY_BLOCK = 4 #drop-off toy block
 
 int32 MOVE_FLANGE_TO = 5 #specify flange pose to reach
 int32 FINE_MOVE_FLANGE_TO = 6 #precision move to specified flange pose
+int32 MOVE_TO_PRE_POSE = 7 # get hand out of way of camera
 
 int32 CLOSE_GRIPPER = 100  #commands to open/close gripper; should specify test value
 int32 OPEN_GRIPPER = 101

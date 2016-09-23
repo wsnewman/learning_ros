@@ -140,6 +140,14 @@ rosrun example_ros_service example_ros_client
 
 classes: see example_ros_class (pass in node handle; odd syntax for callbacks)
 
+rosrun example_ros_class example_ros_class
+rosservice call example_minimal_service 
+rostopic pub -r 2 example_class_input_topic std_msgs/Float32 2.0
+
+*main using a library:
+rosrun creating_a_ros_library example_ros_class_test_main
+(then test, as above)
+
 libraries: creating_a_ros_library; 
 note CMakeLists.txt for adding a library
 where to put header file (then use <pkg/header_name.h>)
@@ -161,8 +169,12 @@ add:
 cs_add_executable(example_action_server src/example_action_server.cpp)
 cs_add_executable(example_action_client src/example_action_client.cpp)
 catkin_make
+
 rosrun example_action_server example_action_server
 rosrun example_action_server example_action_client
+
+rosrun example_action_server example_countdown_server
+rosrun example_action_server timer_client
 
 Parameter server:
 rosparam

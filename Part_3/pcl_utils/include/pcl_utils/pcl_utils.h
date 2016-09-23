@@ -156,7 +156,7 @@ public:
     void box_filter(PointCloud<pcl::PointXYZ>::Ptr inputCloud, Eigen::Vector3f pt_min, Eigen::Vector3f pt_max, 
                 vector<int> &indices);
     void box_filter(Eigen::Vector3f pt_min, Eigen::Vector3f pt_max, vector<int> &indices);
-    void find_plane_fit(double x_min, double x_max, double y_min, double y_max, double z_min, double z_max, double dz_tol,
+    bool find_plane_fit(double x_min, double x_max, double y_min, double y_max, double z_min, double z_max, double dz_tol,
       Eigen::Vector3f &plane_normal, double &plane_dist, Eigen::Vector3f &major_axis, Eigen::Vector3f  &centroid);
     
     void analyze_selected_points_color();

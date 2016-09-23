@@ -64,6 +64,7 @@ private:
     int dropoff_from_above(geometry_msgs::PoseStamped gripper_pose_wrt_torso, double approach_dist);
     int move_flange_to(geometry_msgs::PoseStamped flange_pose_wrt_torso);
     int fine_move_flange_to(geometry_msgs::PoseStamped des_flange_pose_wrt_torso);
+    int jspace_move_to_pre_pose(void);
     geometry_msgs::PoseStamped convert_pose_to_torso_frame(geometry_msgs::PoseStamped pose_stamped);
     
     //specialized fncs: describes a grasp transform for a specific object (TOY_BLOCK)

@@ -702,9 +702,11 @@ double PclUtils::find_table_height(double x_min, double x_max, double y_min, dou
 //given table height and known object height, filter transformed points to find points within x, y and z bounds,
 // presumably extracting points on the top surface of the object of interest
 // fit a plane to the surviving points and find normal and major axis
-void PclUtils::find_plane_fit(double x_min, double x_max, double y_min, double y_max, double z_min, double z_max, double dz_tol,
+const int min_n_filtered = 100;
+bool PclUtils::find_plane_fit(double x_min, double x_max, double y_min, double y_max, double z_min, double z_max, double dz_tol,
      Eigen::Vector3f &plane_normal, double &plane_dist, Eigen::Vector3f &major_axis, Eigen::Vector3f  &centroid) { 
     vector<int> indices;
+    bool ans_valid = true;
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);
     pcl::PassThrough<pcl::PointXYZ> pass; //create a pass-through object    
     pass.setInputCloud(pclTransformed_ptr_); //set the cloud we want to operate on--pass via a pointer
@@ -729,10 +731,13 @@ void PclUtils::find_plane_fit(double x_min, double x_max, double y_min, double y
     pass.filter(*cloud_filtered);
     n_filtered = cloud_filtered->points.size();
     ROS_INFO("num z-filtered pts = %d",n_filtered);
-    
+    if (n_filtered<min_n_filtered) {
+        ans_valid= false; //give warning of insufficient data
+    }
     fit_points_to_plane(cloud_filtered, plane_normal, plane_dist);    
     major_axis = major_axis_;
     centroid = centroid_;
+    return ans_valid;
 }
 
 void PclUtils::filter_cloud_z(PointCloud<pcl::PointXYZ>::Ptr inputCloud, double z_nom, double z_eps, vector<int> &indices) {
