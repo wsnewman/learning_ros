@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(coordinator)
+project(object_manipulation_properties)
 
 find_package(catkin_simple REQUIRED)
 
@@ -27,18 +27,15 @@ catkin_simple()
 # SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 # Libraries: uncomment the following and edit arguments to create a new library
-# cs_add_library(my_lib src/my_lib.cpp)   
+cs_add_library(object_manipulation_properties src/object_manipulation_properties.cpp)   
 
 # Executables: uncomment the following and edit arguments to compile new nodes
 # may add more of these lines for more nodes from the same package
-#cs_add_executable(coordinator src/coordinator_v2.cpp)
-#cs_add_executable(coordinator_v3 src/coordinator_v3.cpp)
-#cs_add_executable(coordinator_test src/coordinator_test.cpp)
-cs_add_executable(coordinator_v4 src/coordinator_v4.cpp)
-cs_add_executable(coordinator_action_client src/coordinator_action_client.cpp)
+cs_add_executable(object_manipulation_properties_test_main src/object_manipulation_properties_test_main.cpp)
+
 #the following is required, if desire to link a node in this package with a library created in this same package
 # edit the arguments to reference the named node and named library within this package
-# target_link_libraries(example my_lib)
+target_link_libraries(object_manipulation_properties_test_main object_manipulation_properties)
 
 cs_install()
 cs_export()

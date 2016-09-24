@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
 
     // use the name of our server, which is: example_action (named in example_action_server.cpp)
     // the "true" argument says that we want our new client to run as a separate thread (a good idea)
-    actionlib::SimpleActionClient<coordinator::ManipTaskAction> action_client("manip_task_action", true);
+    actionlib::SimpleActionClient<coordinator::ManipTaskAction> action_client("manip_task_action_service", true);
 
     // attempt to connect to the server:
     ROS_INFO("waiting for server: ");
@@ -83,23 +83,8 @@ int main(int argc, char** argv) {
     goal.action_code = coordinator::ManipTaskGoal::MANIP_OBJECT;
     //goal.perception_source= coordinator::ManipTaskGoal::BLIND_MANIP;
     goal.perception_source = coordinator::ManipTaskGoal::PCL_VISION;
-    //actionlib::SimpleClientGoalState state = action_client.getState();
-    //ROS_INFO("server state: %s",state.toString().c_str());
 
     action_client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
-    //start work on the goal...
-    //NOTE: since client is separately threaded, do NOT need spins here!
-    //callbacks for doneCB, activeCB and feedbackCB still work
-
-    //interrupt our task with a new one:
-    //ROS_INFO("attempting to cancel goal(s)");
-    //action_client.cancelAllGoals();    
-    //ROS_INFO("sleep 1-sec before sending new goal");
-    //ros::Duration(1.0).sleep();
-    //ROS_INFO("and sending new goal");
-    //goal.object_code=2;
-    //action_client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
-    //g_goal_done = false;
 
     while (!g_goal_done) {
         ros::Duration(0.1).sleep();

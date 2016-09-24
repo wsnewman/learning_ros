@@ -186,6 +186,8 @@ public:
     // for RT_ARM_PLAN_PATH_CURRENT_TO_GOAL_POSE
     bool rt_arm_plan_path_current_to_goal_pose(); //uses goal.des_pose_gripper_right to plan a cartesian path
     bool rt_arm_plan_path_current_to_goal_flange_pose(); //interprets goal.des_pose_flange_right as a des FLANGE pose to plan a cartesian path
+    //plan a joint-space path from current jspace pose to some soln of desired toolflange cartesian pose
+    bool rt_arm_plan_jspace_path_current_to_cart_pose();
     bool rt_arm_plan_fine_path_current_to_goal_flange_pose(); //interprets goal.des_pose_flange_right as a des FLANGE pose to plan a cartesian path
 
     //for RT_ARM_PLAN_PATH_CURRENT_TO_GOAL_DP_XYZ
@@ -196,8 +198,7 @@ public:
     // and RT_ARM_PLAN_JSPACE_PATH_CURRENT_TO_QGOAL
     bool plan_jspace_path_qstart_to_qend(Vectorq7x1 q_start, Vectorq7x1 q_goal);
     bool plan_jspace_path_qstart_to_qend(Eigen::VectorXd q_start_Xd, Eigen::VectorXd q_goal_Xd);
-    //plan a joint-space path from current jspace pose to some soln of desired toolflange cartesian pose
-    bool jspace_path_planner_current_to_affine_goal(Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path);
+    //bool jspace_path_planner_current_to_affine_goal(Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path);
     void rescale_planned_trajectory_time(double time_stretch_factor);
     bool refine_cartesian_path_soln();
 
@@ -278,8 +279,6 @@ void ArmMotionInterface::executeCB(const actionlib::SimpleActionServer<cartesian
             
             break;
             
-            
-
         case cartesian_planner::baxter_cart_moveGoal::RT_ARM_PLAN_PATH_CURRENT_TO_GOAL_DP_XYZ:
             rt_arm_plan_path_current_to_goal_dp_xyz();
             break;
@@ -298,7 +297,11 @@ void ArmMotionInterface::executeCB(const actionlib::SimpleActionServer<cartesian
             ROS_INFO("responding to request RT_ARM_EXECUTE_PLANNED_PATH");
             execute_planned_move();
             break;
-
+            
+        case cartesian_planner::baxter_cart_moveGoal::RT_ARM_PLAN_JSPACE_PATH_CURRENT_TO_CART_POSE:          
+            rt_arm_plan_path_current_to_goal_flange_pose();   
+            break;
+                
         default:
             ROS_WARN("this command mode is not defined: %d", command_mode_);
             cart_result_.return_code = cartesian_planner::baxter_cart_moveResult::COMMAND_CODE_NOT_RECOGNIZED;
@@ -310,7 +313,7 @@ void ArmMotionInterface::executeCB(const actionlib::SimpleActionServer<cartesian
 //CONSTRUCTOR: pass in a node handle and perform initializations (w/ initializers)
 
 ArmMotionInterface::ArmMotionInterface(ros::NodeHandle* nodehandle) : nh_(*nodehandle),
-cart_move_as_(*nodehandle, "cartMoveActionServer", boost::bind(&ArmMotionInterface::executeCB, this, _1), false),
+cart_move_as_(*nodehandle, "cart_move_action_server", boost::bind(&ArmMotionInterface::executeCB, this, _1), false),
 baxter_traj_streamer_(nodehandle),
 traj_streamer_action_client_("rightArmTrajActionServer", true) { // constructor
     ROS_INFO("in class constructor of ArmMotionInterface");
@@ -639,6 +642,7 @@ bool ArmMotionInterface::plan_jspace_path_qstart_to_qend(Eigen::VectorXd q_start
 
 }
 
+/*  renamed this: rt_arm_plan_path_current_to_goal_flange_pose
     bool ArmMotionInterface::jspace_path_planner_current_to_affine_goal(Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path) {
     ROS_INFO("planning a joint-space path to a Cartesian goal");
     //set q_start to current arm pose;
@@ -662,7 +666,7 @@ bool ArmMotionInterface::plan_jspace_path_qstart_to_qend(Eigen::VectorXd q_start
     }
     return path_is_valid_;
 }
-
+*/
 //this is a pretty general function:
 // goal contains a desired tool pose;
 // path is planned from current joint state to some joint state that achieves desired tool pose
@@ -698,7 +702,6 @@ bool ArmMotionInterface::rt_arm_plan_path_current_to_goal_pose() {
 }
 
 //this version uses des_pose_flange_right as desired FLANGE pose
-
 bool ArmMotionInterface::rt_arm_plan_path_current_to_goal_flange_pose() {
     ROS_INFO("computing a cartesian trajectory to right-arm flange goal pose");
     //unpack the goal pose:
@@ -709,6 +712,34 @@ bool ArmMotionInterface::rt_arm_plan_path_current_to_goal_flange_pose() {
     Vectorq7x1 q_start;
     q_start = get_jspace_start_right_arm_(); // choose last cmd, or current joint angles
     path_is_valid_ = cartTrajPlanner_.cartesian_path_planner(q_start, goal_flange_affine_right_, optimal_path_);
+
+    if (path_is_valid_) {
+        baxter_traj_streamer_.stuff_trajectory_right_arm(optimal_path_, des_trajectory_); //convert from vector of poses to trajectory message   
+        computed_arrival_time_ = des_trajectory_.points.back().time_from_start.toSec();
+        cart_result_.return_code = cartesian_planner::baxter_cart_moveResult::SUCCESS;
+        cart_result_.computed_arrival_time = computed_arrival_time_;
+        cart_move_as_.setSucceeded(cart_result_);
+    } else {
+        cart_result_.return_code = cartesian_planner::baxter_cart_moveResult::RT_ARM_PATH_NOT_VALID;
+        cart_result_.computed_arrival_time = -1.0; //impossible arrival time        
+        cart_move_as_.setSucceeded(cart_result_); //the communication was a success, but not the computation 
+    }
+
+    return path_is_valid_;
+}
+
+bool ArmMotionInterface::rt_arm_plan_jspace_path_current_to_cart_pose() {
+    ROS_INFO("computing a jspace trajectory to right-arm flange goal pose");
+    //unpack the goal pose:
+    goal_flange_affine_right_ = xformUtils.transformPoseToEigenAffine3d(cart_goal_.des_pose_flange_right.pose);
+
+    ROS_INFO("flange goal");
+    display_affine(goal_flange_affine_right_);
+    Vectorq7x1 q_start;
+    q_start = get_jspace_start_right_arm_(); // choose last cmd, or current joint angles
+    //    bool jspace_path_planner_to_affine_goal(Vectorq7x1 q_start, Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path);
+
+    path_is_valid_ = cartTrajPlanner_.jspace_path_planner_to_affine_goal(q_start, goal_flange_affine_right_, optimal_path_);
 
     if (path_is_valid_) {
         baxter_traj_streamer_.stuff_trajectory_right_arm(optimal_path_, des_trajectory_); //convert from vector of poses to trajectory message   

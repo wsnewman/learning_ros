@@ -1,8 +1,10 @@
 // coordinator: 
 // wsn, Sept, 2016
 // illustrates use of object_finder, object_grabber (need  navigator) action servers
+// presents an action-server interface to clients
+// see example action client: coordinator_action_client.cpp
 
-//trigger this process with:
+//OLD:  trigger this process with:
 // to find toy block:
 //rostopic pub action_codes std_msgs/Int32 100
 /// to grab toy block:
@@ -70,9 +72,9 @@ public:
 };
 
 TaskActionServer::TaskActionServer() :
-as_(nh_, "manip_task_action", boost::bind(&TaskActionServer::executeCB, this, _1), false),
-object_finder_ac_("objectFinderActionServer", true),
-object_grabber_ac_("objectGrabberActionServer", true) {
+as_(nh_, "manip_task_action_service", boost::bind(&TaskActionServer::executeCB, this, _1), false),
+object_finder_ac_("object_finder_action_service", true),
+object_grabber_ac_("object_grabber_action_service", true) {
     ROS_INFO("in constructor of TaskActionServer...");
     // do any other desired initializations here...specific to your implementation
     as_.start(); //start the server running
@@ -135,7 +137,7 @@ void TaskActionServer::executeCB(const actionlib::SimpleActionServer<coordinator
     ROS_INFO("in executeCB: received manipulation task");
 
     goal_action_code_ = goal->action_code; //verbatim from received goal
-    action_code_ = goal->action_code;
+    action_code_ = goal->action_code; //init: this value changes as state machine advances through steps
     ROS_INFO("requested action code is: %d", goal_action_code_);
     //if action code is "MANIP_OBJECT", need to go through a sequence of action codes
     //otherwise, action code is a simple action code, and can use it as-is
@@ -241,7 +243,7 @@ void TaskActionServer::executeCB(const actionlib::SimpleActionServer<coordinator
                 ROS_INFO("executeCB: action_code, status_code = %d, %d", action_code_, status_code_);
                 ros::Duration(2.0).sleep();
                 //if here, then presumably have a valid pose for object of interest; grab it!       
-                object_grabber_goal_.object_code = pickup_action_code_; //specify the object to be grabbed 
+                object_grabber_goal_.action_code = pickup_action_code_; //specify the object to be grabbed 
                 object_grabber_goal_.desired_frame = pickup_pose_; //and the object's current pose
                 ROS_INFO("sending goal to grab object: ");
                 object_grabber_ac_.sendGoal(object_grabber_goal_,
@@ -272,7 +274,7 @@ void TaskActionServer::executeCB(const actionlib::SimpleActionServer<coordinator
             case coordinator::ManipTaskGoal::DROPOFF_OBJECT:
                 status_code_ = coordinator::ManipTaskFeedback::DROPOFF_MOTION_BUSY; //coordinator::ManipTaskResult::MANIP_SUCCESS; //code 0
                 ROS_INFO("executeCB: action_code, status_code = %d, %d", action_code_, status_code_);
-                object_grabber_goal_.object_code = dropoff_action_code_; //specify the object to be grabbed 
+                object_grabber_goal_.action_code = dropoff_action_code_; //specify the object to be grabbed 
                 object_grabber_goal_.desired_frame = dropoff_pose_; //and the object's current pose
                 ROS_INFO("sending goal to drop off object: ");
                 object_grabber_ac_.sendGoal(object_grabber_goal_,
@@ -308,7 +310,7 @@ void TaskActionServer::executeCB(const actionlib::SimpleActionServer<coordinator
                 
             case coordinator::ManipTaskGoal::MOVE_TO_PRE_POSE:
                 status_code_ = coordinator::ManipTaskFeedback::PREPOSE_MOVE_BUSY;
-                object_grabber_goal_.object_code = object_grabber::object_grabberGoal::MOVE_TO_PRE_POSE; //specify the object to be grabbed 
+                object_grabber_goal_.action_code = object_grabber::object_grabberGoal::MOVE_TO_PRE_POSE; //specify the object to be grabbed 
                 ROS_INFO("sending goal to move to pre-pose: ");
                 object_grabber_ac_.sendGoal(object_grabber_goal_,
                         boost::bind(&TaskActionServer::objectGrabberDoneCb_, this, _1, _2));

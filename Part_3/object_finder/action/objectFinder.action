@@ -1,6 +1,7 @@
 #objectFinder.action
 #goal:
 #define object codes...add more!
+#put these in a separate file
 #some generic solid objects:
 int32 UPRIGHT_CYLINDER = 1
 int32 HORIZONTAL_CYLINDER = 2
@@ -35,11 +36,13 @@ int32 OBJECT_FOUND=1
 int32 OBJECT_CODE_NOT_RECOGNIZED=2
 int32 OBJECT_FINDER_BUSY=3
 int32 OBJECT_FINDER_CANCELLED=4
+
 #return the identified pose here:
 int32 found_object_code
 geometry_msgs/PoseStamped object_pose
 ---
 #feedback: optional; 
+#int32 OBJECT_FINDER_BUSY=3 
 int32 fdbk
 
 

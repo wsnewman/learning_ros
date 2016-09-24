@@ -60,11 +60,15 @@ private:
     void executeCB(const actionlib::SimpleActionServer<object_grabber::object_grabberAction>::GoalConstPtr& goal);
 
     int vertical_cylinder_power_grasp(geometry_msgs::PoseStamped object_pose);
-    int grasp_from_above(geometry_msgs::PoseStamped des_flange_grasp_pose, double approach_dist);
+
+    int grasp_from_above(geometry_msgs::PoseStamped des_flange_grasp_pose, 
+        double approach_dist, double gripper_close_test_val);
     int dropoff_from_above(geometry_msgs::PoseStamped gripper_pose_wrt_torso, double approach_dist);
     int move_flange_to(geometry_msgs::PoseStamped flange_pose_wrt_torso);
     int fine_move_flange_to(geometry_msgs::PoseStamped des_flange_pose_wrt_torso);
     int jspace_move_to_pre_pose(void);
+    int jspace_move_flange_to(geometry_msgs::PoseStamped des_flange_pose_wrt_torso);
+
     geometry_msgs::PoseStamped convert_pose_to_torso_frame(geometry_msgs::PoseStamped pose_stamped);
     
     //specialized fncs: describes a grasp transform for a specific object (TOY_BLOCK)

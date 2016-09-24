@@ -40,7 +40,7 @@ public:
 };
 
 ObjectFinder::ObjectFinder() :
-object_finder_as_(nh_, "objectFinderActionServer", boost::bind(&ObjectFinder::executeCB, this, _1), false), pclUtils_(&nh_) {
+object_finder_as_(nh_, "object_finder_action_service", boost::bind(&ObjectFinder::executeCB, this, _1), false), pclUtils_(&nh_) {
     ROS_INFO("in constructor of ObjectFinder...");
     // do any other desired initializations here...specific to your implementation
  

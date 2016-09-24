@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "example_object_grabber_action_client");
     ros::NodeHandle nh;
     XformUtils xformUtils;
-    actionlib::SimpleActionClient<object_grabber::object_grabberAction> object_grabber_ac("objectGrabberActionServer", true);
+    actionlib::SimpleActionClient<object_grabber::object_grabberAction> object_grabber_ac("object_grabber_action_service", true);
     geometry_msgs::PoseStamped toy_block_poseStamped;
     geometry_msgs::PoseStamped toy_block_dropoff_poseStamped;
     //hard code an object pose; later, this will come from perception
@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
     bool finished_before_timeout;
 
     //stuff a goal message:  set action code to grab block and provide block's pose
-    object_grabber_goal.object_code = object_grabber::object_grabberGoal::GRAB_TOY_BLOCK; //specify the object to be grabbed
+    object_grabber_goal.action_code = object_grabber::object_grabberGoal::GRAB_TOY_BLOCK; //specify the object to be grabbed
     object_grabber_goal.desired_frame = toy_block_poseStamped;
 
     ROS_INFO("attempt to grab toy block at object pose: ");
@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
     }
     //drop off the block at specified coordinates
     //stuff a goal message with action code and goal pose
-    object_grabber_goal.object_code = object_grabber::object_grabberGoal::PLACE_TOY_BLOCK;
+    object_grabber_goal.action_code = object_grabber::object_grabberGoal::PLACE_TOY_BLOCK;
     object_grabber_goal.desired_frame = toy_block_dropoff_poseStamped; //des pose
     ROS_INFO("attempting to place toy block at object pose: ");
     xformUtils.printStampedPose(toy_block_dropoff_poseStamped);
