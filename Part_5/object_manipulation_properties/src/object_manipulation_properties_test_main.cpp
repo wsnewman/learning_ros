@@ -9,7 +9,7 @@ int main(int argc, char** argv) {
     double approach_dist, gripper_test_val;
     int object = TOY_BLOCK_ID;
     
-    cout<<"enter object ID code: ";
+    cout<<"enter object ID code (try 1000): ";
     cin>>object;
     
     if (objectManipulationProperties.get_object_info(object,grasp_transform,approach_dist,gripper_test_val)) {

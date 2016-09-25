@@ -3,7 +3,7 @@
 #include <cartesian_planner/baxter_arm_motion_commander.h>
 
 ArmMotionCommander::ArmMotionCommander(ros::NodeHandle* nodehandle) : nh_(*nodehandle),
-cart_move_action_client_("cartMoveActionServer", true) { // constructor
+cart_move_action_client_("cart_move_action_server", true) { // constructor
     ROS_INFO("in constructor of ArmMotionInterface");
 
     // attempt to connect to the server:
@@ -402,48 +402,3 @@ int ArmMotionCommander::rt_arm_request_flange_pose_wrt_torso(void) {
             flange_pose_stamped_.pose.orientation.w);
     return (int) cart_result_.return_code;
 }
-
-//these are repeats--should use fncs from xform_utils library
-/* 
-Eigen::Affine3d ArmMotionCommander::transformPoseToEigenAffine3d(geometry_msgs::Pose pose) {
-    Eigen::Affine3d affine;
-
-    Eigen::Vector3d Oe;
-
-    Oe(0) = pose.position.x;
-    Oe(1) = pose.position.y;
-    Oe(2) = pose.position.z;
-    affine.translation() = Oe;
-
-    Eigen::Quaterniond q;
-    q.x() = pose.orientation.x;
-    q.y() = pose.orientation.y;
-    q.z() = pose.orientation.z;
-    q.w() = pose.orientation.w;
-    Eigen::Matrix3d Re(q);
-
-    affine.linear() = Re;
- affine.translation()= Oe;
-    return affine;
-}
-
-geometry_msgs::Pose ArmMotionCommander::transformEigenAffine3dToPose(Eigen::Affine3d e) {
-    Eigen::Vector3d Oe;
-    Eigen::Matrix3d Re;
-    geometry_msgs::Pose pose;
-    Oe = e.translation();
-    Re = e.linear();
-
-    Eigen::Quaterniond q(Re); // convert rotation matrix Re to a quaternion, q
-    pose.position.x = Oe(0);
-    pose.position.y = Oe(1);
-    pose.position.z = Oe(2);
-
-    pose.orientation.x = q.x();
-    pose.orientation.y = q.y();
-    pose.orientation.z = q.z();
-    pose.orientation.w = q.w();
-
-    return pose;
-}
-*/

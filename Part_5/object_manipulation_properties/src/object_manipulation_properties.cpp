@@ -18,7 +18,7 @@ bool ObjectManipulationProperties::get_object_info(int object_id, Eigen::Affine3
             //set approach distance and gripper-closure test val: MAGIC NUMBERS
             // appropriate ONLY for this object with Baxter right-hand gripper in simu
             approach_dist = 0.05; //old float64 TOY_BLOCK_APPROACH_DIST = 0.05
-            gripper_close_test = 80.0; //old float64 TOY_BLOCK_GRIPPER_CLOSE_TEST_VAL = 80.0
+            gripper_close_test = 83.0; //old float64 TOY_BLOCK_GRIPPER_CLOSE_TEST_VAL = 80.0
             //derive gripper approach pose from block pose:
             //compute a gripper pose with z-axis anti-parallel to object z-axis,
             // and x-axis coincident with object x-axis

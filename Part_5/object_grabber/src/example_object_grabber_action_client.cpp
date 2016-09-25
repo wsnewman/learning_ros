@@ -10,11 +10,14 @@
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 #include <xform_utils/xform_utils.h>
+#include <object_manipulation_properties/object_manipulation_properties.h>
 
+int g_object_grabber_return_code;
 void objectGrabberDoneCb(const actionlib::SimpleClientGoalState& state,
         const object_grabber::object_grabberResultConstPtr& result) {
     ROS_INFO(" objectGrabberDoneCb: server responded with state [%s]", state.toString().c_str());
-    ROS_INFO("got result output = %d; ", result->return_code);
+    g_object_grabber_return_code = result->return_code;
+    ROS_INFO("got result output = %d; ", g_object_grabber_return_code);
 }
 
 int main(int argc, char** argv) {
@@ -53,7 +56,8 @@ int main(int argc, char** argv) {
     bool finished_before_timeout;
 
     //stuff a goal message:  set action code to grab block and provide block's pose
-    object_grabber_goal.action_code = object_grabber::object_grabberGoal::GRAB_TOY_BLOCK; //specify the object to be grabbed
+    object_grabber_goal.action_code = object_grabber::object_grabberGoal::GRAB_W_TOOL_Z_APPROACH; //specify the object to be grabbed
+    object_grabber_goal.object_id = TOY_BLOCK_ID; //from object_manipulation_properties.h
     object_grabber_goal.desired_frame = toy_block_poseStamped;
 
     ROS_INFO("attempt to grab toy block at object pose: ");
@@ -65,10 +69,17 @@ int main(int argc, char** argv) {
         ROS_WARN("giving up waiting on result ");
         return 1;
     }
+    //test return code:
+    if (g_object_grabber_return_code!= object_grabber::object_grabberResult::SUCCESS) {
+        ROS_WARN("return code was not SUCCESS; giving up");
+        return 1;       
+    }
     //drop off the block at specified coordinates
     //stuff a goal message with action code and goal pose
-    object_grabber_goal.action_code = object_grabber::object_grabberGoal::PLACE_TOY_BLOCK;
+    object_grabber_goal.action_code = object_grabber::object_grabberGoal::DROPOFF_ALONG_TOOL_Z;
     object_grabber_goal.desired_frame = toy_block_dropoff_poseStamped; //des pose
+    object_grabber_goal.object_id = TOY_BLOCK_ID;
+    
     ROS_INFO("attempting to place toy block at object pose: ");
     xformUtils.printStampedPose(toy_block_dropoff_poseStamped);
     ROS_INFO("sending goal: ");

@@ -28,6 +28,8 @@
 // Automated header generation creates multiple headers for message I/O
 // These are referred to by the root name (demo) and appended name (Action)
 #include<coordinator/ManipTaskAction.h>
+#include <object_manipulation_properties/object_manipulation_properties.h>
+
 
 class TaskActionServer {
 private:
@@ -149,12 +151,14 @@ void TaskActionServer::executeCB(const actionlib::SimpleActionServer<coordinator
         dropoff_pose_ = goal->dropoff_frame;
         ROS_INFO("object code is: %d", object_code_);
         ROS_INFO("perception_source is: %d", goal->perception_source);
-        if (object_code_ == coordinator::ManipTaskGoal::TOY_BLOCK) {
+        //if (object_code_ == coordinator::ManipTaskGoal::TOY_BLOCK) {
+        if (object_code_ == TOY_BLOCK_ID) {            
             vision_object_code_ = object_finder::objectFinderGoal::TOY_BLOCK;
             ROS_INFO("using object-finder object code %d",vision_object_code_);
             pickup_action_code_ = object_grabber::object_grabberGoal::GRAB_TOY_BLOCK;
             dropoff_action_code_ = object_grabber::object_grabberGoal::PLACE_TOY_BLOCK;
-            action_code_ = coordinator::ManipTaskGoal::GET_PICKUP_POSE; //start with perceptual processing
+            //start the state machine with perceptual processing task:
+            action_code_ = coordinator::ManipTaskGoal::GET_PICKUP_POSE; 
         } else {
             ROS_WARN("unknown object type in manipulation action");
             as_.setAborted(result_);

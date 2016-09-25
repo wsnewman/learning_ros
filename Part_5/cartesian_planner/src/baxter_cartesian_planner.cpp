@@ -521,12 +521,13 @@ bool CartTrajPlanner::jspace_path_planner_to_affine_goal(Vectorq7x1 q_start, Eig
     single_layer_nodes.clear();
     if (nsolns<1) return false; // give up
     //else power on...
-    single_layer_nodes.resize(nsolns);
+    //single_layer_nodes.resize(nsolns);
     for (int isoln = 0; isoln < nsolns; isoln++) {
          q_approx = q_solns[isoln];
         if (baxter_IK_solver_.improve_7dof_soln_wrt_torso(a_flange_end, q_approx, q_refined)) {
             precise_node = q_refined; //convert to Eigen::VectorXd
-            single_layer_nodes.push_back(precise_node);
+            cout<<"precise_node: "<<precise_node.transpose()<<endl;
+            single_layer_nodes.push_back(precise_node);    
         }
     }
     nsolns = single_layer_nodes.size();
@@ -534,6 +535,7 @@ bool CartTrajPlanner::jspace_path_planner_to_affine_goal(Vectorq7x1 q_start, Eig
     if (nsolns <1) {
         return false; //no solns
     }
+    
 
     //ok--we have at least one precise soln;
     // 
@@ -547,10 +549,12 @@ bool CartTrajPlanner::jspace_path_planner_to_affine_goal(Vectorq7x1 q_start, Eig
     //note: prepose hard-code defined in baxter_cart_move_as;
     //q_pre_pose_ << -0.907528, -0.111813, 2.06622, 1.8737, -1.295, 2.00164, 0;
     // should move this to a header;  want shoulder elevation near zero to elevate elbow
-    Eigen::VectorXd dq_move, q_modified_start;
+
+    Eigen::VectorXd dq_move(7), q_modified_start(7);
     q_modified_start = qx_start;
     q_modified_start[1] = 0; // bias preference for shoulder elevation near zero,
                              // regardless of start pose
+    cout<<"q_modified_start: "<<q_modified_start.transpose()<<endl;
     //from baxter_traj_streamer.h:
     //const double q0dotmax = 0.5;
     //const double q1dotmax = 0.5;
@@ -563,13 +567,19 @@ bool CartTrajPlanner::jspace_path_planner_to_affine_goal(Vectorq7x1 q_start, Eig
     //jspace_planner_weights_ are defined here, above
     double penalty_best = 1000000;
     double penalty;
-    qx_end = single_layer_nodes[0]; //default: first soln    
+
+    cout<<"jspace_planner_weights_: "<<jspace_planner_weights_.transpose()<<endl;    
+    qx_end = single_layer_nodes[0]; //default: first soln   
+    cout<<"qx_end: "<<qx_end.transpose()<<endl;
     for (int i=0;i<nsolns;i++) {
+        
         dq_move = q_modified_start-single_layer_nodes[i];
+        cout<<"dq_move: "<<dq_move.transpose()<<endl;
         penalty=0.0;
         for (int j=0;j<7;j++) {
-            penalty+= jspace_planner_weights_[i]*fabs(dq_move[i]); //should scale by speed limits
+            penalty+= jspace_planner_weights_[j]*fabs(dq_move[j]); //should scale by speed limits
         }
+        ROS_INFO("soln %d has penalty = %f",i,penalty);
         if (penalty<penalty_best) {
             penalty_best = penalty;
             qx_end = single_layer_nodes[i];

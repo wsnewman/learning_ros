@@ -5,6 +5,8 @@
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
 #include<coordinator/ManipTaskAction.h>
+#include <object_manipulation_properties/object_manipulation_properties.h>
+
 
 bool g_goal_done = true;
 int g_ntasks_done = 0;
@@ -79,7 +81,7 @@ int main(int argc, char** argv) {
 
     //now send a manipulation code, including vision, grasp and drop-off
     g_goal_done = false;
-    goal.object_code = coordinator::ManipTaskGoal::TOY_BLOCK;
+    goal.object_code = TOY_BLOCK_ID; // from object_manipulation_properties; //coordinator::ManipTaskGoal::TOY_BLOCK;
     goal.action_code = coordinator::ManipTaskGoal::MANIP_OBJECT;
     //goal.perception_source= coordinator::ManipTaskGoal::BLIND_MANIP;
     goal.perception_source = coordinator::ManipTaskGoal::PCL_VISION;

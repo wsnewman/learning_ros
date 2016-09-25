@@ -299,7 +299,7 @@ void ArmMotionInterface::executeCB(const actionlib::SimpleActionServer<cartesian
             break;
             
         case cartesian_planner::baxter_cart_moveGoal::RT_ARM_PLAN_JSPACE_PATH_CURRENT_TO_CART_POSE:          
-            rt_arm_plan_path_current_to_goal_flange_pose();   
+            rt_arm_plan_jspace_path_current_to_cart_pose();   
             break;
                 
         default:
@@ -368,72 +368,6 @@ void ArmMotionInterface::js_doneCb_(const actionlib::SimpleClientGoalState& stat
     g_right_js_doneCb_flag = 1;
 }
 
-//handy utility: convert from a tf::Transform object to an Eigen::Affine3d
-//not used in this node; obsolete--use XformUtils instead
-/*
-Eigen::Affine3d ArmMotionInterface::transformTFToEigen(const tf::Transform &t) {
-    Eigen::Affine3d e;
-    for (int i = 0; i < 3; i++) {
-        e.matrix()(i, 3) = t.getOrigin()[i];
-        for (int j = 0; j < 3; j++) {
-            e.matrix()(i, j) = t.getBasis()[i][j];
-        }
-    }
-    // Fill in identity in last row
-    for (int col = 0; col < 3; col++)
-        e.matrix()(3, col) = 0;
-    e.matrix()(3, 3) = 1;
-    return e;
-}
-*/
-//handy utility: convert from geometry_msgs::Pose to an Eigen::Affine3d
-//should instead use fncs in xformUtils package
-/*
-Eigen::Affine3d ArmMotionInterface::transformPoseToEigenAffine3d(geometry_msgs::Pose pose) {
-    Eigen::Affine3d affine;
-
-    Eigen::Vector3d Oe;
-
-    Oe(0) = pose.position.x;
-    Oe(1) = pose.position.y;
-    Oe(2) = pose.position.z;
-    affine.translation() = Oe;
-
-    Eigen::Quaterniond q;
-    q.x() = pose.orientation.x;
-    q.y() = pose.orientation.y;
-    q.z() = pose.orientation.z;
-    q.w() = pose.orientation.w;
-    Eigen::Matrix3d Re(q);
-
-    affine.linear() = Re;
-    affine.translation()= Oe;
-    return affine;
-}
-*/
-//handy utility: convert from Eigen::Affine3d to a geometry_msgs::Pose
-//obsolete: uses XformUtils
-/*
-geometry_msgs::Pose ArmMotionInterface::transformEigenAffine3dToPose(Eigen::Affine3d e) {
-    Eigen::Vector3d Oe;
-    Eigen::Matrix3d Re;
-    geometry_msgs::Pose pose;
-    Oe = e.translation();
-    Re = e.linear();
-
-    Eigen::Quaterniond q(Re); // convert rotation matrix Re to a quaternion, q
-    pose.position.x = Oe(0);
-    pose.position.y = Oe(1);
-    pose.position.z = Oe(2);
-
-    pose.orientation.x = q.x();
-    pose.orientation.y = q.y();
-    pose.orientation.z = q.z();
-    pose.orientation.w = q.w();
-
-    return pose;
-}
-*/
 //handy utility, just to print data to screen for Affine objects
 
 void ArmMotionInterface::display_affine(Eigen::Affine3d affine) {
@@ -642,31 +576,6 @@ bool ArmMotionInterface::plan_jspace_path_qstart_to_qend(Eigen::VectorXd q_start
 
 }
 
-/*  renamed this: rt_arm_plan_path_current_to_goal_flange_pose
-    bool ArmMotionInterface::jspace_path_planner_current_to_affine_goal(Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path) {
-    ROS_INFO("planning a joint-space path to a Cartesian goal");
-    //set q_start to current arm pose;
-    Vectorq7x1 q_start;
-    q_start = get_jspace_start_right_arm_(); // current joint angles
-    //bool CartTrajPlanner::jspace_path_planner_to_affine_goal(Vectorq7x1 q_start, Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path) {
-
-    path_is_valid_ = cartTrajPlanner_.jspace_path_planner_to_affine_goal(q_start, a_flange_end, optimal_path_);
-    if (path_is_valid_) {
-        //void Baxter_traj_streamer::stuff_trajectory_right_arm( std::vector<Eigen::VectorXd> qvecs, trajectory_msgs::JointTrajectory &new_trajectory) {
-
-        baxter_traj_streamer_.stuff_trajectory_right_arm(optimal_path_, des_trajectory_); //convert from vector of poses to trajectory message   
-        computed_arrival_time_ = des_trajectory_.points.back().time_from_start.toSec();
-        cart_result_.return_code = cartesian_planner::baxter_cart_moveResult::SUCCESS;
-        cart_result_.computed_arrival_time = computed_arrival_time_;
-        cart_move_as_.setSucceeded(cart_result_);
-    } else {
-        cart_result_.return_code = cartesian_planner::baxter_cart_moveResult::RT_ARM_PATH_NOT_VALID;
-        cart_result_.computed_arrival_time = -1.0; //impossible arrival time        
-        cart_move_as_.setSucceeded(cart_result_); //the communication was a success, but not the computation 
-    }
-    return path_is_valid_;
-}
-*/
 //this is a pretty general function:
 // goal contains a desired tool pose;
 // path is planned from current joint state to some joint state that achieves desired tool pose
@@ -703,7 +612,7 @@ bool ArmMotionInterface::rt_arm_plan_path_current_to_goal_pose() {
 
 //this version uses des_pose_flange_right as desired FLANGE pose
 bool ArmMotionInterface::rt_arm_plan_path_current_to_goal_flange_pose() {
-    ROS_INFO("computing a cartesian trajectory to right-arm flange goal pose");
+    ROS_INFO("computing a joint-space trajectory to right-arm flange goal pose");
     //unpack the goal pose:
     goal_flange_affine_right_ = xformUtils.transformPoseToEigenAffine3d(cart_goal_.des_pose_flange_right.pose);
 

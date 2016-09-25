@@ -7,8 +7,10 @@ int32 UPRIGHT_CYLINDER = 1
 int32 GRAB_UPRIGHT_CYLINDER = 1 #synonym
 int32 TOY_BLOCK = 2
 int32 GRAB_TOY_BLOCK = 2 #synonym
+int32 GRAB_W_TOOL_Z_APPROACH = 2 #another synonym
 int32 PLACE_UPRIGHT_CYLINDER = 3 #new drop-off command
 int32 PLACE_TOY_BLOCK = 4 #drop-off toy block
+int32 DROPOFF_ALONG_TOOL_Z = 4 #synonym
 
 int32 MOVE_FLANGE_TO = 5 #specify flange pose to reach
 int32 FINE_MOVE_FLANGE_TO = 6 #precision move to specified flange pose
@@ -18,9 +20,10 @@ int32 JSPACE_MOVE_FLANGE_TO = 8 # joint-space move to specified flange pose
 int32 CLOSE_GRIPPER = 100  #commands to open/close gripper; should specify test value
 int32 OPEN_GRIPPER = 101
 
-float64 TOY_BLOCK_APPROACH_DIST = 0.05
+#moved these properties to object_manipulation_properties package/library
+#float64 TOY_BLOCK_APPROACH_DIST = 0.05
 #expect w/ gripper closed on toy block, finger separation should be more than this value:
-float64 TOY_BLOCK_GRIPPER_CLOSE_TEST_VAL = 80.0
+#float64 TOY_BLOCK_GRIPPER_CLOSE_TEST_VAL = 80.0
 
 
 #add more objects here...
@@ -29,8 +32,9 @@ float64 TOY_BLOCK_GRIPPER_CLOSE_TEST_VAL = 80.0
 
 #goal:
 int32 action_code
+int32 object_id
 geometry_msgs/PoseStamped desired_frame  
-float64 gripper_test_val
+#float64 gripper_test_val
 
 ---
 #result definition
