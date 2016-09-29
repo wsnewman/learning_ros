@@ -1,4 +1,8 @@
 <launch>
-<param name="robot_description" 
-textfile="$(find minimal_robot_description)/minimal_robot_description.urdf"/>
+  <param name="robot_description" 
+   textfile="$(find minimal_robot_description)/minimal_robot_description.urdf"/>
+
+  <!-- Spawn a robot into Gazebo -->
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" 
+     args="-param robot_description -urdf -model one_DOF_robot" />
 </launch>

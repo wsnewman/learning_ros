@@ -3,7 +3,7 @@ rostopic pub cmd_vel geometry_msgs/Twist '{ linear :{ x : 0.5 , y : 0.0 , z : 0.
 rostopic pub cmd_vel geometry_msgs/Twist '{ linear :{ x : 0.0 , y : 0.0 , z : 0.0} , angular: { x : 0.0 , y : 0.0 , z : 0.3}}'
 
 Chapter 3:
-copy over folder: exmpl_models
+in package: exmpl_models
 examine rect_prism; note link fields
 
 
@@ -45,13 +45,42 @@ rosrun example_gazebo_set_state example_gazebo_set_prism_state
 
 rostopic echo gazebo/model_states
 
-next, robot model: kill and restart gazebo;
-from package: minimal_robot_description
+ROBOT MODEL IN GAZEBO:
+kill and restart gazebo;
+spawn robot model into Gazebo using terminal command: 
+roscd minimal_robot_description
 rosrun gazebo_ros spawn_model -urdf -file minimal_robot_description.urdf -model one_DOF
 rostopic list
 rostopic echo gazebo/link_states
 
-copy over package minimal_robot_description somewhere into ros_ws/src directory;
+spawn robot model into Gazebo using rospack-find to locate the model's directory:
+rosrun gazebo_ros spawn_model -urdf -file $(rospack find minimal_robot_description)/minimal_robot_description.urdf -model one_DOF
+
+OR, first put on the parameter server, e.g. with launch file:
+roslaunch minimal_robot_description minimal_robot_description.launch 
+
+observe that robot is stored on parameter server with
+rosparam list
+rosparam get /robot_description
+
+THEN, spawn into Gazebo from parameter server with (terminal command):
+rosrun gazebo_ros spawn_model -param robot_description -urdf -model one_DOF_robot
+
+OR, put these both in a launch file; see, e.g. minimal_robot_w_jnt_ctl.launch
+
+rosrun minimal_joint_controller minimal_joint_controller
+(similar to what is required to make a ROS interface to a robot)
+  get sensor values and publish these on "joint_states"
+  subscribe to jnt_cmd and use this as setpoint in feedback algorithm
+  compute torque corrections and send these to physical interface to motor(s) in tight servo loop
+  
+  rostopic pub pos_cmd std_msgs/Float64 1.0
+  rostopic pub -r 10 pos_cmd std_msgs/Float64 1.0  (better for rqt_plot)
+  
+  rostopic pub -r 10 pos_cmd std_msgs/Float64 0.0
+  rostopic pub -r 10 pos_cmd std_msgs/Float64 -- -1.0 (need -- to note use of negative numbers)
+  
+  rqt_plot w/: /pos_cmd, /jnt_pos, 
 
 roslaunch minimal_robot_description minimal_robot_w_jnt_ctl.launch 
 rostopic list
