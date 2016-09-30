@@ -49,6 +49,7 @@
 <build_depend>geometry_msgs</build_depend>
 <build_depend>std_msgs</build_depend>
 <build_depend>object_manipulation_properties</build_depend>
+<build_depend>example_gazebo_set_state</build_depend>
   <run_depend>roscpp</run_depend>
 <run_depend>object_finder</run_depend>
 <run_depend>object_grabber</run_depend>
@@ -59,6 +60,7 @@
 <run_depend>std_msgs</run_depend>
 <run_depend>message_runtime</run_depend>
 <run_depend>object_manipulation_properties</run_depend> 
+<run_depend>example_gazebo_set_state</run_depend>
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- You can specify that this package is a metapackage here: -->

@@ -57,6 +57,8 @@ private:
     geometry_msgs::PoseStamped dropoff_pose_;
     int goal_action_code_, object_code_, perception_source_;
     int vision_object_code_; //SHOULD be reconciled with ManipTask object codes
+    double surface_height_; // table-top height, as found by object_finder
+    bool found_surface_height_;
 
     //the following are used for logic in executeCB
     bool working_on_task_; //true as long as goal is still in progress
@@ -107,6 +109,7 @@ object_grabber_ac_("object_grabber_action_service", true) {
 
 
     pose_publisher_ = nh_.advertise<geometry_msgs::PoseStamped>("triad_display_pose", 1, true);
+    found_surface_height_=false;
 }
 
 void TaskActionServer::objectFinderDoneCb_(const actionlib::SimpleClientGoalState& state,
@@ -189,7 +192,38 @@ void TaskActionServer::executeCB(const actionlib::SimpleActionServer<coordinator
         }
         //here is where we step through states:
         switch (action_code_) {
-
+            case coordinator::ManipTaskGoal::FIND_TABLE_SURFACE:
+                ROS_INFO("serving request to find table surface");
+                    found_object_code_ = object_finder::objectFinderResult::OBJECT_FINDER_BUSY;
+                    object_finder_goal_.object_id = object_finder::objectFinderGoal::TABLE_SURFACE;
+                       //vision_object_code_;
+                    object_finder_goal_.known_surface_ht = false; //require find table height
+                    //object_finder_goal_.surface_ht = 0.05; //this is ignored for known_surface_ht=false
+                    object_finder_ac_.sendGoal(object_finder_goal_,
+                            boost::bind(&TaskActionServer::objectFinderDoneCb_, this, _1, _2));
+                    action_code_ = coordinator::ManipTaskGoal::WAIT_FIND_TABLE_SURFACE;                                 
+                    ROS_INFO("executeCB: action_code, status_code = %d, %d", action_code_, status_code_);
+                    ROS_INFO("waiting on perception");
+                break;
+            case coordinator::ManipTaskGoal::WAIT_FIND_TABLE_SURFACE: 
+                    if (found_object_code_ == object_finder::objectFinderResult::OBJECT_FOUND) {
+                        ROS_INFO("surface-finder success");
+                        surface_height_ = pickup_pose_.pose.position.z; // table-top height, as found by object_finder
+                        found_surface_height_=true;  
+                        ROS_INFO("found table ht = %f",surface_height_);
+                        as_.setSucceeded(result_); // return the "result" message to client, along with "success" status
+                        return; //done w/ callback
+                } else if (found_object_code_ == object_finder::objectFinderResult::OBJECT_FINDER_BUSY) {
+                    //ROS_INFO("waiting on perception"); //do nothing
+                } else {
+                    ROS_WARN("object-finder failure; aborting");
+                    action_code_ = coordinator::ManipTaskGoal::ABORT;
+                    result_.manip_return_code = coordinator::ManipTaskResult::FAILED_PERCEPTION;
+                    found_surface_height_=false;                
+                }
+                                    
+        break;
+                
             case coordinator::ManipTaskGoal::GET_PICKUP_POSE:
                 ROS_INFO("establishing pick-up pose");
                 if (perception_source_ == coordinator::ManipTaskGoal::BLIND_MANIP) {
@@ -205,9 +239,15 @@ void TaskActionServer::executeCB(const actionlib::SimpleActionServer<coordinator
                     found_object_code_ = object_finder::objectFinderResult::OBJECT_FINDER_BUSY;
                     ROS_INFO("instructing finder to locate object %d",vision_object_code_);
                     object_finder_goal_.object_id = vision_object_code_;
-
-                    object_finder_goal_.known_surface_ht = false; //require find table height
-                    object_finder_goal_.surface_ht = 0.05;
+                    if (found_surface_height_) {
+                        object_finder_goal_.known_surface_ht = true;
+                        object_finder_goal_.surface_ht = surface_height_;
+                        ROS_INFO("using surface ht = %f",surface_height_);
+                    }
+                    else {
+                        object_finder_goal_.known_surface_ht = false; //require find table height
+                        object_finder_goal_.surface_ht = 0.05; //not needed
+                    }
 
                     ROS_INFO("sending object-finder goal: ");
 
@@ -215,6 +255,7 @@ void TaskActionServer::executeCB(const actionlib::SimpleActionServer<coordinator
                             boost::bind(&TaskActionServer::objectFinderDoneCb_, this, _1, _2));
 
                     action_code_ = coordinator::ManipTaskGoal::WAIT_FOR_FINDER; 
+                    ROS_INFO("waiting on perception");
                 }
                 else {
                     ROS_WARN("unrecognized perception mode; quitting");
@@ -228,13 +269,14 @@ void TaskActionServer::executeCB(const actionlib::SimpleActionServer<coordinator
             case coordinator::ManipTaskGoal::WAIT_FOR_FINDER:
                 if (found_object_code_ == object_finder::objectFinderResult::OBJECT_FOUND) {
                     ROS_INFO("object-finder success");
-                    //next step: use the pose to grab object:
+                   //next step: use the pose to grab object:
                     action_code_ = coordinator::ManipTaskGoal::GRAB_OBJECT;
                     status_code_ = coordinator::ManipTaskFeedback::DROPOFF_PLANNING_BUSY;
                     //will later test for result code of object grabber, so initialize it to PENDING
+                    //(next step in state machine)
                     object_grabber_return_code_ = object_grabber::object_grabberResult::PENDING;
                 } else if (found_object_code_ == object_finder::objectFinderResult::OBJECT_FINDER_BUSY) {
-                    ROS_INFO("waiting on perception");
+                    //ROS_INFO("waiting on perception"); //continue waiting
                 } else {
                     ROS_WARN("object-finder failure; aborting");
                     action_code_ = coordinator::ManipTaskGoal::ABORT;

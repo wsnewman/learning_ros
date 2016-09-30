@@ -1,4 +1,4 @@
-// coordinator_action_client: 
+// coordinator_action_client2: 
 // wsn, September, 2016
 
 #include<ros/ros.h>
@@ -6,12 +6,16 @@
 #include <actionlib/client/terminal_state.h>
 #include<coordinator/ManipTaskAction.h>
 #include <object_manipulation_properties/object_manipulation_properties.h>
+#include <example_gazebo_set_state/SrvInt.h> // this message type is defined in the current package
 
 
 bool g_goal_done = true;
 int g_ntasks_done = 0;
 int g_callback_status = coordinator::ManipTaskResult::PENDING;
+int g_fdbk_count = 0;
+int g_n_successes = 0;
 //bool g_goal_active=false;
+using namespace std;
 
 void doneCb(const actionlib::SimpleClientGoalState& state,
         const coordinator::ManipTaskResultConstPtr& result) {
@@ -19,13 +23,36 @@ void doneCb(const actionlib::SimpleClientGoalState& state,
     g_goal_done = true;
     g_ntasks_done++;
     g_callback_status = result->manip_return_code;
-    ROS_INFO("return status is %d ", g_callback_status);
-    //int diff = result->output - result->goal_stamp;
-    //ROS_INFO("got result output = %d; goal_stamp = %d; diff = %d", result->output, result->goal_stamp, diff);
+    switch (g_callback_status) {
+        case coordinator::ManipTaskResult::MANIP_SUCCESS:
+            ROS_INFO("returned MANIP_SUCCESS");
+            break;
+        case coordinator::ManipTaskResult::FAILED_PERCEPTION:
+            ROS_WARN("returned FAILED_PERCEPTION");
+            break;
+        case coordinator::ManipTaskResult::FAILED_PICKUP_PLAN:
+            ROS_WARN("returned FAILED_PICKUP_PLAN");
+            break;
+        case coordinator::ManipTaskResult::FAILED_DROPOFF_PLAN:
+            ROS_WARN("returned FAILED_DROPOFF_PLAN");
+            break;
+        case coordinator::ManipTaskResult::FAILED_PICKUP:
+            ROS_WARN("returned FAILED_PICKUP");
+            break;
+        case coordinator::ManipTaskResult::DROPPED_OBJECT:
+            ROS_WARN("returned DROPPED_OBJECT");
+            break;
+    }
+    //ROS_INFO("return status is %d ", g_callback_status);
 }
 
 void feedbackCb(const coordinator::ManipTaskFeedbackConstPtr& fdbk_msg) {
-    ROS_INFO("feedback status = %d", fdbk_msg->feedback_status);
+    g_fdbk_count++;
+    if (g_fdbk_count > 1000) { //slow down the feedback publications
+        g_fdbk_count = 0;
+        //suppress this feedback output
+        //ROS_INFO("feedback status = %d", fdbk_msg->feedback_status);
+    }
     //g_fdbk = fdbk_msg->feedback_status; //make status available to "main()"
 }
 
@@ -37,9 +64,17 @@ void activeCb() {
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "task_client_node"); // name this node 
-    ros::NodeHandle nh; //standard ros node handle    
+    ros::NodeHandle nh; //standard ros node handle  
+    //rosservice call set_block_state 5
+    //ros::Publisher block_pose_publisher = nh.advertise<std_msgs::Float64>("topic1", 1);
+    ros::ServiceClient block_state_client = nh.serviceClient<example_gazebo_set_state::SrvInt>("set_block_state");
+    example_gazebo_set_state::SrvInt block_state_srv;
 
-    int g_count = 0;
+    int n_attempts = 0;
+    //int n_successes = 0;
+
+    block_state_srv.request.request_int = 1; //refers to toy-block model #1
+
     coordinator::ManipTaskGoal goal;
 
     goal.dropoff_frame.header.frame_id = "torso";
@@ -79,20 +114,52 @@ int main(int argc, char** argv) {
         ros::Duration(0.1).sleep();
     }
 
-    //now send a manipulation code, including vision, grasp and drop-off
+    //send vision request to find table top:
+    ROS_INFO("sending a goal: seeking table top");
     g_goal_done = false;
-    goal.object_code = TOY_BLOCK_ID; // from object_manipulation_properties; //coordinator::ManipTaskGoal::TOY_BLOCK;
-    goal.action_code = coordinator::ManipTaskGoal::MANIP_OBJECT;
-    //goal.perception_source= coordinator::ManipTaskGoal::BLIND_MANIP;
-    goal.perception_source = coordinator::ManipTaskGoal::PCL_VISION;
+    goal.action_code = coordinator::ManipTaskGoal::FIND_TABLE_SURFACE;
 
     action_client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
-
     while (!g_goal_done) {
         ros::Duration(0.1).sleep();
     }
-    ROS_INFO("callback reports goal is done; quitting");
 
+
+    while (ros::ok()) { //manipulation test loop--keep retrying
+        //send a manipulation code, including vision, grasp and drop-off
+        g_goal_done = false;
+        n_attempts++;
+
+        goal.object_code = TOY_BLOCK_ID; // from object_manipulation_properties; //coordinator::ManipTaskGoal::TOY_BLOCK;
+        goal.action_code = coordinator::ManipTaskGoal::MANIP_OBJECT;
+        //goal.perception_source= coordinator::ManipTaskGoal::BLIND_MANIP;
+        goal.perception_source = coordinator::ManipTaskGoal::PCL_VISION;
+
+        action_client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
+
+        while (!g_goal_done) {
+            ros::Duration(0.1).sleep();
+        }
+        if (g_callback_status == coordinator::ManipTaskResult::MANIP_SUCCESS) {
+            ROS_WARN("returned MANIP_SUCCESS");
+            g_n_successes++;
+        } else {
+            ROS_ERROR("failure: code %d; going back to pre-pose", g_callback_status);
+            g_goal_done = false;
+            goal.action_code = coordinator::ManipTaskGoal::MOVE_TO_PRE_POSE;
+            action_client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
+            while (!g_goal_done) {
+                ros::Duration(0.1).sleep();
+            }
+        }
+        ROS_WARN("got %d successes in %d tries", g_n_successes, n_attempts);
+        ROS_INFO("setting up another block");
+        block_state_client.call(block_state_srv);
+        ros::Duration(1.0).sleep(); //wait for block to show up
+        //ROS_INFO("callback reports goal is done; enter 1 to run again:");
+        //int ans;
+        //cin>>ans;
+    }
     return 0;
 }
 

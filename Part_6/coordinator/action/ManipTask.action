@@ -8,7 +8,10 @@ int32 BLIND_MANIP = 2 #expect pose specified in pickup_location field
 #action codes:
 int32 GET_PICKUP_POSE = 1 #low level ops; maybe don't implement
 int32 WAIT_FOR_FINDER = 101
-int32 RETRACT_ARM = 2
+
+int32 FIND_TABLE_SURFACE = 2 #do this once, and re-use result for multiple objects
+int32 WAIT_FIND_TABLE_SURFACE = 102
+
 int32 GRAB_OBJECT = 3 #assumes use of current pickup pose,
                       #whether provided for "blind" manip, or found
                       #from use of PCL_VISION
@@ -23,6 +26,7 @@ int32 MANIP_OBJECT = 5 #macro: does perception, grab, and dropoff
 int32 NO_CURRENT_TASK = 6
 int32 MOVE_TO_PRE_POSE = 7
 int32 WAIT_FOR_MOVE_TO_PREPOSE = 107
+#int32 RETRACT_ARM = 2
 int32 ABORT= 666
 
 #goal specification:
