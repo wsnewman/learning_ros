@@ -29,6 +29,8 @@ private:
     bool find_upright_coke_can(float surface_height, geometry_msgs::PoseStamped &object_pose);
     bool find_toy_block(float surface_height, geometry_msgs::PoseStamped &object_pose);
     float find_table_height();
+    double surface_height_;
+    bool found_surface_height_;
 public:
     ObjectFinder(); //define the body of the constructor outside of class definition
 
@@ -46,6 +48,8 @@ object_finder_as_(nh_, "object_finder_action_service", boost::bind(&ObjectFinder
  
     object_finder_as_.start(); //start the server running
     tfListener_ = new tf::TransformListener; //create a transform listener
+    found_surface_height_=false;
+    
 }
 
 //specialized function: DUMMY...JUST RETURN A HARD-CODED POSE; FIX THIS
@@ -71,10 +75,11 @@ bool ObjectFinder::find_toy_block(float surface_height, geometry_msgs::PoseStamp
     Eigen::Vector3f major_axis;
     Eigen::Vector3f centroid;
     bool found_object = true; //should verify this
-    double block_height = 0.04; //this height is specific to the TOY_BLOCK model
+    double block_height = 0.035; //this height is specific to the TOY_BLOCK model
     //if insufficient points in plane, find_plane_fit returns "false"
     //should do more sanity testing on found_object status
-    found_object = pclUtils_.find_plane_fit(0, 1, -0.5, 0.5, surface_height + 0.035, surface_height + 0.06, 0.001,
+    //hard-coded search bounds based on a block of width 0.035
+    found_object = pclUtils_.find_plane_fit(0.4, 1, -0.5, 0.5, surface_height + 0.025, surface_height + 0.045, 0.001,
             plane_normal, plane_dist, major_axis, centroid);
     //should have put a return value on find_plane_fit;
     //
@@ -146,18 +151,20 @@ void ObjectFinder::executeCB(const actionlib::SimpleActionServer<object_finder::
         double table_ht;
         //table_ht = find_table_height();  //this version is much too slow
         //ROS_INFO("table ht1: %f",table_ht); 
-        ros::Time t1 = ros::Time::now();
-        table_ht = pclUtils_.find_table_height(0.6, 1.2, 0.005);
-        ROS_INFO("table ht2: %f", table_ht);
-        ros::Time t2 = ros::Time::now();
+        //ros::Time t1 = ros::Time::now();
+        //table_ht = pclUtils_.find_table_height(0.6, 1.2, 0.005);
+        //ROS_INFO("table ht2: %f", table_ht);
+        //ros::Time t2 = ros::Time::now();
+        //hard-coded search range: x= [0,1], y= [-0.5,0.5], z=[0.6,1.2] in steps of 0.005
         table_ht = pclUtils_.find_table_height(0.0, 1, -0.5, 0.5, 0.6, 1.2, 0.005);
         ROS_INFO("table ht3: %f", table_ht);
         ros::Time t3 = ros::Time::now();
-        double dt1 = (t1 - tstart).toSec();
-        double dt2 = (t2 - t1).toSec();
-        double dt3 = (t3 - t2).toSec();
-        ROS_INFO("dt1 = %f; dt2 = %f; dt3= %f", dt1, dt2, dt3);
-        surface_height = table_ht;
+        //double dt1 = (t1 - tstart).toSec();
+        //double dt2 = (t2 - t1).toSec();
+        //double dt3 = (t3 - t2).toSec();
+        //ROS_INFO("dt1 = %f; dt2 = %f; dt3= %f", dt1, dt2, dt3);
+        surface_height_ = table_ht; //remember this value for potential future use
+        found_surface_height_ = true;
     }
 
 
@@ -189,7 +196,24 @@ void ObjectFinder::executeCB(const actionlib::SimpleActionServer<object_finder::
                 object_finder_as_.setAborted(result_);
             }
             break;
-
+        case object_finder::objectFinderGoal::TABLE_SURFACE:
+            //if called with !known_surface_ht, then surface height was found above;
+            // return the computed surface_height within an object_pose
+            ROS_INFO("object finder: finding/returning table height");
+                result_.found_object_code = object_finder::objectFinderResult::OBJECT_FOUND;
+                //rtn result in an object_pose: surface height w/rt world
+                object_pose.header.frame_id = "base_link";
+                object_pose.pose.position.x = 0.5; //arbitrarily place origin 0.5m in front of robot
+                object_pose.pose.position.y = 0.0; //centered, left/right
+                object_pose.pose.position.z = surface_height_; //computed value w/rt base_link
+                object_pose.pose.orientation.x = 0; //and aligned with base frame orientation
+                object_pose.pose.orientation.y = 0;
+                object_pose.pose.orientation.z = 0;
+                object_pose.pose.orientation.w = 1;
+                result_.object_pose = object_pose;
+                ROS_INFO("returning height %f",surface_height_);
+                object_finder_as_.setSucceeded(result_);            
+            break;
         default:
             ROS_WARN("this object ID is not implemented");
             result_.found_object_code = object_finder::objectFinderResult::OBJECT_CODE_NOT_RECOGNIZED;
@@ -208,7 +232,7 @@ int main(int argc, char** argv) {
     ROS_INFO("listening for kinect-to-base transform:");
     tf::StampedTransform stf_kinect_wrt_base;
     bool tferr = true;
-    ROS_INFO("waiting for tf between kinect_pc_frame and world...");
+    ROS_INFO("waiting for tf between kinect_pc_frame and base_link...");
     while (tferr) {
         tferr = false;
         try {

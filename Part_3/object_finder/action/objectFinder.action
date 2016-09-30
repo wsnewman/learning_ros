@@ -8,6 +8,7 @@ int32 HORIZONTAL_CYLINDER = 2
 int32 CUBE = 3
 int32 PRISM = 4
 int32 SPHERE = 5
+int32 TABLE_SURFACE = 6
 
 #some very specific objects...add more!
 #better: read these in from a database that is more easily augmented
