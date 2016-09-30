@@ -31,7 +31,7 @@ const double q4dotmax = 1;
 const double q5dotmax = 1;
 const double q6dotmax = 1;
 const double dt_traj = 0.02; // time step for trajectory interpolation
-const double SPEED_SCALE_FACTOR= 0.5; // go this fraction of speed from above maxes
+const double SPEED_SCALE_FACTOR= 0.8; // go this fraction of speed from above maxes
 
 
 class Baxter_traj_streamer

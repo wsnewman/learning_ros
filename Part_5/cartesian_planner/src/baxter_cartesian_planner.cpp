@@ -365,6 +365,10 @@ bool CartTrajPlanner::refine_cartesian_path_plan(std::vector<Eigen::VectorXd> &o
         ROS_WARN("number of jspace samples does not match number of cartesian samples; cannot refine path:");
         return false;
     }
+    if (nsamps_path<2) {
+        ROS_WARN("refine_cartesian path: not enough points in provided path");
+        return false;
+    }
     //if here, march through each solution and refine it:
     ROS_INFO("refining cartesian solutions...");
     Eigen::Affine3d des_flange_affine;
@@ -372,12 +376,13 @@ bool CartTrajPlanner::refine_cartesian_path_plan(std::vector<Eigen::VectorXd> &o
     Eigen::VectorXd refined_jspace_soln;
     Vectorq7x1 q_in, q_7dof_precise;
     bool valid;
-    for (int i = 0; i < nsamps_cart; i++) {
+    //start from i=1; keep start pose as-is
+    for (int i = 1; i < nsamps_cart; i++) {
         des_flange_affine = cartesian_affine_samples_[i];
         approx_jspace_soln = optimal_path[i];
         q_in = approx_jspace_soln; //convert data type
         valid = baxter_IK_solver_.improve_7dof_soln_wrt_torso(des_flange_affine, q_in, q_7dof_precise);
-        if (valid) {
+        if (valid) { //note: if solution is not improved, retain approximate solution
             refined_jspace_soln = q_7dof_precise;
             optimal_path[i] = refined_jspace_soln; //install the improved soln
         }

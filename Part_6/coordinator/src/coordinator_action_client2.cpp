@@ -15,6 +15,8 @@ int g_ntasks_done = 0;
 int g_callback_status = coordinator::ManipTaskResult::PENDING;
 int g_fdbk_count = 0;
 int g_n_successes = 0;
+int g_n_perception_failures = 0;
+int g_n_pickup_failures =0;
 //bool g_goal_active=false;
 using namespace std;
 
@@ -22,14 +24,16 @@ void doneCb(const actionlib::SimpleClientGoalState& state,
         const coordinator::ManipTaskResultConstPtr& result) {
     ROS_INFO(" doneCb: server responded with state [%s]", state.toString().c_str());
     g_goal_done = true;
-    g_ntasks_done++;
+
     g_callback_status = result->manip_return_code;
     switch (g_callback_status) {
         case coordinator::ManipTaskResult::MANIP_SUCCESS:
             ROS_INFO("returned MANIP_SUCCESS");
+             //g_n_successes++; //note: this will count pre-pose and find table-top
             break;
         case coordinator::ManipTaskResult::FAILED_PERCEPTION:
             ROS_WARN("returned FAILED_PERCEPTION");
+            g_n_perception_failures++;
             break;
         case coordinator::ManipTaskResult::FAILED_PICKUP_PLAN:
             ROS_WARN("returned FAILED_PICKUP_PLAN");
@@ -39,6 +43,7 @@ void doneCb(const actionlib::SimpleClientGoalState& state,
             break;
         case coordinator::ManipTaskResult::FAILED_PICKUP:
             ROS_WARN("returned FAILED_PICKUP");
+            g_n_pickup_failures++;
             break;
         case coordinator::ManipTaskResult::DROPPED_OBJECT:
             ROS_WARN("returned DROPPED_OBJECT");
@@ -103,6 +108,7 @@ int main(int argc, char** argv) {
     model_state_srv_msg.request.model_state.pose.orientation.w = 1;
     //do the following periodically to reset robot pose:
     set_model_state_client.call(model_state_srv_msg);    
+    ros::Duration(2.0).sleep(); // wait for repositioning
     
     int n_attempts = 0;
     //int n_successes = 0;
@@ -174,6 +180,8 @@ int main(int argc, char** argv) {
         while (!g_goal_done) {
             ros::Duration(0.1).sleep();
         }
+            g_ntasks_done++;
+            
         if (g_callback_status == coordinator::ManipTaskResult::MANIP_SUCCESS) {
             ROS_WARN("returned MANIP_SUCCESS");
             g_n_successes++;
@@ -187,10 +195,11 @@ int main(int argc, char** argv) {
             }
         }
         ROS_WARN("got %d successes in %d tries", g_n_successes, n_attempts);
+        ROS_WARN("failed pickups: %d; failed perception %d: ",g_n_pickup_failures,g_n_perception_failures);
         ROS_INFO("setting up another block");
         set_model_state_client.call(model_state_srv_msg);       
         block_state_client.call(block_state_srv);
-        ros::Duration(1.0).sleep(); //wait for block to show up
+        ros::Duration(2.0).sleep(); //wait for block to show up
         //ROS_INFO("callback reports goal is done; enter 1 to run again:");
         //int ans;
         //cin>>ans;

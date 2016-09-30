@@ -187,8 +187,8 @@ void Baxter_traj_streamer::stuff_trajectory_right_arm( std::vector<Eigen::Vector
     double net_time=0.0;
     q_start = qvecs[0];
     q_end = qvecs[0];   
-     cout<<"stuff_traj: start pt = "<<q_start.transpose()<<endl; 
-
+     //cout<<"stuff_traj: start pt = "<<q_start.transpose()<<endl; 
+    ROS_INFO("stuffing trajectory");
     //trajectory_point1.positions = qvecs[0];
  
     trajectory_point1.time_from_start =    ros::Duration(net_time); 
@@ -203,13 +203,13 @@ void Baxter_traj_streamer::stuff_trajectory_right_arm( std::vector<Eigen::Vector
         q_start = q_end;
         q_end = qvecs[iq];
         dqvec = q_end-q_start;
-        cout<<"dqvec: "<<dqvec.transpose()<<endl;
+        //cout<<"dqvec: "<<dqvec.transpose()<<endl;
         del_time = transition_time(dqvec);
         if (del_time< dt_traj)
             del_time = dt_traj;
-        cout<<"stuff_traj: next pt = "<<q_end.transpose()<<endl; 
+        //cout<<"stuff_traj: next pt = "<<q_end.transpose()<<endl; 
         net_time+= del_time;
-        ROS_INFO("iq = %d; del_time = %f; net time = %f",iq,del_time,net_time);        
+        //ROS_INFO("iq = %d; del_time = %f; net time = %f",iq,del_time,net_time);        
         for (int i=0;i<7;i++) { //copy over the joint-command values
             trajectory_point1.positions[i]=q_end[i];
         }   

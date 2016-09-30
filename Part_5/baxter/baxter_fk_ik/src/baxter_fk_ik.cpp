@@ -1422,7 +1422,7 @@ bool Baxter_IK_solver::improve_7dof_soln(Eigen::Affine3d const& desired_flange_p
     Vectorq7x1 q123_precise;
     
     double w_err_norm= precise_soln_q123(desired_flange_pose_wrt_arm_mount,q_in, q123_precise);
-    cout<<"improve_7dof_soln: w_err_norm = "<<w_err_norm<<endl;
+    //cout<<"improve_7dof_soln: w_err_norm = "<<w_err_norm<<endl;
     bool valid = update_spherical_wrist(q123_precise,R_flange_wrt_right_arm_mount, q_7dof_precise);
     return valid;
 }
@@ -1432,7 +1432,7 @@ bool Baxter_IK_solver::improve_7dof_soln_wrt_torso(Eigen::Affine3d const& desire
     //convert to frame w/rt right-arm mount
     Eigen::Affine3d desired_flange_pose_wrt_right_arm_mount = Affine_torso_to_rarm_mount_.inverse()*desired_flange_pose_wrt_torso;
     //now can invoke previous fnc, w/rt right-arm mount:
-        ROS_DEBUG("improving IK soln");
+        //ROS_DEBUG("improving IK soln");
         Eigen::Vector3d des_origin, origin_from_q_approx, origin_refined;
         des_origin = desired_flange_pose_wrt_torso.translation();
         
@@ -1443,13 +1443,13 @@ bool Baxter_IK_solver::improve_7dof_soln_wrt_torso(Eigen::Affine3d const& desire
     Eigen::Affine3d orig_affine = fwd_kin_flange_wrt_torso_solve(q_in);
     origin_from_q_approx = orig_affine.translation();
     double err1 = (origin_from_q_approx-des_origin).norm();
-    cout<<"origin of desired pose: "<<desired_flange_pose_wrt_torso.translation().transpose()<<endl;
-    cout<<"FK of orig soln: origin: "<<orig_affine.translation().transpose()<<endl;
+    //cout<<"origin of desired pose: "<<desired_flange_pose_wrt_torso.translation().transpose()<<endl;
+    //cout<<"FK of orig soln: origin: "<<orig_affine.translation().transpose()<<endl;
 
     Eigen::Affine3d refined_affine = fwd_kin_flange_wrt_torso_solve(q_7dof_precise);
     origin_refined = refined_affine.translation();
-        cout<<"FK of refined soln origin: "<<refined_affine.translation().transpose()<<endl;   
-        cout<<"improved q: "<<q_7dof_precise.transpose()<<endl;
+        //cout<<"FK of refined soln origin: "<<refined_affine.translation().transpose()<<endl;   
+        //cout<<"improved q: "<<q_7dof_precise.transpose()<<endl;
         double err2 = (origin_refined-des_origin).norm();
         if (err2>err1) {
             ROS_WARN("IK improvement failed; retaining q_approx");

@@ -129,6 +129,8 @@ void TaskActionServer::objectFinderDoneCb_(const actionlib::SimpleClientGoalStat
     } else {
         ROS_WARN("object not found!");
     }
+    //put this last--possible race condition with main!
+        found_object_code_ = result->found_object_code;
 }
 
 void TaskActionServer::objectGrabberDoneCb_(const actionlib::SimpleClientGoalState& state,
@@ -287,7 +289,7 @@ void TaskActionServer::executeCB(const actionlib::SimpleActionServer<coordinator
             case coordinator::ManipTaskGoal::GRAB_OBJECT:
                 status_code_ = coordinator::ManipTaskFeedback::PICKUP_MOTION_BUSY;
                 ROS_INFO("executeCB: action_code, status_code = %d, %d", action_code_, status_code_);
-                ros::Duration(2.0).sleep();
+                //ros::Duration(2.0).sleep();
                 //if here, then presumably have a valid pose for object of interest; grab it!       
                 object_grabber_goal_.action_code = pickup_action_code_; //specify the object to be grabbed 
                 object_grabber_goal_.desired_frame = pickup_pose_; //and the object's current pose
@@ -380,8 +382,8 @@ void TaskActionServer::executeCB(const actionlib::SimpleActionServer<coordinator
 
             case coordinator::ManipTaskGoal::ABORT:
                 ROS_WARN("aborting goal...");
-
-                result_.manip_return_code = coordinator::ManipTaskResult::ABORTED;
+                //retain reason for failure to report back to client
+                //result_.manip_return_code = coordinator::ManipTaskResult::ABORTED;
                 action_code_ = coordinator::ManipTaskGoal::NO_CURRENT_TASK;
                 status_code_ = coordinator::ManipTaskFeedback::ABORTED;
                 working_on_task_ = false;

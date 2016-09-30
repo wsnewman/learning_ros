@@ -212,7 +212,8 @@ void ObjectFinder::executeCB(const actionlib::SimpleActionServer<object_finder::
                 object_pose.pose.orientation.w = 1;
                 result_.object_pose = object_pose;
                 ROS_INFO("returning height %f",surface_height_);
-                object_finder_as_.setSucceeded(result_);            
+                result_.found_object_code = object_finder::objectFinderResult::OBJECT_FOUND;
+                object_finder_as_.setSucceeded(result_);             
             break;
         default:
             ROS_WARN("this object ID is not implemented");
