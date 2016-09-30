@@ -7,7 +7,8 @@
 #include<coordinator/ManipTaskAction.h>
 #include <object_manipulation_properties/object_manipulation_properties.h>
 #include <example_gazebo_set_state/SrvInt.h> // this message type is defined in the current package
-
+#include <gazebo_msgs/ModelState.h>
+#include <gazebo_msgs/SetModelState.h>
 
 bool g_goal_done = true;
 int g_ntasks_done = 0;
@@ -69,7 +70,40 @@ int main(int argc, char** argv) {
     //ros::Publisher block_pose_publisher = nh.advertise<std_msgs::Float64>("topic1", 1);
     ros::ServiceClient block_state_client = nh.serviceClient<example_gazebo_set_state::SrvInt>("set_block_state");
     example_gazebo_set_state::SrvInt block_state_srv;
+    //the following is just to keep the robot from slipping...
+    bool service_ready = false;
+    while (!service_ready) {
+      service_ready = ros::service::exists("/gazebo/set_model_state",true);
+      ROS_INFO("waiting for set_model_state service");
+      ros::Duration(0.5).sleep();
+    }
+    ROS_INFO("set_model_state service exists");
 
+    ros::ServiceClient set_model_state_client = 
+       nh.serviceClient<gazebo_msgs::SetModelState>("/gazebo/set_model_state");
+    
+    gazebo_msgs::SetModelState model_state_srv_msg;
+    model_state_srv_msg.request.model_state.model_name = "baxter_on_mobot";
+    model_state_srv_msg.request.model_state.twist.linear.x= 0.0; //2cm/sec
+    model_state_srv_msg.request.model_state.twist.linear.y= 0.0;
+    model_state_srv_msg.request.model_state.twist.linear.z= 0.0;
+    
+    model_state_srv_msg.request.model_state.twist.angular.x= 0.0;
+    model_state_srv_msg.request.model_state.twist.angular.y= 0.0;
+    model_state_srv_msg.request.model_state.twist.angular.z= 0.0;
+        
+    model_state_srv_msg.request.model_state.reference_frame = "world";
+    model_state_srv_msg.request.model_state.pose.position.x = 0;
+    model_state_srv_msg.request.model_state.pose.position.y = 0;
+    model_state_srv_msg.request.model_state.pose.position.z = 0.0;
+    
+    model_state_srv_msg.request.model_state.pose.orientation.x = 0;
+    model_state_srv_msg.request.model_state.pose.orientation.y = 0;
+    model_state_srv_msg.request.model_state.pose.orientation.z = 0;
+    model_state_srv_msg.request.model_state.pose.orientation.w = 1;
+    //do the following periodically to reset robot pose:
+    set_model_state_client.call(model_state_srv_msg);    
+    
     int n_attempts = 0;
     //int n_successes = 0;
 
@@ -154,6 +188,7 @@ int main(int argc, char** argv) {
         }
         ROS_WARN("got %d successes in %d tries", g_n_successes, n_attempts);
         ROS_INFO("setting up another block");
+        set_model_state_client.call(model_state_srv_msg);       
         block_state_client.call(block_state_srv);
         ros::Duration(1.0).sleep(); //wait for block to show up
         //ROS_INFO("callback reports goal is done; enter 1 to run again:");
