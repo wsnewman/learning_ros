@@ -10,6 +10,7 @@
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 
+
 geometry_msgs::PoseStamped g_perceived_object_pose;
 ros::Publisher *g_pose_publisher;
 
@@ -61,16 +62,17 @@ int main(int argc, char** argv) {
     g_pose_publisher = &pose_publisher;
     object_finder::objectFinderGoal object_finder_goal;
     //object_finder::objectFinderResult object_finder_result;
-    
+
+    object_finder_goal.object_id = object_finder::objectFinderGoal::TABLE_SURFACE;
+    object_finder_goal.known_surface_ht = false; //require find table height
     //object_finder_goal.object_id=object_finder::objectFinderGoal::COKE_CAN_UPRIGHT;
-    object_finder_goal.object_id=object_finder::objectFinderGoal::TOY_BLOCK;
+    //object_finder_goal.object_id=object_finder::objectFinderGoal::TOY_BLOCK;
     //object_finder_goal.known_surface_ht=true;
-    object_finder_goal.known_surface_ht=false; //require find table height
-    object_finder_goal.surface_ht = 0.05;
-    
+    //object_finder_goal.known_surface_ht=false; //require find table height
+    //object_finder_goal.surface_ht = 0.05;
+    double surface_height;
     ROS_INFO("sending goal: ");
-        object_finder_ac.sendGoal(object_finder_goal,&objectFinderDoneCb); // we could also name additional callback functions here, if desired
-        //    action_client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb); //e.g., like this
+        object_finder_ac.sendGoal(object_finder_goal,&objectFinderDoneCb); 
         
         bool finished_before_timeout = object_finder_ac.waitForResult(ros::Duration(10.0));
         //bool finished_before_timeout = action_client.waitForResult(); // wait forever...
@@ -79,6 +81,37 @@ int main(int argc, char** argv) {
             return 1;
         }
         
-    return 0;
+    if (g_found_object_code == object_finder::objectFinderResult::OBJECT_FOUND) {
+                        ROS_INFO("surface-finder success");
+                        surface_height = g_perceived_object_pose.pose.position.z; // table-top height, as found by object_finder 
+                        ROS_INFO("found table ht = %f",surface_height);   }
+    else {
+        ROS_WARN("did not find table height; quitting:");
+        return 1;
+    }
+    //if here, then find block using known table height:
+    object_finder_goal.known_surface_ht = true;
+    object_finder_goal.surface_ht = surface_height;
+    ROS_INFO("using surface ht = %f",surface_height);        
+    object_finder_goal.object_id=object_finder::objectFinderGoal::TOY_BLOCK;
+     ROS_INFO("sending goal to find TOY_BLOCK: ");
+        object_finder_ac.sendGoal(object_finder_goal,&objectFinderDoneCb); 
+        
+        finished_before_timeout = object_finder_ac.waitForResult(ros::Duration(10.0));
+        //bool finished_before_timeout = action_client.waitForResult(); // wait forever...
+        if (!finished_before_timeout) {
+            ROS_WARN("giving up waiting on result ");
+            return 1;
+        }       
+        
+    if (g_found_object_code == object_finder::objectFinderResult::OBJECT_FOUND)   {
+        ROS_INFO("found object!");
+        return 0;
+    }    
+    else {
+        ROS_WARN("object not found!:");
+        return 1;
+    }
+
 }
 

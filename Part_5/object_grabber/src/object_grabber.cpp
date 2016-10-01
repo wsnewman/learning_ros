@@ -76,7 +76,7 @@ int ObjectGrabber::jspace_move_flange_to(geometry_msgs::PoseStamped des_flange_p
     //is plan successful?
     if (planner_rtn_code != cartesian_planner::baxter_cart_moveResult::SUCCESS) {
         ROS_WARN("cannot move to specified approach pose");
-        return object_grabber::object_grabberResult::FAILED_CANNOT_REACH_POSE_CARTESIAN_MOVE;
+        return object_grabber::object_grabberResult::FAILED_CANNOT_REACH_JSPACE_MOVE;
     }
 
     //if here, plan is good, so send command to execute planned motion
@@ -94,14 +94,14 @@ int ObjectGrabber::jspace_move_to_pre_pose(void) {
     //is plan successful?
     if (planner_rtn_code != cartesian_planner::baxter_cart_moveResult::SUCCESS) {
         ROS_WARN("cannot move to pre-pose");
-        return object_grabber::object_grabberResult::FAILED_CANNOT_REACH_POSE_CARTESIAN_MOVE;
+        return object_grabber::object_grabberResult::FAILED_CANNOT_MOVE_TO_PRE_POSE;
     }
 
     //if here, plan is good, so send command to execute planned motion
     ROS_INFO("sending command to execute planned path to pre-pose:");
     execute_return_code = armMotionCommander.rt_arm_execute_planned_path();
     //assumes execution was successful...should return a more valuable code
-    return object_grabber::object_grabberResult::SUCCESS;    
+    return object_grabber::object_grabberResult::SUCCESS;
 }
 
 //pure, careful, precise motion from current pose to precise goal...e.g. vertical approach
@@ -112,7 +112,7 @@ int ObjectGrabber::fine_move_flange_to(geometry_msgs::PoseStamped des_flange_pos
     planner_rtn_code = armMotionCommander.rt_arm_plan_fine_path_current_to_goal_flange_pose(des_flange_pose_wrt_torso);
     if (planner_rtn_code != cartesian_planner::baxter_cart_moveResult::SUCCESS) {
         ROS_WARN("desired fine motion is not feasible");
-        return object_grabber::object_grabberResult::FAILED_CANNOT_REACH_POSE_CARTESIAN_MOVE;
+        return object_grabber::object_grabberResult::FAILED_CANNOT_MOVE_CARTESIAN_FINE;
     }
     //if succeed to here, send command to execute planned motion
     ROS_INFO("sending command to execute planned hi-res path:");
@@ -202,7 +202,7 @@ geometry_msgs::PoseStamped ObjectGrabber::convert_pose_to_torso_frame(geometry_m
 
 
 //fnc to compute gripper pose from block pose, per a specific grasp strategy
-
+//obsolete: use object_to_flange_grasp_transform() instead
 Eigen::Affine3d ObjectGrabber::block_grasp_transform(Eigen::Affine3d block_affine) {
     Eigen::Affine3d gripper_affine;
     //derive gripper approach pose from block pose:
@@ -225,7 +225,7 @@ Eigen::Affine3d ObjectGrabber::block_grasp_transform(Eigen::Affine3d block_affin
 }
 
 //same as above, except uses stamped poses:
-
+//obsolete: use object_to_flange_grasp_transform() instead
 geometry_msgs::PoseStamped ObjectGrabber::block_grasp_transform(geometry_msgs::PoseStamped block_pose) {
     Eigen::Affine3d block_affine, gripper_affine;
     geometry_msgs::PoseStamped gripper_pose;
@@ -238,7 +238,7 @@ geometry_msgs::PoseStamped ObjectGrabber::block_grasp_transform(geometry_msgs::P
 
 //does two steps: convert from block pose to gripper pose, then gripper pose to flange pose
 // could use TF for 2nd step
-
+//obsolete: use object_to_flange_grasp_transform() instead
 geometry_msgs::PoseStamped ObjectGrabber::block_to_flange_grasp_transform(geometry_msgs::PoseStamped block_pose) {
     geometry_msgs::PoseStamped flange_pose_for_block_grasp;
     Eigen::Affine3d block_affine, gripper_affine, flange_affine;
@@ -253,15 +253,16 @@ geometry_msgs::PoseStamped ObjectGrabber::block_to_flange_grasp_transform(geomet
 //more general--get grasp transform from object-properties library
 //given object_id and given object's pose, compute corresponding right-arm toolflange pose for grasp
 //input an object poseStamped and object_id; return a corresponding right-arm toolflange poseStamped for grasp
+
 geometry_msgs::PoseStamped ObjectGrabber::object_to_flange_grasp_transform(int object_id, geometry_msgs::PoseStamped object_pose) {
     geometry_msgs::PoseStamped flange_pose_for_object_grasp;
     Eigen::Affine3d object_affine, gripper_affine, flange_affine;
     Eigen::Vector3d origin;
-    
+
     //get grasp_transform for this object ID: CAREFUL--need to make sure object_id is recognized!
-    objectManipulationProperties.get_object_info(object_id_,grasp_transform_,
-            approach_dist_,gripper_test_val_);   
-    
+    objectManipulationProperties.get_object_info(object_id_, grasp_transform_,
+            approach_dist_, gripper_test_val_);
+
     //convert object pose to an Affine 
     object_affine = xformUtils.transformPoseToEigenAffine3d(object_pose.pose);
     // given T_object/torso, want to compute T_flange/torso
@@ -270,25 +271,32 @@ geometry_msgs::PoseStamped ObjectGrabber::object_to_flange_grasp_transform(int o
     // (^flange)T_(gripper) is fixed transform of gripper frame w/rt flange frame
     // given object frame w/rt torso, want to compute flange frame w/rt torso = (^torso)T_(flange)
 
-    gripper_affine = object_affine*grasp_transform_.inverse();
+    gripper_affine = object_affine * grasp_transform_.inverse();
     origin = gripper_affine.translation();
-    ROS_INFO("gripper origin set to: %f, %f, %f",origin[0],origin[1],origin[2]);
+    ROS_INFO("gripper origin set to: %f, %f, %f", origin[0], origin[1], origin[2]);
     origin = a_right_gripper_frame_wrt_flange_.translation();
-    ROS_INFO("gripperframe origin wrt flange: %f %f %f",origin[0],origin[1],origin[2]);
-    
+    ROS_INFO("gripperframe origin wrt flange: %f %f %f", origin[0], origin[1], origin[2]);
+
     //convert this back to a geometry_msgs PoseStamped object:
-    flange_affine = gripper_affine*a_right_gripper_frame_wrt_flange_.inverse(); // from gripper frame to flange frame
+    flange_affine = gripper_affine * a_right_gripper_frame_wrt_flange_.inverse(); // from gripper frame to flange frame
     origin = flange_affine.translation();
-    ROS_INFO("flange origin wrt torso: %f %f %f",origin[0],origin[1],origin[2]);
-    
+    ROS_INFO("flange origin wrt torso: %f %f %f", origin[0], origin[1], origin[2]);
+
     //flange_affine = gripper_affine * a_right_gripper_frame_wrt_flange_.inverse(); // from gripper frame to flange frame
     flange_pose_for_object_grasp.header = object_pose.header; //and from affine to stamped pose
     flange_pose_for_object_grasp.pose = xformUtils.transformEigenAffine3dToPose(flange_affine);
     return flange_pose_for_object_grasp; //and return the resulting computed flange pose
 }
 
-//int ObjectGrabber::grasp_from_above(geometry_msgs::PoseStamped des_flange_grasp_pose, 
-int ObjectGrabber::grasp_approach_tool_z_axis(geometry_msgs::PoseStamped des_flange_grasp_pose, 
+
+// a grasping function that assumes approach along the toolframe z-axis;
+// does: opens gripper;
+// performs a joint-space move to an approach pose, 
+// moves with precision to the grasp pose along the tool-z direction
+// closes the gripper
+// does a Cartesian depart move, presumably holding the part
+
+int ObjectGrabber::grasp_approach_tool_z_axis(geometry_msgs::PoseStamped des_flange_grasp_pose,
         double approach_dist, double gripper_close_test_val) {
     int rtn_val;
     //geometry_msgs::PoseStamped des_gripper_grasp_pose, des_gripper_approach_pose, des_gripper_depart_pose;
@@ -334,11 +342,12 @@ int ObjectGrabber::grasp_approach_tool_z_axis(geometry_msgs::PoseStamped des_fla
     //plan/execute Cartesian move to approach pose
     des_flange_approach_pose.header.frame_id = "torso";
     des_flange_approach_pose.pose = xformUtils.transformEigenAffine3dToPose(a_flange_approach_);
-   
+
     //move_to_rtn_code = move_flange_to(des_flange_approach_pose);
     //do jspace move instead to approach pose...may need to make approach higher
-    move_to_rtn_code = jspace_move_flange_to(des_flange_approach_pose);    
+    move_to_rtn_code = jspace_move_flange_to(des_flange_approach_pose);
     if (move_to_rtn_code != object_grabber::object_grabberResult::SUCCESS) {
+
         return move_to_rtn_code; // give up--and send diagnostic code
     }
 
@@ -375,7 +384,7 @@ int ObjectGrabber::grasp_approach_tool_z_axis(geometry_msgs::PoseStamped des_fla
 // specify gripper pose for drop-off, so this can be used with objects of different heights and different grasp transforms;
 // the parent pgm must compute the gripper pose that corresponds to desired object pose, taking into account grasp transform and
 // object dimensions
-//this func is more general that simply dropoff from above;  it is: approach dropoff location along
+//this func is more general than simply dropoff from above;  it is: approach dropoff location along
 // tool z-axis, open gripper, depart along neg toolframe z-axis;  So, this COULD e.g. insert a peg
 // into a hole w/ a tilted hole.  But expected most common use would be placement from above, using
 // gravity as a fixture
@@ -441,7 +450,7 @@ int ObjectGrabber::dropoff_from_above(geometry_msgs::PoseStamped des_flange_drop
     }
 
     move_to_rtn_code = jspace_move_to_pre_pose();
-    
+
     return object_grabber::object_grabberResult::SUCCESS;
 }
 
@@ -577,17 +586,23 @@ int ObjectGrabber::vertical_cylinder_power_grasp(geometry_msgs::PoseStamped obje
 }
 
 
-//callback: at present, hard-coded for two specific objects;
-//extend this to add more grasp strategies for more objects
+//can access various low-level behaviors, e.g. MOVE_TO_PRE_POSE, OPEN_GRIPPER, CLOSE_GRIPPER
+//useful high-level cases are:
+//GRAB_W_TOOL_Z_APPROACH and DROPOFF_ALONG_TOOL_Z, which combine multiple steps of motion planning
+// and execution, coordinated with gripper actions,  based on a strategy of approach along 
+// the toolframe z-axis, customized for the current object_id
+// 
+// case GRAB_UPRIGHT_CYLINDER is a variation (that needs refactoring and testing); it also approaches
+// grasp along tool-z, but the approach direction will be horizontal, followed by a lift that is
+// vertical, e.g. to grasp and lift a container of fluid without spilling 
 
 void ObjectGrabber::executeCB(const actionlib::SimpleActionServer<object_grabber::object_grabberAction>::GoalConstPtr& goal) {
 
     int action_code = goal->action_code;
-    ROS_INFO("got action code %d",action_code);
+    ROS_INFO("got action code %d", action_code);
     int object_grabber_rtn_code;
     switch (action_code) {
         case object_grabber::object_grabberGoal::GRAB_UPRIGHT_CYLINDER:
-            //case object_grabber::object_grabberGoal::UPRIGHT_CYLINDER:
             ROS_INFO("case GRAB_UPRIGHT_CYLINDER");
             object_pose_stamped_ = goal->desired_frame;
             object_pose_stamped_wrt_torso_ = convert_pose_to_torso_frame(object_pose_stamped_);
@@ -597,23 +612,23 @@ void ObjectGrabber::executeCB(const actionlib::SimpleActionServer<object_grabber
             object_grabber_as_.setSucceeded(grab_result_);
             break;
         case object_grabber::object_grabberGoal::GRAB_W_TOOL_Z_APPROACH: //more general name
-        //case object_grabber::object_grabberGoal::GRAB_TOY_BLOCK: //toy block is example case of above
+            //case object_grabber::object_grabberGoal::GRAB_TOY_BLOCK: //toy block is example case of above
             //case object_grabber::object_grabberGoal::TOY_BLOCK:
             ROS_INFO("case GRAB_W_TOOL_Z_APPROACH");
             object_pose_stamped_ = goal->desired_frame;
-            object_id_ = TOY_BLOCK_ID; // this is the corresponding object ID for this case
-            ROS_INFO("object_id = %d",object_id_);
-  
+            object_id_ = goal->object_id; // e.g. TOY_BLOCK_ID; 
+            ROS_INFO("object_id = %d", object_id_);
+
             //look up object manipulation properties from library:
-            if (!objectManipulationProperties.get_object_info(object_id_,grasp_transform_,
-               approach_dist_,gripper_test_val_)) {
+            if (!objectManipulationProperties.get_object_info(object_id_, grasp_transform_,
+                    approach_dist_, gripper_test_val_)) {
                 ROS_WARN("object ID not recognized");
                 grab_result_.return_code = object_grabber::object_grabberResult::ACTION_CODE_UNKNOWN;
-                object_grabber_as_.setAborted(grab_result_);        
-            }                                                      
-            
+                object_grabber_as_.setAborted(grab_result_);
+            }
+
             object_pose_stamped_wrt_torso_ = convert_pose_to_torso_frame(object_pose_stamped_);
-            des_flange_pose_stamped_wrt_torso_=object_to_flange_grasp_transform(object_id_, 
+            des_flange_pose_stamped_wrt_torso_ = object_to_flange_grasp_transform(object_id_,
                     object_pose_stamped_wrt_torso_);
             //old version--block only
             //des_flange_pose_stamped_wrt_torso_ = block_to_flange_grasp_transform(object_pose_stamped_wrt_torso_);
@@ -622,35 +637,38 @@ void ObjectGrabber::executeCB(const actionlib::SimpleActionServer<object_grabber
             //then can simplify grasp_approach_tool_z_axis() fnc
             //object_grabber_rtn_code = grasp_from_above(object_pose_stamped_wrt_torso_,
             object_grabber_rtn_code = grasp_approach_tool_z_axis(des_flange_pose_stamped_wrt_torso_,
-                    approach_dist_,gripper_test_val_);
+                    approach_dist_, gripper_test_val_);
 
             grab_result_.return_code = object_grabber_rtn_code;
+            grab_result_.des_flange_pose_stamped_wrt_torso = des_flange_pose_stamped_wrt_torso_;
             object_grabber_as_.setSucceeded(grab_result_); //"succeeded" just means goal was processed; need to inspect rtn code to see result
             break;
-        //DROPOFF_ALONG_TOOL_Z means: approach dropoff pose along toolflange z-axis, then
-        // open gripper, then depart along neg toolframe z axis back
-        // approach/depart distance is param associated with object_manipulation_properties
+            
+            //DROPOFF_ALONG_TOOL_Z means: approach dropoff pose along toolflange z-axis, then
+            // open gripper, then depart along neg toolframe z axis back
+            // approach/depart distance is param associated with object_manipulation_properties
         case object_grabber::object_grabberGoal::DROPOFF_ALONG_TOOL_Z: //more general name
-        //case object_grabber::object_grabberGoal::PLACE_TOY_BLOCK: //specific example
-            ROS_INFO("case PLACE_TOY_BLOCK");
+            //case object_grabber::object_grabberGoal::PLACE_TOY_BLOCK: //specific example
+            ROS_INFO("case DROPOFF_ALONG_TOOL_Z");
             object_pose_stamped_ = goal->desired_frame; //make sure is expressed w/rt torso frame
             object_pose_stamped_wrt_torso_ = convert_pose_to_torso_frame(object_pose_stamped_);
-            object_id_ = TOY_BLOCK_ID; // this is the corresponding object ID for this case
+            object_id_ = goal->object_id; //e.g. TOY_BLOCK_ID; 
             //look up object manipulation properties from library:
-            if (!objectManipulationProperties.get_object_info(object_id_,grasp_transform_,
-               approach_dist_,gripper_test_val_)) {
+            if (!objectManipulationProperties.get_object_info(object_id_, grasp_transform_,
+                    approach_dist_, gripper_test_val_)) {
                 ROS_WARN("object ID not recognized");
                 grab_result_.return_code = object_grabber::object_grabberResult::ACTION_CODE_UNKNOWN;
-                object_grabber_as_.setAborted(grab_result_);        
-            }                                                      
-                     
+                object_grabber_as_.setAborted(grab_result_);
+            }
+
             //need to consider grasp transform, from object frame to flange frame
-            des_flange_pose_stamped_wrt_torso_=object_to_flange_grasp_transform(object_id_, 
+            des_flange_pose_stamped_wrt_torso_ = object_to_flange_grasp_transform(object_id_,
                     object_pose_stamped_wrt_torso_);
             //des_flange_pose_stamped_wrt_torso_ = block_to_flange_grasp_transform(object_pose_stamped_wrt_torso_);
 
-            object_grabber_rtn_code = dropoff_from_above(des_flange_pose_stamped_wrt_torso_,approach_dist_);
+            object_grabber_rtn_code = dropoff_from_above(des_flange_pose_stamped_wrt_torso_, approach_dist_);
             grab_result_.return_code = object_grabber_rtn_code;
+            grab_result_.des_flange_pose_stamped_wrt_torso = des_flange_pose_stamped_wrt_torso_;
             object_grabber_as_.setSucceeded(grab_result_); //"succeeded" just means goal was processed; need to inspect rtn code to see result
             break;
             //partial move commands--lower level than above; interpret object_pose_stamped_wrt_torso_ as desired FLANGE pose
@@ -659,23 +677,26 @@ void ObjectGrabber::executeCB(const actionlib::SimpleActionServer<object_grabber
             des_flange_pose_stamped_ = goal->desired_frame;
             des_flange_pose_stamped_wrt_torso_ = convert_pose_to_torso_frame(des_flange_pose_stamped_);
             grab_result_.return_code = move_flange_to(des_flange_pose_stamped_wrt_torso_);
+            grab_result_.des_flange_pose_stamped_wrt_torso = des_flange_pose_stamped_wrt_torso_;
             object_grabber_as_.setSucceeded(grab_result_); //"succeeded" just means goal was processed; need to inspect rtn code to see result
             break;
         case object_grabber::object_grabberGoal::JSPACE_MOVE_FLANGE_TO:
-             ROS_INFO("object-grabber: case JSPACE_MOVE_FLANGE_TO");
+            ROS_INFO("object-grabber: case JSPACE_MOVE_FLANGE_TO");
             des_flange_pose_stamped_ = goal->desired_frame;
             des_flange_pose_stamped_wrt_torso_ = convert_pose_to_torso_frame(des_flange_pose_stamped_);
             grab_result_.return_code = jspace_move_flange_to(des_flange_pose_stamped_wrt_torso_);
+            grab_result_.des_flange_pose_stamped_wrt_torso = des_flange_pose_stamped_wrt_torso_;
             object_grabber_as_.setSucceeded(grab_result_); //"succeeded" just means goal was processed; need to inspect rtn code to see result
-            break;           
-            
             break;
-            
+
+            break;
+
         case object_grabber::object_grabberGoal::FINE_MOVE_FLANGE_TO:
             ROS_INFO("case FINE_MOVE_FLANGE_TO");
             des_flange_pose_stamped_ = goal->desired_frame;
             des_flange_pose_stamped_wrt_torso_ = convert_pose_to_torso_frame(des_flange_pose_stamped_);
             grab_result_.return_code = fine_move_flange_to(des_flange_pose_stamped_wrt_torso_);
+            grab_result_.des_flange_pose_stamped_wrt_torso = des_flange_pose_stamped_wrt_torso_;
             object_grabber_as_.setSucceeded(grab_result_); //"succeeded" just means goal was processed; need to inspect rtn code to see result
             break;
         case object_grabber::object_grabberGoal::OPEN_GRIPPER:
@@ -683,15 +704,15 @@ void ObjectGrabber::executeCB(const actionlib::SimpleActionServer<object_grabber
             break;
         case object_grabber::object_grabberGoal::CLOSE_GRIPPER:
             //ASSUMES gripper_test_val_ has been set by a call to object_manipulation_properties
-            ROS_INFO("closing gripper to test val %f",gripper_test_val_);
+            ROS_INFO("closing gripper to test val %f", gripper_test_val_);
             close_gripper(gripper_test_val_);
             break;
-        //need ability to get hand out of way of camera
+            //need ability to get hand out of way of camera
         case object_grabber::object_grabberGoal::MOVE_TO_PRE_POSE:
-                grab_result_.return_code = jspace_move_to_pre_pose();
-                object_grabber_as_.setSucceeded(grab_result_);
+            grab_result_.return_code = jspace_move_to_pre_pose();
+            object_grabber_as_.setSucceeded(grab_result_);
             break;
-            
+
         default:
             ROS_WARN("this object ID is not implemented");
             grab_result_.return_code = object_grabber::object_grabberResult::ACTION_CODE_UNKNOWN;

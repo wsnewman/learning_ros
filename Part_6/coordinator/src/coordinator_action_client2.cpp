@@ -9,16 +9,53 @@
 #include <example_gazebo_set_state/SrvInt.h> // this message type is defined in the current package
 #include <gazebo_msgs/ModelState.h>
 #include <gazebo_msgs/SetModelState.h>
-
+#include <fstream>
+#include <object_finder/objectFinderAction.h>
+#include <object_grabber/object_grabberAction.h>
 bool g_goal_done = true;
 int g_ntasks_done = 0;
 int g_callback_status = coordinator::ManipTaskResult::PENDING;
+int g_object_grabber_return_code=0;
+int g_object_finder_return_code=0;
 int g_fdbk_count = 0;
 int g_n_successes = 0;
 int g_n_perception_failures = 0;
 int g_n_pickup_failures =0;
+int g_n_dropoff_failures=0;
+int g_n_gripper_failures=0;
+geometry_msgs::PoseStamped g_des_flange_pose_stamped_wrt_torso;
+geometry_msgs::PoseStamped g_object_pose;
 //bool g_goal_active=false;
 using namespace std;
+
+void save_failure_data(void) {
+  std::ofstream outfile;
+
+  outfile.open("failures.txt", std::ios_base::app);
+  outfile << "g_object_grabber_return_code: "<<g_object_grabber_return_code<<endl;
+  if (g_object_grabber_return_code==object_grabber::object_grabberResult::GRIPPER_FAILURE) {
+      outfile<<"gripper failure, object pose: "<<endl;
+      outfile<<"object origin: (x,y,z) = ("<<g_object_pose.pose.position.x<<", "<<g_object_pose.pose.position.y<<", "
+              <<g_object_pose.pose.position.z<<")"<<endl;
+      outfile<<"orientation: (qx,qy,qz,qw) = ("<<g_object_pose.pose.orientation.x<<","
+              <<g_object_pose.pose.orientation.y<<","
+              <<g_object_pose.pose.orientation.z<<","
+              <<g_object_pose.pose.orientation.w<<")"<<endl;
+  }
+  else {
+      outfile<<"manipulation failure code "<<g_object_grabber_return_code<<endl;
+      outfile<<"manip failed with desired flange pose: "<<endl;
+       outfile<<"object origin: (x,y,z) = ("<<g_des_flange_pose_stamped_wrt_torso.pose.position.x<<", "
+               <<g_des_flange_pose_stamped_wrt_torso.pose.position.y<<", "
+               <<g_des_flange_pose_stamped_wrt_torso.pose.position.z<<")"<<endl;
+      outfile<<"orientation: (qx,qy,qz,qw) = ("<<g_des_flange_pose_stamped_wrt_torso.pose.orientation.x<<","
+              <<g_des_flange_pose_stamped_wrt_torso.pose.orientation.y<<","
+              <<g_des_flange_pose_stamped_wrt_torso.pose.orientation.z<<","
+              <<g_des_flange_pose_stamped_wrt_torso.pose.orientation.w<<")"<<endl;     
+  }
+
+  outfile.close();
+}
 
 void doneCb(const actionlib::SimpleClientGoalState& state,
         const coordinator::ManipTaskResultConstPtr& result) {
@@ -26,27 +63,36 @@ void doneCb(const actionlib::SimpleClientGoalState& state,
     g_goal_done = true;
 
     g_callback_status = result->manip_return_code;
+
     switch (g_callback_status) {
         case coordinator::ManipTaskResult::MANIP_SUCCESS:
             ROS_INFO("returned MANIP_SUCCESS");
              //g_n_successes++; //note: this will count pre-pose and find table-top
             break;
+            
         case coordinator::ManipTaskResult::FAILED_PERCEPTION:
             ROS_WARN("returned FAILED_PERCEPTION");
             g_n_perception_failures++;
-            break;
-        case coordinator::ManipTaskResult::FAILED_PICKUP_PLAN:
-            ROS_WARN("returned FAILED_PICKUP_PLAN");
-            break;
-        case coordinator::ManipTaskResult::FAILED_DROPOFF_PLAN:
-            ROS_WARN("returned FAILED_DROPOFF_PLAN");
+            g_object_finder_return_code = result->object_finder_return_code;
             break;
         case coordinator::ManipTaskResult::FAILED_PICKUP:
             ROS_WARN("returned FAILED_PICKUP");
             g_n_pickup_failures++;
+
+            g_object_grabber_return_code= result->object_grabber_return_code;
+            if (g_object_grabber_return_code==object_grabber::object_grabberResult::GRIPPER_FAILURE) {
+                 g_n_gripper_failures++;
+            }
+            g_object_pose = result->object_pose;
+            g_des_flange_pose_stamped_wrt_torso = result->des_flange_pose_stamped_wrt_torso;
+            //for failed pickup, save failure code and pose:
+            save_failure_data();
             break;
-        case coordinator::ManipTaskResult::DROPPED_OBJECT:
-            ROS_WARN("returned DROPPED_OBJECT");
+        case coordinator::ManipTaskResult::FAILED_DROPOFF:
+            ROS_WARN("returned FAILED_DROPOFF");
+            g_n_dropoff_failures++;
+            g_des_flange_pose_stamped_wrt_torso = result->des_flange_pose_stamped_wrt_torso;
+            save_failure_data();            
             break;
     }
     //ROS_INFO("return status is %d ", g_callback_status);
@@ -194,7 +240,7 @@ int main(int argc, char** argv) {
                 ros::Duration(0.1).sleep();
             }
         }
-        ROS_WARN("got %d successes in %d tries", g_n_successes, n_attempts);
+        ROS_WARN("got %d successes in %d tries", g_n_successes, g_ntasks_done);
         ROS_WARN("failed pickups: %d; failed perception %d: ",g_n_pickup_failures,g_n_perception_failures);
         ROS_INFO("setting up another block");
         set_model_state_client.call(model_state_srv_msg);       

@@ -53,7 +53,7 @@
 <build_depend>xform_utils</build_depend>
 <build_depend>baxter_arm_motion_commander</build_depend>
 <build_depend>object_manipulation_properties</build_depend>
-
+<build_depend>geometry_msgs</build_depend>
  <build_depend>tf</build_depend>
   <run_depend>roscpp</run_depend>
 <run_depend>std_msgs</run_depend>
@@ -68,6 +68,7 @@
 <run_depend>xform_utils</run_depend>
 <run_depend>baxter_arm_motion_commander</run_depend>
 <run_depend>object_manipulation_properties</run_depend> 
+<run_depend>geometry_msgs</run_depend> 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- You can specify that this package is a metapackage here: -->

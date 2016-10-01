@@ -149,20 +149,10 @@ void ObjectFinder::executeCB(const actionlib::SimpleActionServer<object_finder::
     if (!known_surface_ht) {
         ros::Time tstart = ros::Time::now();
         double table_ht;
-        //table_ht = find_table_height();  //this version is much too slow
-        //ROS_INFO("table ht1: %f",table_ht); 
-        //ros::Time t1 = ros::Time::now();
-        //table_ht = pclUtils_.find_table_height(0.6, 1.2, 0.005);
-        //ROS_INFO("table ht2: %f", table_ht);
-        //ros::Time t2 = ros::Time::now();
         //hard-coded search range: x= [0,1], y= [-0.5,0.5], z=[0.6,1.2] in steps of 0.005
         table_ht = pclUtils_.find_table_height(0.0, 1, -0.5, 0.5, 0.6, 1.2, 0.005);
-        ROS_INFO("table ht3: %f", table_ht);
+        ROS_INFO("table ht: %f", table_ht);
         ros::Time t3 = ros::Time::now();
-        //double dt1 = (t1 - tstart).toSec();
-        //double dt2 = (t2 - t1).toSec();
-        //double dt3 = (t3 - t2).toSec();
-        //ROS_INFO("dt1 = %f; dt2 = %f; dt3= %f", dt1, dt2, dt3);
         surface_height_ = table_ht; //remember this value for potential future use
         found_surface_height_ = true;
     }

@@ -42,11 +42,17 @@ int32 FAILED_PERCEPTION = 1
 int32 FAILED_PICKUP_PLAN =2 
 int32 FAILED_DROPOFF_PLAN=3
 int32 FAILED_PICKUP=4
-int32 DROPPED_OBJECT = 5
-int32 ABORTED = 6
-int32 PENDING = 7
+int32 FAILED_DROPOFF=5
+int32 DROPPED_OBJECT = 6
+int32 ABORTED = 7
+int32 PENDING = 8
 
 int32 manip_return_code
+int32 object_grabber_return_code
+geometry_msgs/PoseStamped des_flange_pose_stamped_wrt_torso
+int32 object_finder_return_code
+geometry_msgs/PoseStamped object_pose
+
 ---
 #feedback codes:  perception_busy; planning_busy; pickup_busy; dropoff_busy
 int32 RECEIVED_NEW_TASK = 0
@@ -58,8 +64,9 @@ int32 DROPOFF_PLANNING_BUSY = 4
 int32 DROPOFF_MOTION_BUSY = 5
 int32 NO_CURRENT_TASK = 6
 int32 ABORTED = 7
-int32 COMPLETED_DROPOFF = 8
-int32 PREPOSE_MOVE_BUSY = 9
+int32 COMPLETED_MOVE = 8
+int32 COMPLETED_DROPOFF = 9
+int32 PREPOSE_MOVE_BUSY = 10
 
 
 int32 feedback_status

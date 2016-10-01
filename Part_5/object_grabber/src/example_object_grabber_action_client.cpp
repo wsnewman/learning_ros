@@ -1,5 +1,5 @@
 // example_object_grabber_action_client: 
-// wsn, August, 2016
+// wsn, September, 2016
 // illustrates use of object_grabber action server called "objectGrabberActionServer"
 
 #include<ros/ros.h>
