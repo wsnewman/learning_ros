@@ -1,14 +1,13 @@
 <launch>
 <!--x,y,z = 1.028, -0.11, 0.8  rpy = 0,0,0.43-->
-<node name="spawn_toy_block0" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/toy_block/toy_block.sdf -sdf -model block0 -x 0.5 -y -0.4 -z 0.08" />
-<node name="spawn_toy_block1" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/toy_block/toy_block.sdf -sdf -model block1 -x 0.6 -y -0.5 -z 0.08  " />
-<node name="spawn_toy_block2" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/toy_block/toy_block.sdf -sdf -model block2 -x 0.7 -y -0.6 -z 0.08  " />
-<node name="spawn_toy_block3" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/toy_block/toy_block.sdf -sdf -model block3 -x 0.8 -y -0.7 -z 0.08  " />
-<node name="spawn_toy_block4" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/toy_block/toy_block.sdf -sdf -model block4 -x 0.9 -y -0.8 -z 0.08  3" />
-<node name="spawn_toy_block5" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/toy_block/toy_block.sdf -sdf -model block5 -x 1.0 -y -0.9 -z 0.08  " />
-<node name="spawn_toy_block6" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/toy_block/toy_block.sdf -sdf -model block6 -x 1.1 -y -1 -z 0.08  " />
-<node name="spawn_toy_block7" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/toy_block/toy_block.sdf -sdf -model block7 -x 1.2 -y -1.1 -z 0.08  " />
-<node name="spawn_toy_block8" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/toy_block/toy_block.sdf -sdf -model block8 -x 1.3 -y -1.2 -z 0.08  " />
-<node name="spawn_toy_block9" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/toy_block/toy_block.sdf -sdf -model block9 -x 1.4 -y -1.3 -z 0.08  " />
-<node name="spawn_toy_block10" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/toy_block/toy_block.sdf -sdf -model block10 -x 1.5 -y -1.4 -z 0.08  " />
+<node name="spawn_toy_block1" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/toy_block/toy_block.sdf -sdf -model toy_block1 -x 0.6 -y -0.5 -z 0.08  " />
+<node name="spawn_toy_block2" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/toy_block/toy_block.sdf -sdf -model toy_block2 -x 0.7 -y -0.6 -z 0.08  " />
+<node name="spawn_toy_block3" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/toy_block/toy_block.sdf -sdf -model toy_block3 -x 0.8 -y -0.7 -z 0.08  " />
+<node name="spawn_toy_block4" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/toy_block/toy_block.sdf -sdf -model toy_block4 -x 0.9 -y -0.8 -z 0.08  3" />
+<node name="spawn_toy_block5" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/toy_block/toy_block.sdf -sdf -model toy_block5 -x 1.0 -y -0.9 -z 0.08  " />
+<node name="spawn_toy_block6" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/toy_block/toy_block.sdf -sdf -model toy_block6 -x 1.1 -y -1 -z 0.08  " />
+<node name="spawn_toy_block7" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/toy_block/toy_block.sdf -sdf -model toy_block7 -x 1.2 -y -1.1 -z 0.08  " />
+<node name="spawn_toy_block8" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/toy_block/toy_block.sdf -sdf -model toy_block8 -x 1.3 -y -1.2 -z 0.08  " />
+<node name="spawn_toy_block9" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/toy_block/toy_block.sdf -sdf -model toy_block9 -x 1.4 -y -1.3 -z 0.08  " />
+<node name="spawn_toy_block10" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/toy_block/toy_block.sdf -sdf -model toy_block10 -x 1.5 -y -1.4 -z 0.08  " />
 </launch>

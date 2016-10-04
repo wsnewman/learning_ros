@@ -4,5 +4,57 @@ notes: 8/15/16
   need diff drive for mobot;
   test wheels, robot, grippers
   add sticky fingers?
+
+
+modified find-block and tested:
+got result:
+[ INFO] [1473950933.232170029, 1102.811000000]: got pose x,y,z = 0.527852, -0.259387, 0.811483
+[ INFO] [1473950933.232204939, 1102.811000000]: got quaternion x,y,z, w = -0.004020, 0.002314, -0.498932, 0.866623
+
+object finder says:
+[ INFO] [1473950888.088355238]: listening for kinect-to-base transform:
+[ INFO] [1473950888.088426298]: waiting for tf between kinect_pc_frame and world...
+[ WARN] [1473950888.088700005]: "base_link" passed to lookupTransform argument target_frame does not exist. ; retrying...
+[ INFO] [1473950888.780521632, 1062.485000000]: kinect to base_link tf is good
+[ INFO] [1473950888.780704732, 1062.485000000]: frame_id: base_link
+
+[ INFO] [1473950888.780772698, 1062.485000000]: child_frame_id: kinect_pc_frame
+
+[ INFO] [1473950888.780883360, 1062.485000000]: vector from reference frame to child frame: 0.02695,0,1.81
+
+[ INFO] [1473950888.780938869, 1062.485000000]: orientation of child frame w/rt reference frame: 
+
+[ INFO] [1473950888.780991823, 1062.485000000]: 0,-0.932039,0.362358
+
+[ INFO] [1473950888.781043612, 1062.485000000]: -1,0,0
+
+[ INFO] [1473950888.781123862, 1062.485000000]: 0,-0.362358,-0.932039
+
+[ INFO] [1473950888.781344271, 1062.485000000]: quaternion: 0.694989, -0.694989, 0.130347, -0.130347
+
+affine rotation: 
+        0 -0.932039  0.362358
+       -1         0         0
+        0 -0.362358 -0.932039
+affine offset: 0.02695    0 1.81
+
+
+UPON RECEIVING FIND_BLOCK GOAL:
+
+table ht3: 0.772500
+
+centroid:  0.527852 -0.259387  0.811483
+[ INFO] [1473950933.231129180, 1102.810000000]: major_axis: 0.502125, -0.864792, 0.002162
+[ INFO] [1473950933.231190604, 1102.810000000]: plane normal: 0.010184, 0.003413, -0.999942
+
+------------coordinator------------
+need action client of object-finder
+  (and transform pose to torso coords)
+need action client of object_grabber
+
+(will need action client of navigator)
+
+
+
   
   

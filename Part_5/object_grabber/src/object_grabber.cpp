@@ -432,7 +432,7 @@ int ObjectGrabber::dropoff_from_above(geometry_msgs::PoseStamped des_flange_drop
         ROS_WARN("failure: return code = %d", move_to_rtn_code);
         return move_to_rtn_code; // give up--and send diagnostic code
     }
-
+    ros::Duration(0.5).sleep();
     //open the gripper:
     ROS_INFO("releasing the part");
     int gripper_status;
@@ -440,7 +440,7 @@ int ObjectGrabber::dropoff_from_above(geometry_msgs::PoseStamped des_flange_drop
     if (object_grabber::object_grabberResult::GRIPPER_FAILURE == gripper_status) {
         return gripper_status; //failure to open gripper; return diagnostic
     }
-
+    ros::Duration(0.5).sleep();
     //depart, carefully:
     ROS_INFO("computing/executing depart move");
     move_to_rtn_code = fine_move_flange_to(des_flange_approach_pose);
@@ -612,8 +612,6 @@ void ObjectGrabber::executeCB(const actionlib::SimpleActionServer<object_grabber
             object_grabber_as_.setSucceeded(grab_result_);
             break;
         case object_grabber::object_grabberGoal::GRAB_W_TOOL_Z_APPROACH: //more general name
-            //case object_grabber::object_grabberGoal::GRAB_TOY_BLOCK: //toy block is example case of above
-            //case object_grabber::object_grabberGoal::TOY_BLOCK:
             ROS_INFO("case GRAB_W_TOOL_Z_APPROACH");
             object_pose_stamped_ = goal->desired_frame;
             object_id_ = goal->object_id; // e.g. TOY_BLOCK_ID; 
@@ -630,12 +628,7 @@ void ObjectGrabber::executeCB(const actionlib::SimpleActionServer<object_grabber
             object_pose_stamped_wrt_torso_ = convert_pose_to_torso_frame(object_pose_stamped_);
             des_flange_pose_stamped_wrt_torso_ = object_to_flange_grasp_transform(object_id_,
                     object_pose_stamped_wrt_torso_);
-            //old version--block only
-            //des_flange_pose_stamped_wrt_torso_ = block_to_flange_grasp_transform(object_pose_stamped_wrt_torso_);
 
-            //convert object pose to gripper pose via grasp transform
-            //then can simplify grasp_approach_tool_z_axis() fnc
-            //object_grabber_rtn_code = grasp_from_above(object_pose_stamped_wrt_torso_,
             object_grabber_rtn_code = grasp_approach_tool_z_axis(des_flange_pose_stamped_wrt_torso_,
                     approach_dist_, gripper_test_val_);
 

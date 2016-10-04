@@ -67,7 +67,7 @@ void Baxter_traj_streamer::map_arms_joint_indices(vector<string> joint_names) {
     left_arm_joint_indices_.clear();
     int index;
     int n_jnts = joint_names.size();
-    cout<<"num jnt names = "<<n_jnts<<endl;
+    //cout<<"num jnt names = "<<n_jnts<<endl;
     std::string j_name;
 
    for (int j=0;j<7;j++) {
@@ -88,16 +88,16 @@ void Baxter_traj_streamer::map_arms_joint_indices(vector<string> joint_names) {
         }        
        }
    }   
-   cout<<"indices of right-arm joints: "<<endl;
-   for (int i=0;i<7;i++) {
-       cout<<right_arm_joint_indices_[i]<<", ";
-   }
-   cout<<endl;
-   cout<<"indices of left-arm joints: "<<endl;
-   for (int i=0;i<7;i++) {
-       cout<<left_arm_joint_indices_[i]<<", ";
-   }
-   cout<<endl;   
+   //cout<<"indices of right-arm joints: "<<endl;
+   //for (int i=0;i<7;i++) {
+       //cout<<right_arm_joint_indices_[i]<<", ";
+   //}
+   //cout<<endl;
+   //cout<<"indices of left-arm joints: "<<endl;
+   //for (int i=0;i<7;i++) {
+    //   cout<<left_arm_joint_indices_[i]<<", ";
+   //}
+   //cout<<endl;   
 }
 
 
@@ -141,7 +141,7 @@ Vectorq7x1 Baxter_traj_streamer::get_qvec_left_arm() {
 //re-use this for both left and right; same size, same vel limits, 
 double Baxter_traj_streamer::transition_time(Vectorq7x1 dqvec) {
     double t_max = fabs(dqvec[0])/qdot_max_vec_[0];
-    cout<<"qdot max: "<<qdot_max_vec_.transpose()<<endl;
+    //cout<<"qdot max: "<<qdot_max_vec_.transpose()<<endl;
     double ti;
     for (int i=1;i<7;i++) {
         ti = fabs(dqvec[i])/qdot_max_vec_[i];
@@ -152,7 +152,7 @@ double Baxter_traj_streamer::transition_time(Vectorq7x1 dqvec) {
 
 double Baxter_traj_streamer::transition_time(Eigen::VectorXd dqvec) {
     double t_max = fabs(dqvec[0])/qdot_max_vec_[0];
-    cout<<"qdot max: "<<qdot_max_vec_.transpose()<<endl;
+    //cout<<"qdot max: "<<qdot_max_vec_.transpose()<<endl;
     double ti;
     for (int i=1;i<7;i++) {
         ti = fabs(dqvec[i])/qdot_max_vec_[i];
@@ -245,7 +245,7 @@ void Baxter_traj_streamer::stuff_trajectory_left_arm( std::vector<Eigen::VectorX
     double net_time=0.0;
     q_start = qvecs[0];
     q_end = qvecs[0];   
-     cout<<"stuff_traj: start pt = "<<q_start.transpose()<<endl; 
+     //cout<<"stuff_traj: start pt = "<<q_start.transpose()<<endl; 
 
     //trajectory_point1.positions = qvecs[0];
  
@@ -261,11 +261,11 @@ void Baxter_traj_streamer::stuff_trajectory_left_arm( std::vector<Eigen::VectorX
         q_start = q_end;
         q_end = qvecs[iq];
         dqvec = q_end-q_start;
-        cout<<"dqvec: "<<dqvec.transpose()<<endl;
+        //cout<<"dqvec: "<<dqvec.transpose()<<endl;
         del_time = transition_time(dqvec);
         if (del_time< dt_traj)
             del_time = dt_traj;
-        cout<<"stuff_traj: next pt = "<<q_end.transpose()<<endl; 
+        //cout<<"stuff_traj: next pt = "<<q_end.transpose()<<endl; 
         net_time+= del_time;
         ROS_INFO("iq = %d; del_time = %f; net time = %f",iq,del_time,net_time);        
         for (int i=0;i<7;i++) { //copy over the joint-command values

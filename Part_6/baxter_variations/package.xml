@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>baxter_on_mobot</name>
+  <name>baxter_variations</name>
   <version>0.0.0</version>
-  <description>The baxter_on_mobot package</description>
+  <description>The baxter_variations package</description>
   
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->

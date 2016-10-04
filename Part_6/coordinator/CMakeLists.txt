@@ -37,6 +37,7 @@ catkin_simple()
 cs_add_executable(coordinator_v4 src/coordinator_v4.cpp)
 cs_add_executable(coordinator_action_client src/coordinator_action_client.cpp)
 cs_add_executable(coordinator_action_client2 src/coordinator_action_client2.cpp)
+cs_add_executable(coordinator_action_client3 src/coordinator_action_client3.cpp)
 #the following is required, if desire to link a node in this package with a library created in this same package
 # edit the arguments to reference the named node and named library within this package
 # target_link_libraries(example my_lib)

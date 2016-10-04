@@ -25,7 +25,7 @@ using namespace std;
 //
     //generate random poses, height 0.8, x=[0.4,0.52], y=[-0.45, 0.2], yaw 0 to pi
     const double x_min = 0.4;
-    const double x_max = 0.52; //baxter torso sits x=-0.173 behind base_link origin;
+    const double x_max = 0.7; //baxter torso sits x=-0.173 behind base_link origin;
                                // w/ base_link=0 in world frame, baxter reach to world 0.52 is about max
     const double y_min = -0.45;
     const double y_max = 0.15;
@@ -96,7 +96,7 @@ int main(int argc, char **argv) {
     model_state_srv_msg.request.model_state.twist.angular.z= 0.0;
         
     model_state_srv_msg.request.model_state.reference_frame = "world";
-    string block("block");
+    string block("toy_block");
     string blockN;
 
     
@@ -107,10 +107,14 @@ int main(int argc, char **argv) {
     while(ros::ok()) {
      if (g_trigger_new_request) {
        g_trigger_new_request=false; //reset trigger
-    //cout<<"enter a block number: "; //later, replace this with a service
-    //int ans;
-    //cin>>ans;
-    blockN = block + SSTR(g_block_num);
+
+       if (g_block_num>0) { //if have a number >0, append this number to the block name
+          blockN = block + SSTR(g_block_num);
+       }
+       else {
+           blockN = block;
+       }
+
     cout<<"block name: "<<blockN<<endl;
     //ROS_INFO("tough--doing block0");
     model_state_srv_msg.request.model_state.model_name = blockN; //"block0";

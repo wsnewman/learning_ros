@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<robot 
+     xmlns:xacro="http://www.ros.org/wiki/xacro" name="pedestal">
+     <!-- define the base-link origin to lie at floor level, between the drive wheels-->
+     <!--main body is a simple box; origin is a center of box-->
+    <xacro:property name="bodylen" value="0.3" />
+    <xacro:property name="bodywidth" value="0.3" />
+    <xacro:property name="bodyheight" value="0.85" />
+
+    
+    <!--link name="baxter_pedestal"-->
+    <link name="base_link">
+        <visual>
+            <geometry>
+                <box size="${bodylen} ${bodywidth} ${bodyheight}"/>
+            </geometry>
+            <origin xyz="0 0 ${bodyheight/2}" rpy="0 0 0"/>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="${bodylen} ${bodywidth} ${bodyheight-0.01}"/>
+            </geometry>
+            <origin xyz="0 0 ${bodyheight/2}" rpy="0 0 0"/>
+        </collision>
+    </link>
+    
+  
+</robot>

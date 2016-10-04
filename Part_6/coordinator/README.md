@@ -1,31 +1,32 @@
 # coordinator
 
-Top-level node that is a client of: navigator, object_grabber, and object_finder.
-Waits for an incoming goal, then starts entire process of: (navigation to table),
-recognition of object, grasp of object, (return to home)
+Top-level node that is a client of: object_grabber, and object_finder.
+Waits for an incoming goal, then starts entire process of: 
+recognition of object, grasp of object, and dropoff of object.
+
+The client specifies the object of interest, optionally with a specified pose 
+(alternatively, requesting Kinect-based perception of the object).  The client
+specifies the object's drop-off pose.  Grasp transforms are associated with
+specified object ID's (via an object-properties library).
+
+At present, this does not incorporate navigation.
 
 start up an empty world:
-`(optirun) roslaunch gazebo_ros empty_world.launch`
+`roslaunch gazebo_ros empty_world.launch`
+ 
+ spawn Baxter on pedestal in front of a table and a block:
+ `roslaunch baxter_variations baxter_on_pedestal_w_kinect.launch`
 
-add table and block
-`roslaunch exmpl_models add_table_and_block.launch`
-
-spawn Baxter on mobot:
-`roslaunch baxter_on_mobot baxter_on_mobot_w_lidar.launch`
-
-launch a bunch of nodes, including trajectory streamers, cartesian planner, rviz, baxter-playfile, 
-triad_display (for object-frame visualization), object-grabber, object-finder and coordinator:
+launch a bunch of nodes, including trajectory streamers, cartesian planner, rviz, baxter-playfile, triad_display (for object-frame visualization), object-grabber, object-finder coordinator, and block-state resetter:
 `roslaunch coordinator baxter_object_grabber_nodes.launch`
+    
+Start up an example client node:
+`rosrun coordinator coordinator_action_client3`
 
-Start an example client of the coordinator (later, to send orders for kits)
-`rosrun coordinator coordinator_action_client`
+The robot will look for a block on the table and will plan and execute motions to
+pick up the block and drop it off at a fixed dropoff location.  After each trial,
+the block position will be reset randomly on the tabletop within reach of the robot.
 
-optional: to add random blocks:
+The operation continues to repeat, and performance data is saved to the file "failures"
 
-`roslaunch exmpl_models add_blocks.launch`    
-`rosrun example_gazebo_set_state set_block_state`
-`rosservice call set_block_state 5`  (for block 5)
 
-notes: frequent failures with gripper fingers hitting block.  May try smaller block.
-Also, should allow gripper orientation w/ x-axis anti-parallel to block x-axis as well.
-Further, allow drop-off w/ block x-axis anti-parallel as option to open up more solutions.

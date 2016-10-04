@@ -15,6 +15,7 @@ int main(int argc, char **argv) {
 
     input_float.data = 0.0;
     
+    
     // do work here in infinite loop (desired for this example), but terminate if detect ROS has faulted
     while (ros::ok()) 
     {
@@ -22,7 +23,7 @@ int main(int argc, char **argv) {
         // expect one core to be 100% dedicated (wastefully) to this small task
         input_float.data = input_float.data + 0.001; //increment by 0.001 each iteration
         my_publisher_object.publish(input_float); // publish the value--of type Float64-- 
-        //to the topic "topic1"
+        //to the topic "topic1" 
     }
 }
 
