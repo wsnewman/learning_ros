@@ -4,6 +4,10 @@ Required editing Baxter model files to remove most of Baxter's sensor drivers (d
 Still references libbaxter_gazebo_ros_control.so and all CAD files in baxter_description, so model here could
 break if these are updated incompatibly.
 
+Also created baxter_on_pedestal, which is the Baxter simulator on a rigid support,
+with the addition of a Kinect sensor.  This works with the object_grabber and
+object_finder action servers.  See "coordinator" package.
+
 ## Example usage
 Start up a non-empty world: contains starting pen, cafe table and beer can:
  `optirun roslaunch baxter_on_mobot play_pen_world.launch` 

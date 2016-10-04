@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <robot
   xmlns:xacro="http://www.ros.org/wiki/xacro" name="baxter_on_mobot">
-  <xacro:include filename="$(find baxter_on_mobot)/mobot_base.xacro" />    
+  <xacro:include filename="$(find baxter_variations)/mobot_base.xacro" />    
 
   <xacro:include filename="$(find baxter_on_mobot)/baxter_base.urdf.xacro">
     <xacro:arg name="gazebo" value="${gazebo}"/>
