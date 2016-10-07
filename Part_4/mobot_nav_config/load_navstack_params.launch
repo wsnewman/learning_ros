@@ -1,0 +1,12 @@
+<launch>
+<!--navstack config files-->
+    <rosparam file="$(find mobot_nav_config)/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find mobot_nav_config)/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find mobot_nav_config)/base_local_planner_params.yaml" command="load" />
+
+    <rosparam file="$(find mobot_nav_config)/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find mobot_nav_config)/global_costmap_params.yaml" command="load" />
+
+
+
+</launch>

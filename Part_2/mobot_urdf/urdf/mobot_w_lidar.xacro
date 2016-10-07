@@ -249,7 +249,8 @@
     <odometryTopic>odom</odometryTopic>
     <odometryFrame>odom</odometryFrame>
     <robotBaseFrame>base_link</robotBaseFrame>
-    <publishWheelTF>true</publishWheelTF>
+    <!--don't publish wheel TF, so it does not conflict with robot_state_publisher -->
+    <publishWheelTF>false</publishWheelTF>
     <publishWheelJointState>true</publishWheelJointState>
   </plugin>
  </gazebo> 
