@@ -8,6 +8,8 @@ Panels:
         - /Status1
         - /Map1
         - /Map2
+        - /Path1
+        - /Pose1
       Splitter Ratio: 0.5
     Tree Height: 454
   - Class: rviz/Selection
@@ -240,7 +242,7 @@ Visualization Manager:
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
-      Color: 25; 255; 0
+      Color: 85; 0; 255
       Enabled: true
       Line Style: Lines
       Line Width: 0.03
@@ -249,7 +251,7 @@ Visualization Manager:
         X: 0
         Y: 0
         Z: 0
-      Topic: /move_base_node/NavfnROS/plan
+      Topic: /move_base/NavfnROS/plan
       Unreliable: false
       Value: true
     - Alpha: 1
@@ -291,6 +293,21 @@ Visualization Manager:
       Topic: /move_base_node/local_costmap/costmap
       Unreliable: false
       Value: false
+    - Alpha: 1
+      Axes Length: 1
+      Axes Radius: 0.1
+      Class: rviz/Pose
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.3
+      Head Radius: 0.1
+      Name: Pose
+      Shaft Length: 1
+      Shaft Radius: 0.05
+      Shape: Axes
+      Topic: /move_base/current_goal
+      Unreliable: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -316,22 +333,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 30.9832
+      Distance: 23.2443
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -1.50215
-        Y: 0.13697
-        Z: 0.854934
+        X: -2.83224
+        Y: 0.650306
+        Z: 0.851319
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 1.5698
+      Pitch: 1.5598
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.13218
+      Yaw: 3.14218
     Saved: ~
 Window Geometry:
   Displays:
@@ -349,5 +366,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1652
-  X: 266
-  Y: 205
+  X: 206
+  Y: 66
