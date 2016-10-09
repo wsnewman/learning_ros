@@ -1,0 +1,7 @@
+<launch>
+
+  <!-- Run the map server -->
+  <node name="map_server" pkg="map_server" type="map_server" 
+     args="$(find maps)/starting_pen/starting_pen_map.yaml"/>
+
+</launch>

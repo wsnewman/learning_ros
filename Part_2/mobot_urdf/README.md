@@ -7,8 +7,12 @@ Start gazebo with an empty world:
 then load the robot model into Gazebo via the parameter server:
 `roslaunch mobot_urdf mobot.launch`
 Drive the robot around, e.g. with:
-`rostopic pub cmvel geometry_msgs/Twist  '{linear:  {x: 0.5, y: 0.0, z: 0.0}, angular: {x: 0.0,y: 0.0,z: 0.3}}'`
+`rostopic pub cmd_vel geometry_msgs/Twist  '{linear:  {x: 0.5, y: 0.0, z: 0.0}, angular: {x: 0.0,y: 0.0,z: 0.3}}'`
 
-Launch file for this example does not include joint-state and robot-state publishers for use with rviz.
+Alternatively, launch Gazebo, spawn the starting-pen model, load and spawn the robot, and start a robot-state
+publisher with:
+`roslaunch mobot_urdf mobot_in_pen.launch`
+Then drive the robot around under teleoperation with:
+`rosrun teleop_twist_keyboard teleop_twist_keyboard.py`
 
     

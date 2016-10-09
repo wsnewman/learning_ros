@@ -1,7 +1,19 @@
 <launch>
-<!-- Convert an xacro and put on parameter server -->
-<param name="robot_description" command="$(find xacro)/xacro.py '$(find mobot_urdf)/urdf/mobot.xacro'" />
+<!--launch file to start up mobot in starting pen  this takes the place of starting up a real robot -->
+<!-- load the model "starting_pen" into Gazebo -->
+<include file="$(find gazebo_ros)/launch/empty_world.launch"/>
 
-<!-- Spawn a robot into Gazebo -->
+<node name="spawn_sdf" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/starting_pen/model.sdf -sdf -model starting_pen -y -5" />
+
+<!-- Convert xacro model file and put on parameter server -->
+<param name="robot_description" command="$(find xacro)/xacro.py '$(find mobot_urdf)/urdf/mobot_w_lidar_and_kinect.xacro'" />
+
+<!-- Spawn the robot from parameter server into Gazebo -->
 <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model mobot" />
+
+<node pkg="tf" type="static_transform_publisher" name="kinect_broadcaster" args="0 0 0 -0.500 0.500 -0.500 0.500 kinect_link kinect_depth_frame 100" />
+
+<!-- start a robot_state_publisher -->
+<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
 </launch>
