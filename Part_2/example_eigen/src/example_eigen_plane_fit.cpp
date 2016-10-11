@@ -16,7 +16,7 @@
 using namespace std;
 //using namespace Eigen; //if you get tired of typing Eigen:: everywhere, uncomment this.
                          // but I'll leave this as required, for now, to highlight when Eigen classes are being used
-    double g_noise_gain = 0.1; //0.1; //0.1; //decide how much noise to add to points; start with 0.0, and should get precise results
+    double g_noise_gain = 0.0; //0.1; //0.1; //0.1; //decide how much noise to add to points; start with 0.0, and should get precise results
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "example_eigen_plane_fit"); //node name

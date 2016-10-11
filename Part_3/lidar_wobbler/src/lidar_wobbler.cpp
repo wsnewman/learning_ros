@@ -17,14 +17,14 @@ void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan_in)
 {
   if(!listener_.waitForTransform(
         scan_in->header.frame_id,
-        "/base_link",
+        "/world",
         scan_in->header.stamp + ros::Duration().fromSec(scan_in->ranges.size()*scan_in->time_increment),
         ros::Duration(1.0))){
      return;
   }
 
   sensor_msgs::PointCloud cloud;
-  projector_.transformLaserScanToPointCloud("/base_link",*scan_in,cloud,listener_);
+  projector_.transformLaserScanToPointCloud("/world",*scan_in,cloud,listener_);
 
   // Do something with cloud.
 }
