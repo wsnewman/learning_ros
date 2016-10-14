@@ -16,7 +16,7 @@
 using namespace std;
 //using namespace Eigen; //if you get tired of typing Eigen:: everywhere, uncomment this.
                          // but I'll leave this as required, for now, to highlight when Eigen classes are being used
-    double g_noise_gain = 0.0; //0.1; //0.1; //0.1; //decide how much noise to add to points; start with 0.0, and should get precise results
+    double g_noise_gain = 0.1; //0.1; //0.1; //0.1; //decide how much noise to add to points; start with 0.0, and should get precise results
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "example_eigen_plane_fit"); //node name
@@ -46,8 +46,8 @@ int main(int argc, char** argv) {
     //  0;0;1]
     Eigen::Matrix3d Rot_z;
     Rot_z.row(0)<<0,-1,0;  // populate the first row--shorthand method
-    Rot_z.row(1)<<1,0,0;  //second row
-    Rot_z.row(2)<<0,0,1;  // yada, yada
+    Rot_z.row(1)<<1, 0,0;  //second row
+    Rot_z.row(2)<<0, 0,1;  // yada, yada
     cout<<"Rot_z: "<<endl;  
 
     cout<<Rot_z<<endl;  // Eigen matrices and vectors are nicely formatted; better: use ROS_INFO_STREAM() instead of cout

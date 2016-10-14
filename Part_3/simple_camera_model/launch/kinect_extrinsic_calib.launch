@@ -1,0 +1,6 @@
+<launch>
+<!-- make this tf external for tuning -->
+<node pkg="tf" type="static_transform_publisher" name="kinect_calib" args="0 0 0 0 0 0 1 base_link kinect_pc_frame 50"/>
+</launch>
+
+

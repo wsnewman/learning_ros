@@ -118,4 +118,40 @@ rosrun arm7dof_NAC_controller arm7dof_NAC_controller
 Reduce gravity to, e.g. -0.5m/sec^2, then drop a weight with:
 roslaunch exmpl_models add_cylinder_weight.launch
 
+roslaunch baxter_gazebo baxter_world.launch
+rosrun baxter_tools enable_robot.py -e
+rosrun baxter_tools tuck_arms.py -t
+rosrun baxter_tools tuck_arms.py -u
+rosrun baxter_examples joint_velocity_wobbler.py
+
+rosrun baxter_trajectory_streamer rt_arm_as
+rosrun baxter_trajectory_streamer left_arm_as
+rosrun baxter_trajectory_streamer pre_pose 
+
+rosrun baxter_interface joint_trajectory_action_server.py --mode position
+rosrun baxter_jnt_traj_ctlr_client baxter_jnt_traj_ctlr_client_pre_pose
+
+rosrun baxter_playfile_nodes get_and_save_jntvals
+
+rosrun baxter_playfile_nodes baxter_recorder
+
+rosrun baxter_playfile_nodes baxter_playback pre_pose_right.jsp pre_pose_left.jsp
+rosrun baxter_playfile_nodes baxter_playback shy.jsp
+
+rosrun baxter_playfile_nodes baxter_multitraj_player
+
+roslaunch baxter_launch_files baxter_playfile_service_nodes.launch
+rosrun baxter_playfile_nodes baxter_playfile_client 
+
+roslaunch baxter_gazebo baxter_world.launch
+roslaunch exmpl_models add_table_and_toys.launch
+roslaunch baxter_launch_files baxter_cartesian_motion_nodes.launch
+rosrun cartesian_planner baxter_cart_move_action_client_w_gripper
+
+roslaunch baxter_gazebo baxter_world.launch
+roslaunch exmpl_models add_table_and_block.launch
+roslaunch baxter_launch_files baxter_object_grabber_nodes.launch
+rosrun object_grabber example_object_grabber_ac
+
+
 

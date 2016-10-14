@@ -1,0 +1,5 @@
+<launch>
+  <!--imperfect sensor transform, to illustrate extrinsic calibration -->
+  <node pkg="tf" type="static_transform_publisher" name="kinect_broadcaster2" args="0.1 0.1 0.1 -0.50 0.50 -0.50 0.5 kinect_link kinect_pc_frame 100" />  
+
+</launch>
