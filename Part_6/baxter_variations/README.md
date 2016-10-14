@@ -9,32 +9,46 @@ with the addition of a Kinect sensor.  This works with the object_grabber and
 object_finder action servers.  See "coordinator" package.
 
 ## Example usage
-Start up a non-empty world: contains starting pen, cafe table and beer can:
- `optirun roslaunch baxter_on_mobot play_pen_world.launch` 
- Load the combined baxter/mobot model into parameter server, spawn into Gazebo, load the controllers, and
- start up left and right arm trajectory interpolation action servers:
- `roslaunch baxter_on_mobot baxter_on_mobot_w_lidar.launch` 
- (the above uses $(find baxter_on_mobot)/baxter_on_mobot.xacro)
-  ->  $(find baxter_on_mobot)/mobot_base.xacro
+Start up gazebo, add starting pen, tables and blocks, spawn baxter-on-mobot:  
+ (optirun) `roslaunch baxter_on_mobot baxter_on_mobot.launch` 
+
+Wait for Baxter's controllers to load and simu to stabilize, then run the following (which will include
+enabling the motors).  
+
+Launch multiple nodes, including 6 action servers, 2 services,  and rviz (including trajectory streamers, 
+cartesian planner, rviz, baxter-playfile,  triad_display, object-grabber, object-finder and coordinator).  Same
+as coordinator for baxter on pedestal:
+`roslaunch coordinator coord_vision_manip.launch`
+
+Diagnostics for vision and manipulation: 
+Test the right gripper: (will open/close at 1-second intervals)
+  `rosrun test_baxter_gripper gripper_publisher`
+
+Test with this example client of the coordinator:
+`rosrun coordinator coordinator_action_client_tester`
+
+Start the nav-stack.  
+Start up map server (with starting-pen map), amcl, and move_base with 4 nav config files.  Nearly identical
+to nav-launch in Part-4, except do not start up rviz (again):
+
+`roslaunch baxter_variations mobot_startup_navstack.launch`
+
+ (the above uses $(find baxter_variations)/baxter_on_mobot.xacro)
+  ->  $(find baxter_variations)/mobot_base.xacro
   
-  ->  $(find baxter_on_mobot)/baxter_base.urdf.xacro
-    -> $(find baxter_on_mobot)/baxter_drives.gazebo.xacro
+  ->  $(find baxter_variations)/baxter_base.urdf.xacro
+    -> $(find baxter_variations)/baxter_drives.gazebo.xacro
     -> package://baxter_description/meshes/...
- Should be able to see arm poses corresponding to Gazebo and LIDAR points pinging the walls in rviz:
-  `rosrun rviz rviz`  
 
-
- Wait for gravity compensation turned off, then enable Baxter's motors with:
-   `rosrun baxter_tools enable_robot.py -e`
- Test moves: 
-  `roscd baxter_playfile_nodes` and from this directory, generate a right-arm motion with:
-  `rosrun baxter_playfile_nodes baxter_playback shake.jsp`  (or try shy.jsp, wave.jsp...; runs to completion)
-  view Kinect pointCloud points on outstretched arm--overlay is (unrealistically) perfect
-     
+Mobility diagnostics:     
  Cause the base to spin: (move the table to avoid interference)
   `rostopic pub cmd_vel geometry_msgs/Twist '{ angular: { z : 0.3}}'`   
+or use keyboard teleop:
+`rosrun teleop_twist_keyboard teleop_twist_keyboard.py`
+or use rviz tool "2D Nav Goal" to set planner goals.
+
+
   
- Test the right gripper: (will open/close at 1-second intervals)
-  `rosrun test_baxter_gripper gripper_publisher`
+
 
     

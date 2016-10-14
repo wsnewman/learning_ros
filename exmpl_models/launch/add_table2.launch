@@ -1,0 +1,3 @@
+<launch>
+<node name="spawn_sdf_table2" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/cafe_table_copy/model-1_4.sdf -sdf -model cafe_table_2 -x -9.45 -y -1.0" />
+</launch>

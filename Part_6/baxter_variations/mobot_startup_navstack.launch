@@ -1,0 +1,25 @@
+<launch>
+  <!-- Run the map server and load the starting-pen map -->
+  <node name="map_server" pkg="map_server" type="map_server" 
+     args="$(find maps)/starting_pen/starting_pen_map.yaml"/>
+ 
+   <!-- use amcl for localization-->
+   <!--node pkg="amcl" type="amcl" name="amcl" output="screen"--> 
+  <!-- alt: try differential-drive amcl config params -->
+  <include file="$(find amcl)/examples/amcl_diff.launch"/>  
+  
+  <!--alt: instead of loading a map and localizing on it, could run slam dynamically -->
+  <!--node name="slam_gmapping" pkg="gmapping" type="slam_gmapping"/--> 
+     
+
+<!--move_base w/ navstack config files--> 
+ <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+   <rosparam file="$(find mobot_nav_config)/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find mobot_nav_config)/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find mobot_nav_config)/base_local_planner_params.yaml" command="load" />
+
+    <rosparam file="$(find mobot_nav_config)/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find mobot_nav_config)/global_costmap_params.yaml" command="load" />
+  </node>
+ 
+</launch>

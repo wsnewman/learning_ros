@@ -1,22 +1,19 @@
 coordination commands:
-start up an empty world:
-`(optirun) roslaunch gazebo_ros empty_world.launch`
+Start up gazebo, add starting pen, tables and blocks, spawn baxter-on-mobot:  
+ (optirun) `roslaunch baxter_on_mobot baxter_on_mobot.launch` 
 
-add table and block
-`roslaunch exmpl_models add_table_and_block.launch`
 
-spawn Baxter on mobot:
-`roslaunch baxter_on_mobot baxter_on_mobot_w_lidar.launch`
+Launch multiple nodes, including 6 action servers, 2 services,  and rviz (including trajectory streamers, 
+cartesian planner, rviz, baxter-playfile,  triad_display, object-grabber, object-finder and coordinator).  Same
+as coordinator for baxter on pedestal:
+`roslaunch coordinator coord_vision_manip.launch`
 
-launch a bunch of nodes, including trajectory streamers, cartesian planner, rviz, baxter-playfile, 
-triad_display (for object-frame visualization), object-grabber, object-finder and coordinator:
-`roslaunch coordinator baxter_object_grabber_nodes.launch`
+Optionally, test with this example client of the coordinator:
+`rosrun coordinator coordinator_action_client_tester`
 
-Start an example client of the coordinator (later, to send orders for kits)
-`rosrun coordinator coordinator_action_client`
+Start up map server (with starting-pen map), amcl, and move_base with 4 nav config files.  Nearly identical
+to nav-launch in Part-4, except do not start up rviz (again):
 
-optional: to add random blocks:
+`roslaunch baxter_variations mobot_startup_navstack.launch`
 
-`roslaunch exmpl_models add_blocks.launch`    
-`rosrun example_gazebo_set_state set_block_state`
-`rosservice call set_block_state 5`  (for block 5)
+
