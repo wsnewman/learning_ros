@@ -36,6 +36,7 @@ catkin_simple()
 #cs_add_executable(coordinator_test src/coordinator_test.cpp)
 #cs_add_executable(coordinator_v4 src/coordinator_v4.cpp)
 cs_add_executable(coordinator src/coordinator.cpp)
+cs_add_executable(command_bundler src/command_bundler.cpp)
 
 #cs_add_executable(coordinator_action_client src/coordinator_action_client.cpp)
 #cs_add_executable(coordinator_action_client2 src/coordinator_action_client2.cpp)
