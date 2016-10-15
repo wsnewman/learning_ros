@@ -1,0 +1,4 @@
+<launch>
+<!--x,y,z = 1.028, -0.11, 0.8  rpy = 0,0,0.43-->
+<node name="spawn_toy_block" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/toy_block/toy_block.sdf -sdf -model toy_block3 -x 0.5 -y -0.26 -z 0.8  -Y 0.0" />
+</launch>

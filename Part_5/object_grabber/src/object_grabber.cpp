@@ -420,7 +420,8 @@ int ObjectGrabber::dropoff_from_above(geometry_msgs::PoseStamped des_flange_drop
     des_flange_dropoff_pose.header.frame_id = "torso";
     des_flange_dropoff_pose.pose = xformUtils.transformEigenAffine3dToPose(dropoff_flange_affine);
     ROS_INFO("attempting move to approach pose");
-    move_to_rtn_code = move_flange_to(des_flange_approach_pose);
+    //move_to_rtn_code = move_flange_to(des_flange_approach_pose);
+    move_to_rtn_code = jspace_move_flange_to(des_flange_approach_pose); //use jspace instead
     if (move_to_rtn_code != object_grabber::object_grabberResult::SUCCESS) {
         ROS_WARN("failure: return code = %d", move_to_rtn_code);
         return move_to_rtn_code; // give up--and send diagnostic code
