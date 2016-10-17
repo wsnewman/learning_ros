@@ -37,11 +37,11 @@ The operation continues to repeat, and performance data is saved to the file "fa
 Mobile manipulation:
 (optirun) `roslaunch baxter_variations baxter_on_mobot.launch`
 
-Start up the manipulator controls.  Wait for simulator to stabilize.  Then launch:
+Start up the manipulator controls and nav-stack.  Wait for simulator to stabilize.  Then launch:
 `roslaunch coordinator command_bundler.launch`
 
-Start up the move-base navigation:
-`roslaunch baxter_variations mobot_startup_navstack.launch`
+The above launch file includes the launchfile: 
+roslaunch baxter_variations mobot_startup_navstack.launch
 
 The launch sequence may result in the blocks having fallen to the floor.  Reset the model
 poses via Gazebo using Edit->reset model poses.
@@ -62,6 +62,7 @@ Send a destination goal to move_base to approach a table outside the pen (still 
 Manually command the robot to approach closer to the table (a pose that would be forbidden by the
 costmap):
 `rosservice call open_loop_nav_service 0.7`
+(should be at approx (-8.9, -0.15, 0)= (x,y,z) and (0,0,-90) = RPY base_link w/rt map)
 Command the robot to stack the block by: perceiving the table surface, finding a block on the table,
 computing a drop-off pose to stack the grasped block, computing arm motion commands to stack the block,
 and executing this plan.
