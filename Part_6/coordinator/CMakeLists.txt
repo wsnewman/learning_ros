@@ -46,6 +46,7 @@ cs_add_executable(stack_block_client src/stack_block_client.cpp)
 cs_add_executable(coordinator_action_client_tester src/coordinator_action_client_tester.cpp)
 cs_add_executable(open_loop_nav_service src/open_loop_nav_service.cpp)
 cs_add_executable(open_loop_yaw_service src/open_loop_yaw_service.cpp)
+cs_add_executable(fetch_and_stack_client src/fetch_and_stack_client.cpp)
 #cs_add_executable(move_base_action_client src/move_base_action_client.cpp)
 #the following is required, if desire to link a node in this package with a library created in this same package
 # edit the arguments to reference the named node and named library within this package
