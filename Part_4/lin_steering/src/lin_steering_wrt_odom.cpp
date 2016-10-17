@@ -222,8 +222,7 @@ void SteeringController::lin_steering_algorithm() {
     //END OF DEBUG STUFF
     
      // do something clever with this information     
-    
-    controller_speed = des_state_vel_ + K_TRIP_DIST*trip_dist_err; //you call that clever ?!?!?!? should speed up/slow down to null out 
+    controller_speed = des_state_vel_ + K_TRIP_DIST*trip_dist_err; //speed up/slow down to null out 
     //controller_omega = des_state_omega_; //ditto
     controller_omega = des_state_omega_ + K_PHI*heading_err + K_DISP*lateral_err;
     

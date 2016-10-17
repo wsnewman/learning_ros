@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(coordinator)
+project(example_move_base_client)
 
 find_package(catkin_simple REQUIRED)
 
@@ -31,22 +31,8 @@ catkin_simple()
 
 # Executables: uncomment the following and edit arguments to compile new nodes
 # may add more of these lines for more nodes from the same package
-#cs_add_executable(coordinator src/coordinator_v2.cpp)
-#cs_add_executable(coordinator_v3 src/coordinator_v3.cpp)
-#cs_add_executable(coordinator_test src/coordinator_test.cpp)
-#cs_add_executable(coordinator_v4 src/coordinator_v4.cpp)
-cs_add_executable(coordinator src/coordinator.cpp)
-cs_add_executable(command_bundler src/command_bundler.cpp)
-cs_add_executable(bundler_client src/bundler_client.cpp)
-cs_add_executable(acquire_block_client src/acquire_block_client.cpp)
-cs_add_executable(dropoff_block_client src/dropoff_block_client.cpp)
-cs_add_executable(stack_block_client src/stack_block_client.cpp)
-#cs_add_executable(coordinator_action_client src/coordinator_action_client.cpp)
-#cs_add_executable(coordinator_action_client2 src/coordinator_action_client2.cpp)
-cs_add_executable(coordinator_action_client_tester src/coordinator_action_client_tester.cpp)
-cs_add_executable(open_loop_nav_service src/open_loop_nav_service.cpp)
-cs_add_executable(open_loop_yaw_service src/open_loop_yaw_service.cpp)
-#cs_add_executable(move_base_action_client src/move_base_action_client.cpp)
+cs_add_executable(example_move_base_client src/example_move_base_client.cpp)
+
 #the following is required, if desire to link a node in this package with a library created in this same package
 # edit the arguments to reference the named node and named library within this package
 # target_link_libraries(example my_lib)

@@ -1,4 +1,5 @@
-// bundler_client: 
+// dropoff_block_client: 
+// given a grasped block, drop it off (from above) to specified dropoff pose
 // wsn, October, 2016
 
 #include<ros/ros.h>
@@ -13,50 +14,15 @@
 #include <object_finder/objectFinderAction.h>
 #include <object_grabber/object_grabberAction.h>
 bool g_goal_done = true;
-int g_ntasks_done = 0;
 int g_callback_status = coordinator::ManipTaskResult::PENDING;
-int g_object_grabber_return_code=0;
-int g_object_finder_return_code=0;
 int g_fdbk_count = 0;
-int g_n_successes = 0;
-int g_n_perception_failures = 0;
-int g_n_pickup_failures =0;
-int g_n_dropoff_failures=0;
-int g_n_gripper_failures=0;
-geometry_msgs::PoseStamped g_des_flange_pose_stamped_wrt_torso;
-geometry_msgs::PoseStamped g_object_pose;
+
+//geometry_msgs::PoseStamped g_des_flange_pose_stamped_wrt_torso;
+//geometry_msgs::PoseStamped g_object_pose;
 coordinator::ManipTaskResult g_result;
 //bool g_goal_active=false;
 using namespace std;
 
-void save_failure_data(void) {
-  std::ofstream outfile;
-
-  outfile.open("failures.txt", std::ios_base::app);
-  outfile << "g_object_grabber_return_code: "<<g_object_grabber_return_code<<endl;
-  if (g_object_grabber_return_code==object_grabber::object_grabberResult::GRIPPER_FAILURE) {
-      outfile<<"gripper failure, object pose: "<<endl;
-      outfile<<"object origin: (x,y,z) = ("<<g_object_pose.pose.position.x<<", "<<g_object_pose.pose.position.y<<", "
-              <<g_object_pose.pose.position.z<<")"<<endl;
-      outfile<<"orientation: (qx,qy,qz,qw) = ("<<g_object_pose.pose.orientation.x<<","
-              <<g_object_pose.pose.orientation.y<<","
-              <<g_object_pose.pose.orientation.z<<","
-              <<g_object_pose.pose.orientation.w<<")"<<endl;
-  }
-  else {
-      outfile<<"manipulation failure code "<<g_object_grabber_return_code<<endl;
-      outfile<<"manip failed with desired flange pose: "<<endl;
-       outfile<<"object origin: (x,y,z) = ("<<g_des_flange_pose_stamped_wrt_torso.pose.position.x<<", "
-               <<g_des_flange_pose_stamped_wrt_torso.pose.position.y<<", "
-               <<g_des_flange_pose_stamped_wrt_torso.pose.position.z<<")"<<endl;
-      outfile<<"orientation: (qx,qy,qz,qw) = ("<<g_des_flange_pose_stamped_wrt_torso.pose.orientation.x<<","
-              <<g_des_flange_pose_stamped_wrt_torso.pose.orientation.y<<","
-              <<g_des_flange_pose_stamped_wrt_torso.pose.orientation.z<<","
-              <<g_des_flange_pose_stamped_wrt_torso.pose.orientation.w<<")"<<endl;     
-  }
-
-  outfile.close();
-}
 
 void doneCb(const actionlib::SimpleClientGoalState& state,
         const coordinator::ManipTaskResultConstPtr& result) {
@@ -70,31 +36,8 @@ void doneCb(const actionlib::SimpleClientGoalState& state,
             ROS_INFO("returned MANIP_SUCCESS");
             
             break;
-            
-        case coordinator::ManipTaskResult::FAILED_PERCEPTION:
-            ROS_WARN("returned FAILED_PERCEPTION");
-            g_n_perception_failures++;
-            g_object_finder_return_code = result->object_finder_return_code;
-            break;
-        case coordinator::ManipTaskResult::FAILED_PICKUP:
-            ROS_WARN("returned FAILED_PICKUP");
-            g_n_pickup_failures++;
-
-            g_object_grabber_return_code= result->object_grabber_return_code;
-            if (g_object_grabber_return_code==object_grabber::object_grabberResult::GRIPPER_FAILURE) {
-                 g_n_gripper_failures++;
-            }
-            g_object_pose = result->object_pose;
-            g_des_flange_pose_stamped_wrt_torso = result->des_flange_pose_stamped_wrt_torso;
-            //for failed pickup, save failure code and pose:
-            save_failure_data();
-            break;
-        case coordinator::ManipTaskResult::FAILED_DROPOFF:
-            ROS_WARN("returned FAILED_DROPOFF");
-            g_n_dropoff_failures++;
-            g_des_flange_pose_stamped_wrt_torso = result->des_flange_pose_stamped_wrt_torso;
-            save_failure_data();            
-            break;
+        default:
+            ROS_ERROR("action server response indicates failure");
     }
     //ROS_INFO("return status is %d ", g_callback_status);
 }
@@ -119,16 +62,8 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "dropoff_client_node"); // name this node 
     ros::NodeHandle nh; //standard ros node handle  
 
-    ros::ServiceClient block_state_client = nh.serviceClient<example_gazebo_set_state::SrvInt>("set_block_state");
-    example_gazebo_set_state::SrvInt block_state_srv;
-
-    int n_attempts = 0;
-
-
-    block_state_srv.request.request_int = 0; //refers to toy-block model #1
-
     coordinator::ManipTaskGoal goal;
-
+    geometry_msgs::PoseStamped dropoff_pose;
    
     // use the name of our server, which is: example_action (named in example_action_server.cpp)
     // the "true" argument says that we want our new client to run as a separate thread (a good idea)
@@ -143,52 +78,28 @@ int main(int argc, char** argv) {
         ros::Duration(0.5).sleep();
         ROS_INFO("retrying...");
     }
-
     ROS_INFO("connected to action server"); // if here, then we connected to the server;
-
-      
-    //send vision request to find table top:
-    ROS_INFO("sending a goal: seeking table top");
-    g_goal_done = false;
-    goal.action_code = coordinator::ManipTaskGoal::FIND_TABLE_SURFACE;
-
-    action_client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
-    while (!g_goal_done) {
-        ros::Duration(0.1).sleep();
-    }
     
-    //send vision goal to find block:
-    ROS_INFO("sending a goal: find block");
-    g_goal_done = false;
-    goal.action_code = coordinator::ManipTaskGoal::GET_PICKUP_POSE;
-    goal.object_code= TOY_BLOCK_ID;
-    goal.perception_source = coordinator::ManipTaskGoal::PCL_VISION;
-    action_client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
-    while (!g_goal_done) {
-        ros::Duration(0.1).sleep();
-    }    
-    if (g_callback_status!= coordinator::ManipTaskResult::MANIP_SUCCESS)
-    {
-        ROS_ERROR("failed to find block quitting");
-        return 0;
-    }
-    g_object_pose = g_result.object_pose;
-    ROS_INFO_STREAM("object origin: (x,y,z) = ("<<g_object_pose.pose.position.x<<", "<<g_object_pose.pose.position.y<<", "
-              <<g_object_pose.pose.position.z<<")"<<endl);
-    ROS_INFO_STREAM("orientation: (qx,qy,qz,qw) = ("<<g_object_pose.pose.orientation.x<<","
-              <<g_object_pose.pose.orientation.y<<","
-              <<g_object_pose.pose.orientation.z<<","
-              <<g_object_pose.pose.orientation.w<<")"<<endl);    
+    //define a dropoff pose; 
+    dropoff_pose.header.frame_id = "torso";
+    dropoff_pose.pose.position.x = 0.5;
+    dropoff_pose.pose.position.y = -0.35;
+    dropoff_pose.pose.position.z = -0.12;
+    dropoff_pose.pose.orientation.x = 0;
+    dropoff_pose.pose.orientation.y = 0;
+    dropoff_pose.pose.orientation.z = 0.707;
+    dropoff_pose.pose.orientation.w = 0.707;
+    dropoff_pose.header.stamp = ros::Time::now();
+    
     
     //send command to set grasped block on top of existing block:
-    ROS_INFO("sending a goal: stack block");
+    ROS_INFO("sending a goal: dropoff block");
     
     g_goal_done = false;
     goal.action_code = coordinator::ManipTaskGoal::DROPOFF_OBJECT;
     //goal.dropoff_frame = dropoff_pose_ = goal->dropoff_frame;
-    goal.dropoff_frame = g_object_pose; //test--put it back where found it
-    goal.dropoff_frame.pose.position.z+=0.035; //set height to one block thickness higher
-    goal.object_code= TOY_BLOCK_ID;
+    goal.dropoff_frame = dropoff_pose; //test--put it back where found it
+    goal.object_code= TOY_BLOCK_ID; //assumes robot is holding TOY_BLOCK object
     action_client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
     while (!g_goal_done) {
         ros::Duration(0.1).sleep();

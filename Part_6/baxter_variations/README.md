@@ -10,7 +10,7 @@ object_finder action servers.  See "coordinator" package.
 
 ## Example usage
 Start up gazebo, add starting pen, tables and blocks, spawn baxter-on-mobot:  
- (optirun) `roslaunch baxter_on_mobot baxter_on_mobot.launch` 
+ (optirun) `roslaunch baxter_variations baxter_on_mobot.launch` 
 
 Wait for Baxter's controllers to load and simu to stabilize, then run the following (which will include
 enabling the motors).  
@@ -46,6 +46,15 @@ Mobility diagnostics:
 or use keyboard teleop:
 `rosrun teleop_twist_keyboard teleop_twist_keyboard.py`
 or use rviz tool "2D Nav Goal" to set planner goals.
+
+To fix head pan manually:
+`rostopic pub /robot/head/command_head_pan baxter_core_msgs/HeadPanCommand   '{target: 0.0, enable_pan_request: 1}'`
+(may have to run this twice)
+
+Alternatively, run the node:
+`rosrun baxter_head_pan baxter_head_pan_zero`
+
+
 
 
   

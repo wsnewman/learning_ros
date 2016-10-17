@@ -9,8 +9,6 @@ The client specifies the object of interest, optionally with a specified pose
 specifies the object's drop-off pose.  Grasp transforms are associated with
 specified object ID's (via an object-properties library).
 
-At present, this does not incorporate navigation.
-
 start up an empty world:
 `roslaunch gazebo_ros empty_world.launch`
  
@@ -18,15 +16,55 @@ start up an empty world:
  `roslaunch baxter_variations baxter_on_pedestal_w_kinect.launch`
 
 launch a bunch of nodes, including trajectory streamers, cartesian planner, rviz, baxter-playfile, triad_display (for object-frame visualization), object-grabber, object-finder coordinator, and block-state resetter:
-`roslaunch coordinator baxter_object_grabber_nodes.launch`
-    
-Start up an example client node:
-`rosrun coordinator coordinator_action_client3`
+`roslaunch coordinator coord_vision_manip.launch`
 
-The robot will look for a block on the table and will plan and execute motions to
+Command the robot to: find the table height, find the block on the table, compute an approach and grasp strategy,
+execute the plan, and retract (holding the block) to the pre-pose position.
+`rosrun coordinator acquire_block_client`
+
+The block can be placed back down again with the node:
+`rosrun coordinator dropoff_block_client`
+
+Instead of manually commanding pickup and dropoff commands, 
+the entire process can be repeated continuously with:
+`rosrun coordinator coordinator_action_client_tester`
+
+With this node, the robot will look for a block on the table and will plan and execute motions to
 pick up the block and drop it off at a fixed dropoff location.  After each trial,
 the block position will be reset randomly on the tabletop within reach of the robot.
-
 The operation continues to repeat, and performance data is saved to the file "failures"
+
+Mobile manipulation:
+(optirun) `roslaunch baxter_variations baxter_on_mobot.launch`
+
+Start up the manipulator controls.  Wait for simulator to stabilize.  Then launch:
+`roslaunch coordinator command_bundler.launch`
+
+Start up the move-base navigation:
+`roslaunch baxter_variations mobot_startup_navstack.launch`
+
+The launch sequence may result in the blocks having fallen to the floor.  Reset the model
+poses via Gazebo using Edit->reset model poses.
+
+The following commands can be run manually, one at a time.  Alternatively, these
+commands may be integrated into a single node.
+
+As launched above, the robot will be facing a table with a block on the table.  Command
+the robot to: get the table height, find the block on the table, compute a sequence of motion
+commands to approach the block from above, grasp the block, depart, and move to the pre-pose position.
+`rosrun coordinator acquire_block_client`
+Next, manually command the robot to back up 1m:
+`rosservice call open_loop_nav_service -- -1`
+Command the robot to rotate CCW by 1 rad, causing it to face towards the starting-pen exit: 
+`rosservice call open_loop_yaw_service 1`
+Send a destination goal to move_base to approach a table outside the pen (still carrying the grasped block).
+`rosrun example_move_base_client example_move_base_client`
+Manually command the robot to approach closer to the table (a pose that would be forbidden by the
+costmap):
+`rosservice call open_loop_nav_service 0.7`
+Command the robot to stack the block by: perceiving the table surface, finding a block on the table,
+computing a drop-off pose to stack the grasped block, computing arm motion commands to stack the block,
+and executing this plan.
+`rosrun coordinator stack_block_client`
 
 

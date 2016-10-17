@@ -6,9 +6,15 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-        - /PointCloud23
+        - /Axes1
+        - /Axes2
+        - /Axes3
+        - /PointCloud21
+        - /Marker1
+        - /Map1
+        - /PoseArray1
       Splitter Ratio: 0.5
-    Tree Height: 454
+    Tree Height: 380
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -27,7 +33,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: LaserScan
+    SyncSource: PointCloud2
 Visualization Manager:
   Class: ""
   Displays:
@@ -417,160 +423,26 @@ Visualization Manager:
       Update Interval: 0
       Value: true
       Visual Enabled: true
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz/LaserScan
-      Color: 255; 255; 255
-      Color Transformer: Intensity
-      Decay Time: 0
+    - Class: rviz/Axes
       Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 0
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: LaserScan
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.2
-      Style: Spheres
-      Topic: /scan
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
+      Length: 0.5
+      Name: Axes
+      Radius: 0.02
+      Reference Frame: torso
       Value: true
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 1.64167
-        Min Value: 0.00547206
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz/PointCloud2
-      Color: 255; 255; 255
-      Color Transformer: AxisColor
-      Decay Time: 0
-      Enabled: false
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 4096
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: PointCloud2
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.005
-      Style: Spheres
-      Topic: /kinect/depth/points
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: false
-    - Alpha: 0.7
-      Class: rviz/Map
-      Color Scheme: map
-      Draw Behind: false
+    - Class: rviz/Axes
       Enabled: true
-      Name: Map
-      Topic: /map
-      Unreliable: false
+      Length: 0.2
+      Name: Axes
+      Radius: 0.02
+      Reference Frame: right_gripper
       Value: true
-    - Alpha: 0.7
-      Class: rviz/Map
-      Color Scheme: costmap
-      Draw Behind: false
+    - Class: rviz/Axes
       Enabled: true
-      Name: Map
-      Topic: /move_base/global_costmap/costmap
-      Unreliable: false
-      Value: true
-    - Alpha: 1
-      Class: rviz/Polygon
-      Color: 25; 255; 0
-      Enabled: true
-      Name: Polygon
-      Topic: /move_base_node/global_costmap/footprint
-      Unreliable: false
-      Value: true
-    - Alpha: 1
-      Buffer Length: 1
-      Class: rviz/Path
-      Color: 85; 0; 255
-      Enabled: true
-      Line Style: Lines
-      Line Width: 0.03
-      Name: Path
-      Offset:
-        X: 0
-        Y: 0
-        Z: 0
-      Topic: /move_base/NavfnROS/plan
-      Unreliable: false
-      Value: true
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz/PointCloud2
-      Color: 255; 255; 255
-      Color Transformer: ""
-      Decay Time: 0
-      Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 4096
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: PointCloud2
-      Position Transformer: ""
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.01
-      Style: Flat Squares
-      Topic: /move_base_node/TrajectoryPlannerROS/cost_cloud
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: true
-    - Alpha: 0.7
-      Class: rviz/Map
-      Color Scheme: map
-      Draw Behind: false
-      Enabled: false
-      Name: Map
-      Topic: /move_base_node/local_costmap/costmap
-      Unreliable: false
-      Value: false
-    - Alpha: 1
-      Axes Length: 1
-      Axes Radius: 0.1
-      Class: rviz/Pose
-      Color: 255; 25; 0
-      Enabled: true
-      Head Length: 0.3
-      Head Radius: 0.1
-      Name: Pose
-      Shaft Length: 1
-      Shaft Radius: 0.05
-      Shape: Axes
-      Topic: /move_base/current_goal
-      Unreliable: false
+      Length: 0.2
+      Name: Axes
+      Radius: 0.02
+      Reference Frame: right_hand
       Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
@@ -602,6 +474,31 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /triad_display
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Alpha: 0.7
+      Class: rviz/Map
+      Color Scheme: costmap
+      Draw Behind: false
+      Enabled: true
+      Name: Map
+      Topic: /move_base/global_costmap/costmap
+      Unreliable: false
+      Value: true
+    - Arrow Length: 0.3
+      Class: rviz/PoseArray
+      Color: 255; 25; 0
+      Enabled: true
+      Name: PoseArray
+      Topic: /particlecloud
+      Unreliable: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -627,30 +524,30 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 9.47368
+      Distance: 14.337
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -7.58336
-        Y: 0.266763
-        Z: 0.772524
+        X: 0.759902
+        Y: 0.962877
+        Z: 0.0161214
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 1.1248
+      Pitch: 1.4948
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.76218
+      Yaw: 3.14223
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 760
+  Height: 686
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd0000000400000000000001dd00000255fc0200000009fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000000c00430061006d0065007200610200000102000000e30000030400000221fb000000100044006900730070006c006100790073010000004100000255000000dd00fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f00000349fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000004100000349000000b000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000604000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000006740000003efc0100000002fb0000000800540069006d0065010000000000000674000002f600fffffffb0000000800540069006d00650100000000000004500000000000000000000004910000025500000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000004000000000000016a0000020bfc020000000afb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000000c00430061006d0065007200610200000102000000e30000030400000221fb000000100044006900730070006c00610079007301000000410000020b000000dd00fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d00650072006100000001da000000ad0000000000000000000000010000010f00000349fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000004100000349000000b000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000604000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000005290000003efc0100000002fb0000000800540069006d0065010000000000000529000002f600fffffffb0000000800540069006d00650100000000000004500000000000000000000003b90000020b00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -659,6 +556,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1652
-  X: 51
-  Y: 108
+  Width: 1321
+  X: 772
+  Y: 103
