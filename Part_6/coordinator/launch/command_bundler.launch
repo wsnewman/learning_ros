@@ -13,5 +13,9 @@
   <node pkg="coordinator" type="command_bundler" name="command_bundler"  output="screen"/>
   <node pkg="example_gazebo_set_state" type="set_block_state" name="set_block_state"  output="screen"/>
   <node pkg="coordinator" type="open_loop_nav_service" name="open_loop_nav_service"  output="screen"/>  
-  <node pkg="coordinator" type="open_loop_yaw_service" name="open_loop_yaw_service"  output="screen"/>    
+  <node pkg="coordinator" type="open_loop_yaw_service" name="open_loop_yaw_service"  output="screen"/>
+  <!-- roslaunch baxter_variations mobot_startup_navstack.launch  -->
+  <include file="$(find baxter_variations)/mobot_startup_navstack.launch">
+ </include> 
+    
 </launch>
