@@ -1,42 +1,81 @@
-// example_navigator_action_client: 
-// wsn, April, 2016
-// illustrates use of navigator action server called "navigatorActionServer"
+// move_base_action_client: 
+// wsn, October, 2016
+// client of move_base
 
 #include<ros/ros.h>
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
-#include <navigator/navigatorAction.h>
+#include <move_base_msgs/MoveBaseAction.h>
 #include <Eigen/Eigen>
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
+#include <geometry_msgs/PoseStamped.h>
+#include <tf/transform_listener.h>
+#include <xform_utils/xform_utils.h>
 
-geometry_msgs::PoseStamped g_desired_pose;
-int g_navigator_rtn_code;
+tf::TransformListener* g_tfListener_ptr;
+geometry_msgs::PoseStamped g_desired_pose,g_pose_table2_approach;
+geometry_msgs::PoseStamped g_via_pose1,g_via_pose2,g_via_pose3,g_via_pose4;
+
+
+void set_via_poses() {
+    g_via_pose1.header.frame_id="/map";
+    g_via_pose1.header.stamp = ros::Time::now();
+    g_via_pose1.pose.orientation.x=0;
+    g_via_pose1.pose.orientation.y=0;
+    g_via_pose1.pose.orientation.z=0;
+    g_via_pose1.pose.orientation.w=1;  
+    g_via_pose1.pose.position.x=0.0;
+    g_via_pose1.pose.position.y=0.0;
+    g_via_pose1.pose.position.z=0.0;    
+    g_via_pose2 = g_via_pose1;
+    g_via_pose3 = g_via_pose1;
+    g_via_pose4 = g_via_pose1;
+    g_pose_table2_approach=g_via_pose1;
+    g_pose_table2_approach.pose.position.x = -8.8;
+    g_pose_table2_approach.pose.position.y = 0.18;
+    g_pose_table2_approach.pose.orientation.z= -0.707; 
+    g_pose_table2_approach.pose.orientation.w= 0.707;
+}
+
 void navigatorDoneCb(const actionlib::SimpleClientGoalState& state,
-        const navigator::navigatorResultConstPtr& result) {
+        const move_base_msgs::MoveBaseResultConstPtr& result) {
     ROS_INFO(" navigatorDoneCb: server responded with state [%s]", state.toString().c_str());
-    g_navigator_rtn_code=result->return_code;
-    ROS_INFO("got object code response = %d; ",g_navigator_rtn_code);
-    if (g_navigator_rtn_code==navigator::navigatorResult::DESTINATION_CODE_UNRECOGNIZED) {
-        ROS_WARN("destination code not recognized");
-    }
-    else if (g_navigator_rtn_code==navigator::navigatorResult::DESIRED_POSE_ACHIEVED) {
-        ROS_INFO("reached desired location!");
-    }
-    else {
-        ROS_WARN("desired pose not reached!");
-    }
 }
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "example_navigator_action_client"); // name this node 
     ros::NodeHandle nh; //standard ros node handle    
+    set_via_poses(); //define values for via points
+    g_tfListener_ptr = new tf::TransformListener;  //create a transform listener and assign its pointer
+    geometry_msgs::PoseStamped current_pose;
+    move_base_msgs::MoveBaseGoal move_base_goal;
+    XformUtils xform_utils; //instantiate an object of XformUtils
     
-    
-    actionlib::SimpleActionClient<navigator::navigatorAction> navigator_ac("navigatorActionServer", true);
+    bool tferr=true;
+    ROS_INFO("waiting for tf between map and base_link...");
+    tf::StampedTransform tfBaseLinkWrtMap; 
+    while (tferr) {
+        tferr=false;
+        try {
+                //try to lookup transform, link2-frame w/rt base_link frame; this will test if
+            // a valid transform chain has been published from base_frame to link2
+                g_tfListener_ptr->lookupTransform("map","base_link", ros::Time(0), tfBaseLinkWrtMap);
+            } catch(tf::TransformException &exception) {
+                ROS_WARN("%s; retrying...", exception.what());
+                tferr=true;
+                ros::Duration(0.5).sleep(); // sleep for half a second
+                ros::spinOnce();                
+            }   
+    }
+    ROS_INFO("tf is good; current pose is:");
+    current_pose = xform_utils.get_pose_from_stamped_tf(tfBaseLinkWrtMap);
+    xform_utils.printStampedPose(current_pose);
+
+    actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> navigator_ac("move_base", true);
     
     // attempt to connect to the server:
-    ROS_INFO("waiting for server: ");
+    ROS_INFO("waiting for move_base server: ");
     bool server_exists = false;
     while ((!server_exists)&&(ros::ok())) {
         server_exists = navigator_ac.waitForServer(ros::Duration(0.5)); // 
@@ -44,17 +83,15 @@ int main(int argc, char** argv) {
         ros::Duration(0.5).sleep();
         ROS_INFO("retrying...");
     }
-    ROS_INFO("connected to navigator action server"); // if here, then we connected to the server; 
-     
-    navigator::navigatorGoal navigation_goal;
-    
-    navigation_goal.location_code=navigator::navigatorGoal::HOME;
+    ROS_INFO("connected to move_base action server"); // if here, then we connected to the server; 
+    //geometry_msgs/PoseStamped target_pose
+    move_base_goal.target_pose = g_pose_table2_approach;         
     
     ROS_INFO("sending goal: ");
-        navigator_ac.sendGoal(navigation_goal,&navigatorDoneCb); // we could also name additional callback functions here, if desired
+    navigator_ac.sendGoal(move_base_goal,&navigatorDoneCb); 
 
         
-        bool finished_before_timeout = navigator_ac.waitForResult(ros::Duration(30.0));
+    bool finished_before_timeout = navigator_ac.waitForResult(ros::Duration(60.0));
         //bool finished_before_timeout = action_client.waitForResult(); // wait forever...
         if (!finished_before_timeout) {
             ROS_WARN("giving up waiting on result ");

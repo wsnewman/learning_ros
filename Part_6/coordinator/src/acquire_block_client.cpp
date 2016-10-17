@@ -1,62 +1,25 @@
-// bundler_client: 
+// acquire_block_client: 
 // wsn, October, 2016
 
 #include<ros/ros.h>
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
-#include<coordinator/ManipTaskAction.h>
+#include <coordinator/ManipTaskAction.h>
 #include <object_manipulation_properties/object_manipulation_properties.h>
-#include <example_gazebo_set_state/SrvInt.h> // this message type is defined in the current package
-#include <gazebo_msgs/ModelState.h>
-#include <gazebo_msgs/SetModelState.h>
-#include <fstream>
 #include <object_finder/objectFinderAction.h>
 #include <object_grabber/object_grabberAction.h>
 bool g_goal_done = true;
-int g_ntasks_done = 0;
 int g_callback_status = coordinator::ManipTaskResult::PENDING;
 int g_object_grabber_return_code=0;
 int g_object_finder_return_code=0;
 int g_fdbk_count = 0;
-int g_n_successes = 0;
-int g_n_perception_failures = 0;
-int g_n_pickup_failures =0;
-int g_n_dropoff_failures=0;
-int g_n_gripper_failures=0;
+
 geometry_msgs::PoseStamped g_des_flange_pose_stamped_wrt_torso;
 geometry_msgs::PoseStamped g_object_pose;
 coordinator::ManipTaskResult g_result;
-//bool g_goal_active=false;
+
 using namespace std;
 
-void save_failure_data(void) {
-  std::ofstream outfile;
-
-  outfile.open("failures.txt", std::ios_base::app);
-  outfile << "g_object_grabber_return_code: "<<g_object_grabber_return_code<<endl;
-  if (g_object_grabber_return_code==object_grabber::object_grabberResult::GRIPPER_FAILURE) {
-      outfile<<"gripper failure, object pose: "<<endl;
-      outfile<<"object origin: (x,y,z) = ("<<g_object_pose.pose.position.x<<", "<<g_object_pose.pose.position.y<<", "
-              <<g_object_pose.pose.position.z<<")"<<endl;
-      outfile<<"orientation: (qx,qy,qz,qw) = ("<<g_object_pose.pose.orientation.x<<","
-              <<g_object_pose.pose.orientation.y<<","
-              <<g_object_pose.pose.orientation.z<<","
-              <<g_object_pose.pose.orientation.w<<")"<<endl;
-  }
-  else {
-      outfile<<"manipulation failure code "<<g_object_grabber_return_code<<endl;
-      outfile<<"manip failed with desired flange pose: "<<endl;
-       outfile<<"object origin: (x,y,z) = ("<<g_des_flange_pose_stamped_wrt_torso.pose.position.x<<", "
-               <<g_des_flange_pose_stamped_wrt_torso.pose.position.y<<", "
-               <<g_des_flange_pose_stamped_wrt_torso.pose.position.z<<")"<<endl;
-      outfile<<"orientation: (qx,qy,qz,qw) = ("<<g_des_flange_pose_stamped_wrt_torso.pose.orientation.x<<","
-              <<g_des_flange_pose_stamped_wrt_torso.pose.orientation.y<<","
-              <<g_des_flange_pose_stamped_wrt_torso.pose.orientation.z<<","
-              <<g_des_flange_pose_stamped_wrt_torso.pose.orientation.w<<")"<<endl;     
-  }
-
-  outfile.close();
-}
 
 void doneCb(const actionlib::SimpleClientGoalState& state,
         const coordinator::ManipTaskResultConstPtr& result) {
@@ -73,32 +36,22 @@ void doneCb(const actionlib::SimpleClientGoalState& state,
             
         case coordinator::ManipTaskResult::FAILED_PERCEPTION:
             ROS_WARN("returned FAILED_PERCEPTION");
-            g_n_perception_failures++;
             g_object_finder_return_code = result->object_finder_return_code;
             break;
         case coordinator::ManipTaskResult::FAILED_PICKUP:
             ROS_WARN("returned FAILED_PICKUP");
-            g_n_pickup_failures++;
-
             g_object_grabber_return_code= result->object_grabber_return_code;
-            if (g_object_grabber_return_code==object_grabber::object_grabberResult::GRIPPER_FAILURE) {
-                 g_n_gripper_failures++;
-            }
             g_object_pose = result->object_pose;
             g_des_flange_pose_stamped_wrt_torso = result->des_flange_pose_stamped_wrt_torso;
-            //for failed pickup, save failure code and pose:
-            save_failure_data();
             break;
         case coordinator::ManipTaskResult::FAILED_DROPOFF:
             ROS_WARN("returned FAILED_DROPOFF");
-            g_n_dropoff_failures++;
-            g_des_flange_pose_stamped_wrt_torso = result->des_flange_pose_stamped_wrt_torso;
-            save_failure_data();            
+            g_des_flange_pose_stamped_wrt_torso = result->des_flange_pose_stamped_wrt_torso;          
             break;
     }
-    //ROS_INFO("return status is %d ", g_callback_status);
 }
 
+//optional feedback; output has been suppressed (commented out) below
 void feedbackCb(const coordinator::ManipTaskFeedbackConstPtr& fdbk_msg) {
     g_fdbk_count++;
     if (g_fdbk_count > 1000) { //slow down the feedback publications
@@ -110,7 +63,6 @@ void feedbackCb(const coordinator::ManipTaskFeedbackConstPtr& fdbk_msg) {
 }
 
 // Called once when the goal becomes active; not necessary, but possibly useful for diagnostics
-
 void activeCb() {
     ROS_INFO("Goal just went active");
 }
@@ -119,30 +71,8 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "task_client_node"); // name this node 
     ros::NodeHandle nh; //standard ros node handle  
 
-    ros::ServiceClient block_state_client = nh.serviceClient<example_gazebo_set_state::SrvInt>("set_block_state");
-    example_gazebo_set_state::SrvInt block_state_srv;
-
-    int n_attempts = 0;
-
-
-    block_state_srv.request.request_int = 0; //refers to toy-block model #1
-
     coordinator::ManipTaskGoal goal;
-    /*
-    goal.dropoff_frame.header.frame_id = "torso";
-    goal.dropoff_frame.pose.position.x = 0.5;
-    goal.dropoff_frame.pose.position.y = -0.35;
-    goal.dropoff_frame.pose.position.z = -0.12;
-    goal.dropoff_frame.pose.orientation.x = 0;
-    goal.dropoff_frame.pose.orientation.y = 0;
-    goal.dropoff_frame.pose.orientation.z = 0.707;
-    goal.dropoff_frame.pose.orientation.w = 0.707;
-    goal.dropoff_frame.header.stamp = ros::Time::now();
-    goal.pickup_frame = goal.dropoff_frame;
-    goal.pickup_frame.pose.position.y = -0.5; //drop block here
-   */
-    // use the name of our server, which is: example_action (named in example_action_server.cpp)
-    // the "true" argument says that we want our new client to run as a separate thread (a good idea)
+
     actionlib::SimpleActionClient<coordinator::ManipTaskAction> action_client("manip_task_action_service", true);
 
     // attempt to connect to the server:
@@ -154,7 +84,6 @@ int main(int argc, char** argv) {
         ros::Duration(0.5).sleep();
         ROS_INFO("retrying...");
     }
-
     ROS_INFO("connected to action server"); // if here, then we connected to the server;
 
     ROS_INFO("sending a goal: move to pre-pose");
@@ -231,9 +160,6 @@ int main(int argc, char** argv) {
         ROS_ERROR("failed to move to pre-pose; quitting");
         return 0;
     }
-
-    //send nav goal here
-    //then drop-off command
     
     return 0;
 }
