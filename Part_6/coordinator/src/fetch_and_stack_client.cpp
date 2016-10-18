@@ -1,4 +1,4 @@
-// acquire_block_client: 
+// fetch_and_stack_client: 
 // wsn, October, 2016
 
 #include<ros/ros.h>
