@@ -16,11 +16,4 @@
     <child link="base" />
     <origin rpy="0 0 0 " xyz="0.1 0 0.06"/>
   </joint>   
-  <!-- attach the kinect to the mobile robot 
-  <joint name="kinect_joint" type="fixed">
-    <parent link="base_link" />
-    <child link="kinect_link" />  
-    <origin rpy="0 0 0 " xyz="0.1 0 0.72"/>
-  </joint-->   
-  <!-- kinect depth frame has a different viewpoint; publish it separately-->
 </robot>
