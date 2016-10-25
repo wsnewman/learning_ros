@@ -31,6 +31,7 @@ public:
    Eigen::Affine3f transformTFToAffine3f(const tf::Transform &t);
    Eigen::Affine3d transformTFToAffine3d(const tf::Transform &t);
    double convertPlanarQuat2Phi(geometry_msgs::Quaternion quaternion);
+   geometry_msgs::Quaternion convertPlanarPsi2Quaternion(double psi);
    tf::Transform get_tf_from_stamped_tf(tf::StampedTransform sTf);
    geometry_msgs::PoseStamped get_pose_from_stamped_tf(tf::StampedTransform sTf);
    bool multiply_stamped_tfs(tf::StampedTransform A_stf,

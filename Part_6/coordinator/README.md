@@ -15,7 +15,7 @@ start up an empty world:
  spawn Baxter on pedestal in front of a table and a block:
  `roslaunch baxter_variations baxter_on_pedestal_w_kinect.launch`
 
-launch a bunch of nodes, including trajectory streamers, cartesian planner, rviz, baxter-playfile, triad_display (for object-frame visualization), object-grabber, object-finder coordinator, and block-state resetter:
+launch multiple nodes, including trajectory streamers, cartesian planner, rviz, baxter-playfile, triad_display (for object-frame visualization), object-grabber, object-finder coordinator, and block-state resetter:
 `roslaunch coordinator coord_vision_manip.launch`
 
 Command the robot to: find the table height, find the block on the table, compute an approach and grasp strategy,
@@ -41,7 +41,7 @@ Start up the manipulator controls and nav-stack.  Wait for simulator to stabiliz
 `roslaunch coordinator command_bundler.launch`
 
 The above launch file includes the launchfile: 
-roslaunch baxter_variations mobot_startup_navstack.launch
+`roslaunch baxter_variations mobot_startup_navstack.launch`
 
 The launch sequence may result in the blocks having fallen to the floor.  Reset the model
 poses via Gazebo using Edit->reset model poses.

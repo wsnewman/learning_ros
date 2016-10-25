@@ -323,9 +323,9 @@ int main(int argc, char** argv) {
     
     g_goal_done = false;
     goal.action_code = coordinator::ManipTaskGoal::DROPOFF_OBJECT;
-    //goal.dropoff_frame = dropoff_pose_ = goal->dropoff_frame;
-    goal.dropoff_frame = g_object_pose; //test--put it back where found it
+    goal.dropoff_frame = g_object_pose; //frame per PCL perception
     goal.dropoff_frame.pose.position.z+=0.035; //set height to one block thickness higher
+                                               // so new block will stack on prior block
     goal.object_code= TOY_BLOCK_ID;
     action_client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
     while (!g_goal_done) {

@@ -23,10 +23,12 @@ When ready to record, start:
 enter "1" at the program prompt, then move the arms in the desired trajectory (path and speed).
 When done with recording, ctl-C.  The results will be in "baxter_r_arm_traj.jsp" and "baxter_l_arm_traj.jsp".
 
-To play back joint-space trajectory files, start up the robot and enable it.  Start up the trajectory
-interpolation action servers:
-`rosrun baxter_trajectory_streamer rt_arm_as`
-`rosrun baxter_trajectory_streamer left_arm_as`
+To play back joint-space trajectory files, start up the robot, wait for it to finish
+booting up, then enable the robot, start the trajectory action servers with:
+`roslaunch baxter_launch_files baxter_playfile_nodes.launch`
+
+This launch file also invokes motion of the arms to a pre-pose position, and it starts up
+a multi-trajectory node that accepts codes corresponding to pre-recorded playfiles (baxter_multitraj_player: see below).
 
 In another terminal, cd to the directory containing the desired trajectory filename(s).
 Run the playback node, with command-line arguments for the right-arm trajectory and left-arm trajectory.

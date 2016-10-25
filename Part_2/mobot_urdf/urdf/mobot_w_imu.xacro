@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<robot 
+     xmlns:xacro="http://www.ros.org/wiki/xacro" name="mobot">
+    <xacro:include filename="$(find mobot_urdf)/urdf/mobot.xacro" /> 
+    
+<link name="imu_link"> 
+</link>
+
+<joint name="imu_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu_link" />
+</joint>    
+ 
+ <!--add IMU plug-in-->
+
+<gazebo>
+  <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
+    <alwaysOn>true</alwaysOn>
+    <updateRate>100.0</updateRate> 
+    <bodyName>imu_link</bodyName>
+    <topicName>imu_data</topicName>
+    <gaussianNoise>1e-06</gaussianNoise>
+   </plugin>
+</gazebo>      
+
+</robot>
+

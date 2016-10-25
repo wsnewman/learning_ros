@@ -104,6 +104,15 @@ double XformUtils::convertPlanarQuat2Phi(geometry_msgs::Quaternion quaternion) {
     return phi;
 }
 
+geometry_msgs::Quaternion  XformUtils::convertPlanarPsi2Quaternion(double psi) {
+    geometry_msgs::Quaternion quaternion;
+    quaternion.x = 0.0;
+    quaternion.y = 0.0;
+    quaternion.z = sin(psi / 2.0);
+    quaternion.w = cos(psi / 2.0);
+    return (quaternion);
+}
+
 tf::Transform XformUtils::get_tf_from_stamped_tf(tf::StampedTransform sTf) {
     tf::Transform tf(sTf.getBasis(), sTf.getOrigin()); //construct a transform using elements of sTf
     return tf;
