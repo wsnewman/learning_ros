@@ -94,11 +94,13 @@ const double DH_q_min5 = -deg2rad*180;
 const double DH_q_min6 = -deg2rad*180; 
 
 const double DH_a_params[]={DH_a1,DH_a2,DH_a3,DH_a4,DH_a5,DH_a6};
-const double DH_d_params[6] = {DH_d1, DH_d2, DH_d3, DH_d4, DH_d5, DH_d6};
-const double DH_alpha_params[6] = {DH_alpha1, DH_alpha2, DH_alpha3, DH_alpha4, DH_alpha5, DH_alpha6};
-const double DH_q_offsets[6] = {DH_q_offset1, DH_q_offset2, DH_q_offset3, DH_q_offset4, DH_q_offset5, DH_q_offset6};
-const double q_lower_limits[6] = {DH_q_min1, DH_q_min2, DH_q_min3, DH_q_min4, DH_q_min5, DH_q_min6};
-const double q_upper_limits[6] = {DH_q_max1, DH_q_max2, DH_q_max3, DH_q_max4, DH_q_max5, DH_q_max6};
+const double DH_d_params[] = {DH_d1, DH_d2, DH_d3, DH_d4, DH_d5, DH_d6};
+const double DH_alpha_params[] = {DH_alpha1, DH_alpha2, DH_alpha3, DH_alpha4, DH_alpha5, DH_alpha6};
+const double DH_q_offsets[] = {DH_q_offset1, DH_q_offset2, DH_q_offset3, DH_q_offset4, DH_q_offset5, DH_q_offset6};
+const double q_lower_limits[] = {DH_q_min1, DH_q_min2, DH_q_min3, DH_q_min4, DH_q_min5, DH_q_min6};
+const double q_upper_limits[] = {DH_q_max1, DH_q_max2, DH_q_max3, DH_q_max4, DH_q_max5, DH_q_max6};
+
+const double g_qdot_max_vec[] = {2.16, 2.16, 3.15, 3.2, 3.2, 3.2}; //values per URDF ur10.urdf.xacro in ur_description
 
 class UR10FwdSolver {
     

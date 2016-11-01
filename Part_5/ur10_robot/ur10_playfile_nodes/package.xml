@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>cartesian_planner</name>
+  <name>ur10_playfile_nodes</name>
   <version>0.0.0</version>
-  <description>The cartesian_planner package</description>
+  <description>The ur10_playfile_nodes package</description>
   
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
@@ -31,44 +31,31 @@
   <!-- Dependencies can be catkin packages or system dependencies -->
   <!-- Examples: -->
   <!-- Use build_depend for packages you need at compile time: -->
-
+<build_depend>message_generation</build_depend>
   <!-- Use buildtool_depend for build tool packages: -->
   <!--   <buildtool_depend>catkin</buildtool_depend> -->
   <!-- Use run_depend for packages you need at runtime: -->
-
+<run_depend>message_runtime</run_depend>
   <!-- Use test_depend for packages you need only for testing: -->
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
   <buildtool_depend>catkin_simple</buildtool_depend>
   <build_depend>roscpp</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_depend>geometry_msgs</build_depend>
-  <build_depend>baxter_trajectory_streamer</build_depend>
-<build_depend>baxter_fk_ik</build_depend>
-<build_depend>arm7dof_fk_ik</build_depend>
+<build_depend>actionlib</build_depend>
+<build_depend>trajectory_msgs</build_depend>
+<build_depend>ur_msgs</build_depend>
+<build_depend>control_msgs</build_depend>
+<build_depend>simple_action_client</build_depend>
+<build_depend>actionlib_msgs</build_depend>
 <build_depend>ur_fk_ik</build_depend>
-<build_depend>joint_space_planner</build_depend>
-    <build_depend>simple_action_client</build_depend>
-        <build_depend>message_generation</build_depend>
-    <build_depend>actionlib</build_depend>
-    <build_depend>tf</build_depend>
-    <build_depend>xform_utils</build_depend>
-    <build_depend>simple_baxter_gripper_interface</build_depend>
-
   <run_depend>roscpp</run_depend>
-<run_depend>baxter_fk_ik</run_depend>
-<run_depend>arm7dof_fk_ik</run_depend>
+<run_depend>actionlib</run_depend>
+<run_depend>trajectory_msgs</run_depend>
+<run_depend>ur_msgs</run_depend>
+<run_depend>control_msgs</run_depend>
+<run_depend>simple_action_client</run_depend>
+<run_depend>actionlib_msgs</run_depend>
 <run_depend>ur_fk_ik</run_depend>
-<run_depend>joint_space_planner</run_depend>
-<run_depend>std_msgs</run_depend>
-<run_depend>geometry_msgs</run_depend>
-    <run_depend>actionlib</run_depend>
-    <run_depend>simple_action_client</run_depend>
-    <run_depend>message_runtime</run_depend>
-    <run_depend>baxter_trajectory_streamer</run_depend>
-<run_depend>tf</run_depend>
-<run_depend>xform_utils</run_depend>
-<run_depend>simple_baxter_gripper_interface</run_depend>
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- You can specify that this package is a metapackage here: -->
