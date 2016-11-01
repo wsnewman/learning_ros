@@ -108,8 +108,6 @@ public:
     Eigen::Matrix4d get_wrist_frame();
     //Eigen::MatrixXd get_Jacobian(const Vectorq6x1& q_vec);
     //Eigen::Matrix3d test_R61(Eigen::VectorXd q_in);
-    Eigen::Matrix4d test_A61(Eigen::VectorXd q_in);
-    Eigen::Vector3d test_w61(Eigen::VectorXd q_in);
     void q_UR_to_q_DH(Eigen::VectorXd q_soln_UR, Eigen::VectorXd &q_soln_DH);
     void q_DH_to_q_UR(Eigen::VectorXd q_soln_DH, Eigen::VectorXd &q_soln_UR);
     bool fit_joints_to_range(Eigen::VectorXd &qvec);    
@@ -119,7 +117,6 @@ private:
     Eigen::Matrix4d fwd_kin_solve_(const Eigen::VectorXd& q_vec);
     Eigen::Matrix4d A_mats[6], A_mat_products[6], A_tool; // note: tool A must also handle diff DH vs URDF frame-7 xform
     Eigen::MatrixXd Jacobian;    
-    
     
 };
 
@@ -159,12 +156,7 @@ private:
            double q_elbow, double &q_shoulder);    
     bool solve_2R_planar_arm(double x_des, double y_des, double L1, double L2,
          vector<double> &q_shoulder_solns,vector<double> &q_elbow_solns);
-    
-    //bool solve_for_theta2(Eigen::Vector3d w_wrt_1,double r_goal, double q2_solns[2]);    
-    //bool solve_for_theta3(Eigen::Vector3d w_wrt_1,double r_goal, double q3_solns[2]); 
 
-    //bool solve_spherical_wrist(Eigen::VectorXd q_in,Eigen::Matrix3d R_des, std::vector<Eigen::VectorXd> &q_solns);    
-    //Eigen::MatrixXd Jacobian;
 };
 
 #endif //UR_KIN_H

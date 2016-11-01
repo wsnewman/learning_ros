@@ -160,7 +160,7 @@ UR10FwdSolver::UR10FwdSolver() { //(const hand_s& hs, const atlas_frame& base_fr
     A_tool(3, 3) = 1;
 }
 
-/*  IN CASE WANT JACOBIAN LATER...
+/*  IN CASE WANT JACOBIAN LATER...finish this
 Eigen::MatrixXd irb120_hand_fwd_solver::get_Jacobian(const Vectorq6x1& q_vec) {
     solve(q_vec);
     Eigen::MatrixXd J = Eigen::MatrixXd::Zero(6, 6);
@@ -205,25 +205,7 @@ Eigen::Affine3d UR10FwdSolver::fwd_kin_solve(const Eigen::VectorXd& q_vec_UR) {
     return A;
 }
 
-//temp test fnc; do not trust
-Eigen::Vector3d UR10FwdSolver::test_w61(Eigen::VectorXd q_in) {
-    double L3 = DH_d_params[4];
-    double L1 =  DH_a_params[1];
-    double L2 = DH_a_params[2];
-    double q3 = q_in[3]+DH_q_offsets[3]; //converts q_UR to q_DH
-    double c1 = cos(q_in[1]); //no offset for q[1],q[2]
-    double c12= cos(q_in[1]+q_in[2]);
-    double c123 = cos(q_in[1]+q_in[2]+q3);
-    double s1 = sin(q_in[1]);
-    double s12= sin(q_in[1]+q_in[2]);
-    double s123 = sin(q_in[1]+q_in[2]+q3);  
-    Eigen::Vector3d reach;    
-    reach[0] = L1*c1+L2*c12+L3*c123;
-    reach[1] = L1*s1+L2*s12+L3*s123;
-    ROS_INFO("reach_x, reach_y = %f, %f",reach[0],reach[1]);
 
-    return reach;
-}
 
 Eigen::Matrix4d UR10FwdSolver::get_wrist_frame() {
     return A_mat_products[4];
@@ -257,23 +239,11 @@ Eigen::Matrix4d UR10FwdSolver::fwd_kin_solve_(const Eigen::VectorXd& q_vec_DH) {
     return A_mat_products[NJNTS - 1]; //flange frame
 }
 
-//compute transform of 6 frame w/rt 1 frame:
-
-Eigen::Matrix4d UR10FwdSolver::test_A61(Eigen::VectorXd q_in) {
-    Eigen::Matrix4d A61;
-    A61 = A_mats[1] * A_mats[2] * A_mats[3] * A_mats[4] * A_mats[5];
-    return A61;
-}
 
 UR10IkSolver::UR10IkSolver() {
     //constructor: 
     L_humerus = DH_a_params[1];
     L_forearm = DH_a_params[2];
-    //double L3 = DH_a_params[2];
-    //double A2 = DH_a_params[2];
-    //L_forearm = sqrt(A2 * A2 + L3 * L3);
-
-    //phi_elbow=acos((A2*A2+L_forearm*L_forearm-L3*L3)/(2.0*A2*L_forearm));
 }
 
 //solve IK; return solns, in UR coordinates, in q_ik_solns
@@ -294,7 +264,7 @@ int UR10IkSolver::ik_solve(Eigen::Affine3d const& desired_hand_pose,  vector<Eig
     //w_des is origin O5; wrist is not spherical, but z5 and z6 intersect  
     double L6 = DH_d_params[5];
     Eigen::Vector3d w_des = p_des - L6*b6_des; // desired wrist position w/rt frame0
-    ROS_INFO("w_des: %f, %f, %f", w_des[0], w_des[1], w_des[2]);
+    //ROS_INFO("w_des: %f, %f, %f", w_des[0], w_des[1], w_des[2]);
     std::vector<double> q1_solns;
     std::vector<double> q5_solns_1a, q5_solns_1b;
     std::vector<double> q6_solns_1a, q6_solns_1b;
@@ -327,12 +297,12 @@ int UR10IkSolver::ik_solve(Eigen::Affine3d const& desired_hand_pose,  vector<Eig
     Eigen::Vector3d O1_wrt_0,O6_wrt_1; //origin of frame 1 w/rt frame 0
     R10a = A1a.block<3, 3>(0, 0);
     T61a = A1a.inverse() * T60;
-    cout<<"T60: "<<endl;
-    cout<<T60<<endl;
-    cout<<"A1a: "<<endl;
-    cout<<A1a<<endl;
-    cout<<"T61a: "<<endl;
-    cout<<T61a<<endl;
+    //cout<<"T60: "<<endl;
+    //cout<<T60<<endl;
+    //cout<<"A1a: "<<endl;
+    //cout<<A1a<<endl;
+    //cout<<"T61a: "<<endl;
+    //cout<<T61a<<endl;
     target_R61a = T61a.block<3, 3>(0, 0);
     b61a = target_R61a.col(2);
     O6_wrt_1 = T61a.block<3,1>(0,3); // extract vector from origin of frame 1 to origin frame 6
@@ -345,15 +315,15 @@ int UR10IkSolver::ik_solve(Eigen::Affine3d const& desired_hand_pose,  vector<Eig
     
     //compute q5 based on orientation of T61a
     compute_q5_solns_from_R(target_R61a, q5_solns_1a);    
-    ROS_INFO("q5_DH solns from q1a via R61a: %f, %f",q5_solns_1a[0],q5_solns_1a[1]);
-    ROS_INFO("q5_UR solns from q1a via R61a: %f, %f",q5_solns_1a[0]-DH_q_offsets[4],
-            q5_solns_1a[1]-DH_q_offsets[4]);
+    //ROS_INFO("q5_DH solns from q1a via R61a: %f, %f",q5_solns_1a[0],q5_solns_1a[1]);
+    //ROS_INFO("q5_UR solns from q1a via R61a: %f, %f",q5_solns_1a[0]-DH_q_offsets[4],
+    //        q5_solns_1a[1]-DH_q_offsets[4]);
     
     compute_q5_solns_from_R(target_R61b, q5_solns_1b); //repeat for 2nd q1 option
     //compute q6 for cases q1a, q1b:
-    ROS_INFO("computing q6 for case q1a: ");
+    //ROS_INFO("computing q6 for case q1a: ");
     compute_q6_solns(target_R61a, q5_solns_1a, q6_solns_1a);
-    ROS_INFO("computing q6 for case q1b: ");
+    //ROS_INFO("computing q6 for case q1b: ");
     compute_q6_solns(target_R61b, q5_solns_1b, q6_solns_1b);  
     
     //compute T41, using q1, q5 and q6
@@ -372,26 +342,26 @@ int UR10IkSolver::ik_solve(Eigen::Affine3d const& desired_hand_pose,  vector<Eig
     double O41xa,O41ya;
     O41xa = T41a0(0,3);
     O41ya = T41a0(1,3);
-    ROS_INFO("case T41a0: O4 w/rt frame 1: O4x, O4y = %f, %f ", O41xa,O41ya);
+    //ROS_INFO("case T41a0: O4 w/rt frame 1: O4x, O4y = %f, %f ", O41xa,O41ya);
     double reachT41a0 = sqrt(O41xa*O41xa+O41ya*O41ya);
     vector<double> elbow_angs_a0, shoulder_angs_a0;
-    ROS_INFO("reach = %f",reachT41a0);
+    //ROS_INFO("reach = %f",reachT41a0);
         //solve for elbow angles
     double L1 = DH_a_params[1];
     double L2 = DH_a_params[2];  
     
     //first 2 solns (elbow up/dn at q1a, first q5/q6 soln)
     if(solve_2R_planar_arm(O41xa,O41ya, L1, L2,shoulder_angs_a0,elbow_angs_a0) ) {
-        ROS_INFO("elbow angles: %f, %f ",elbow_angs_a0[0],elbow_angs_a0[1]);
-        ROS_INFO("shoulder angles: %f, %f",shoulder_angs_a0[0],shoulder_angs_a0[1]);
+        //ROS_INFO("elbow angles: %f, %f ",elbow_angs_a0[0],elbow_angs_a0[1]);
+        //ROS_INFO("shoulder angles: %f, %f",shoulder_angs_a0[0],shoulder_angs_a0[1]);
         Eigen::Matrix4d T43a0,A32,A21;
         A32 = compute_A_of_DH(2, elbow_angs_a0[0]);
         A21 = compute_A_of_DH(1, shoulder_angs_a0[0]);
         T43a0 = A32.inverse()*A21.inverse()*T41a0;
-        cout<<"T43a0: "<<endl;
-        cout<<T43a0<<endl;
+        //cout<<"T43a0: "<<endl;
+        //cout<<T43a0<<endl;
         double q_wrist = atan2(T43a0(1,0),T43a0(0,0));
-        ROS_INFO("wrist angle = %f",q_wrist);
+        //ROS_INFO("wrist angle = %f",q_wrist);
         Eigen::VectorXd q_soln_DH,q_soln_UR;
         q_soln_DH.resize(6);
         q_soln_UR.resize(6);
@@ -408,7 +378,7 @@ int UR10IkSolver::ik_solve(Eigen::Affine3d const& desired_hand_pose,  vector<Eig
         A21 = compute_A_of_DH(1, shoulder_angs_a0[1]);
         T43a0 = A32.inverse()*A21.inverse()*T41a0;
         q_wrist = atan2(T43a0(1,0),T43a0(0,0));
-        ROS_INFO("wrist angle = %f",q_wrist);  
+        //ROS_INFO("wrist angle = %f",q_wrist);  
         q_soln_DH[1]= shoulder_angs_a0[1];
         q_soln_DH[2]=elbow_angs_a0[1];
         q_soln_DH[3] = q_wrist;     
@@ -418,21 +388,21 @@ int UR10IkSolver::ik_solve(Eigen::Affine3d const& desired_hand_pose,  vector<Eig
     //next 2 solns (3 and 4): (elbow up/dn at q1a, second q5/q6 soln)
     O41xa = T41a1(0,3);
     O41ya = T41a1(1,3);
-    ROS_INFO("case T41a1: O4 w/rt frame 1: O4x, O4y = %f, %f ", O41xa,O41ya);
+    //ROS_INFO("case T41a1: O4 w/rt frame 1: O4x, O4y = %f, %f ", O41xa,O41ya);
     double reachT41a1 = sqrt(O41xa*O41xa+O41ya*O41ya);
     vector<double> elbow_angs_a1, shoulder_angs_a1;
-    ROS_INFO("reach = %f",reachT41a1);
+    //ROS_INFO("reach = %f",reachT41a1);
     if(solve_2R_planar_arm(O41xa,O41ya, L1, L2,shoulder_angs_a1,elbow_angs_a1) ) {
-        ROS_INFO("elbow angles: %f, %f ",elbow_angs_a1[0],elbow_angs_a1[1]);
-        ROS_INFO("shoulder angles: %f, %f",shoulder_angs_a1[0],shoulder_angs_a1[1]);
+        //ROS_INFO("elbow angles: %f, %f ",elbow_angs_a1[0],elbow_angs_a1[1]);
+        //ROS_INFO("shoulder angles: %f, %f",shoulder_angs_a1[0],shoulder_angs_a1[1]);
         Eigen::Matrix4d T43a1,A32,A21;
         A32 = compute_A_of_DH(2, elbow_angs_a1[0]);
         A21 = compute_A_of_DH(1, shoulder_angs_a1[0]);
         T43a1 = A32.inverse()*A21.inverse()*T41a1;
-        cout<<"T43a1: "<<endl;
-        cout<<T43a1<<endl;
+        //cout<<"T43a1: "<<endl;
+        //cout<<T43a1<<endl;
         double q_wrist = atan2(T43a1(1,0),T43a1(0,0));
-        ROS_INFO("wrist angle = %f",q_wrist);
+        //ROS_INFO("wrist angle = %f",q_wrist);
         Eigen::VectorXd q_soln_DH,q_soln_UR;
         q_soln_DH.resize(6);
         q_soln_UR.resize(6);
@@ -449,7 +419,7 @@ int UR10IkSolver::ik_solve(Eigen::Affine3d const& desired_hand_pose,  vector<Eig
         A21 = compute_A_of_DH(1, shoulder_angs_a1[1]);
         T43a1 = A32.inverse()*A21.inverse()*T41a1;
         q_wrist = atan2(T43a1(1,0),T43a1(0,0));
-        ROS_INFO("wrist angle = %f",q_wrist);  
+        //ROS_INFO("wrist angle = %f",q_wrist);  
         q_soln_DH[1]= shoulder_angs_a1[1];
         q_soln_DH[2]=elbow_angs_a1[1];
         q_soln_DH[3] = q_wrist;     
@@ -466,23 +436,23 @@ int UR10IkSolver::ik_solve(Eigen::Affine3d const& desired_hand_pose,  vector<Eig
     double O41xb,O41yb;
     O41xb = T41b0(0,3);
     O41yb = T41b0(1,3);
-    ROS_INFO("case T41b0: O4 w/rt frame 1: O4x, O4y = %f, %f ", O41xb,O41yb);
+    //ROS_INFO("case T41b0: O4 w/rt frame 1: O4x, O4y = %f, %f ", O41xb,O41yb);
     double reachT41b0 = sqrt(O41xb*O41xb+O41yb*O41yb);
     vector<double> elbow_angs_b0, shoulder_angs_b0;
-    ROS_INFO("reach = %f",reachT41b0);
+    //ROS_INFO("reach = %f",reachT41b0);
    
     //at q1b, first 2 solns (elbow up/dn at q1b, first q5/q6 soln)
     if(solve_2R_planar_arm(O41xb,O41yb, L1, L2,shoulder_angs_b0,elbow_angs_b0) ) {
-        ROS_INFO("elbow angles: %f, %f ",elbow_angs_b0[0],elbow_angs_b0[1]);
-        ROS_INFO("shoulder angles: %f, %f",shoulder_angs_b0[0],shoulder_angs_b0[1]);
+        //ROS_INFO("elbow angles: %f, %f ",elbow_angs_b0[0],elbow_angs_b0[1]);
+        //ROS_INFO("shoulder angles: %f, %f",shoulder_angs_b0[0],shoulder_angs_b0[1]);
         Eigen::Matrix4d T43b0,A32,A21;
         A32 = compute_A_of_DH(2, elbow_angs_b0[0]);
         A21 = compute_A_of_DH(1, shoulder_angs_b0[0]);
         T43b0 = A32.inverse()*A21.inverse()*T41b0;
-        cout<<"T43b0: "<<endl;
-        cout<<T43b0<<endl;
+        //cout<<"T43b0: "<<endl;
+        //cout<<T43b0<<endl;
         double q_wrist = atan2(T43b0(1,0),T43b0(0,0));
-        ROS_INFO("wrist angle = %f",q_wrist);
+        //ROS_INFO("wrist angle = %f",q_wrist);
         Eigen::VectorXd q_soln_DH,q_soln_UR;
         q_soln_DH.resize(6);
         q_soln_UR.resize(6);
@@ -499,7 +469,7 @@ int UR10IkSolver::ik_solve(Eigen::Affine3d const& desired_hand_pose,  vector<Eig
         A21 = compute_A_of_DH(1, shoulder_angs_b0[1]);
         T43b0 = A32.inverse()*A21.inverse()*T41b0;
         q_wrist = atan2(T43b0(1,0),T43b0(0,0));
-        ROS_INFO("wrist angle = %f",q_wrist);  
+        //ROS_INFO("wrist angle = %f",q_wrist);  
         q_soln_DH[1]= shoulder_angs_b0[1];
         q_soln_DH[2]=elbow_angs_b0[1];
         q_soln_DH[3] = q_wrist;     
@@ -509,22 +479,22 @@ int UR10IkSolver::ik_solve(Eigen::Affine3d const& desired_hand_pose,  vector<Eig
     //last 2 solns (elbow up/dn at q1b, second q5/q6 soln)    
     O41xb = T41b1(0,3);
     O41yb = T41b1(1,3);
-    ROS_INFO("case T41b1: O4 w/rt frame 1: O4x, O4y = %f, %f ", O41xb,O41yb);
+    //ROS_INFO("case T41b1: O4 w/rt frame 1: O4x, O4y = %f, %f ", O41xb,O41yb);
     double reachT41b1 = sqrt(O41xb*O41xb+O41yb*O41yb);
     vector<double> elbow_angs_b1, shoulder_angs_b1;
-    ROS_INFO("reach = %f",reachT41b1);
+    //ROS_INFO("reach = %f",reachT41b1);
 
     if(solve_2R_planar_arm(O41xb,O41yb, L1, L2,shoulder_angs_b1,elbow_angs_b1) ) {
-        ROS_INFO("elbow angles: %f, %f ",elbow_angs_b1[0],elbow_angs_b1[1]);
-        ROS_INFO("shoulder angles: %f, %f",shoulder_angs_b1[0],shoulder_angs_b1[1]);
+        //ROS_INFO("elbow angles: %f, %f ",elbow_angs_b1[0],elbow_angs_b1[1]);
+        //ROS_INFO("shoulder angles: %f, %f",shoulder_angs_b1[0],shoulder_angs_b1[1]);
         Eigen::Matrix4d T43b1,A32,A21;
         A32 = compute_A_of_DH(2, elbow_angs_b1[0]);
         A21 = compute_A_of_DH(1, shoulder_angs_b1[0]);
         T43b1 = A32.inverse()*A21.inverse()*T41b1;
-        cout<<"T43b1: "<<endl;
-        cout<<T43b1<<endl;
+        //cout<<"T43b1: "<<endl;
+        //cout<<T43b1<<endl;
         double q_wrist = atan2(T43b1(1,0),T43b1(0,0));
-        ROS_INFO("wrist angle = %f",q_wrist);
+        //ROS_INFO("wrist angle = %f",q_wrist);
         Eigen::VectorXd q_soln_DH,q_soln_UR;
         q_soln_DH.resize(6);
         q_soln_UR.resize(6);
@@ -541,7 +511,7 @@ int UR10IkSolver::ik_solve(Eigen::Affine3d const& desired_hand_pose,  vector<Eig
         A21 = compute_A_of_DH(1, shoulder_angs_b1[1]);
         T43b1 = A32.inverse()*A21.inverse()*T41b1;
         q_wrist = atan2(T43b1(1,0),T43b1(0,0));
-        ROS_INFO("wrist angle = %f",q_wrist);  
+        //ROS_INFO("wrist angle = %f",q_wrist);  
         q_soln_DH[1]= shoulder_angs_b1[1];
         q_soln_DH[2]=elbow_angs_b1[1];
         q_soln_DH[3] = q_wrist;     
@@ -564,7 +534,7 @@ bool UR10IkSolver::compute_q1_solns(Eigen::Vector3d w_des, std::vector<double> &
     }
     double q1a = q1_solns[0]; //atan2(w_des(1), w_des(0));
     double q1b = q1_solns[1]; //q1a + M_PI; // given q1, q1+pi is also a soln
-    ROS_INFO("q1a, q1b = %f, %f", q1a, q1b);
+    //ROS_INFO("q1a, q1b = %f, %f", q1a, q1b);
     return true;
 }
 
@@ -587,7 +557,7 @@ void UR10IkSolver::compute_q5_solns(Eigen::Vector3d p_des, std::vector<double> q
     } else {
         q5_solns_1a.push_back(acos(cq5)); // = acos(cq5);
         q5_solns_1a.push_back(-acos(cq5)); // = -q5a_solns[0];
-        ROS_INFO("q5a solns: %f, %f", q5_solns_1a[0], q5_solns_1a[1]);
+        //ROS_INFO("q5a solns: %f, %f", q5_solns_1a[0], q5_solns_1a[1]);
     }
 
     //now for other q1 soln:
@@ -598,7 +568,7 @@ void UR10IkSolver::compute_q5_solns(Eigen::Vector3d p_des, std::vector<double> q
     } else {
         q5_solns_1b.push_back(acos(cq5));
         q5_solns_1b.push_back(-acos(cq5));
-        ROS_INFO("q5b solns: %f, %f", q5_solns_1b[0], q5_solns_1b[1]);
+        //ROS_INFO("q5b solns: %f, %f", q5_solns_1b[0], q5_solns_1b[1]);
     }
 
 }
@@ -636,13 +606,13 @@ bool UR10IkSolver::compute_q6_solns(Eigen::Matrix3d target_R61, std::vector<doub
     //compute q6 from first q5 soln:
     sign_s5 = sgn(sin(q5_solns[0]));     
     q6 = atan2(-sign_s5*b,sign_s5*a);
-    ROS_INFO("for first q5:  q6 (in DH coords) = %f",q6);
-    ROS_INFO("q6 in UR coords: %f",q6-DH_q_offsets[5]);
+    //ROS_INFO("for first q5:  q6 (in DH coords) = %f",q6);
+    //ROS_INFO("q6 in UR coords: %f",q6-DH_q_offsets[5]);
     q6_solns.push_back(q6);
     //repeat for 2nd q5 soln:
     sign_s5 = sgn(sin(q5_solns[1]));     
     q6 = atan2(-sign_s5*b,sign_s5*a);
-    ROS_INFO("for second q5: q6 (in DH coords) = %f",q6);
+    //ROS_INFO("for second q5: q6 (in DH coords) = %f",q6);
     q6_solns.push_back(q6);    
     return true;
 }
@@ -653,28 +623,28 @@ bool UR10IkSolver::solve_2R_planar_arm_elbow_angs(double x_des, double y_des, do
          vector<double> &q_elbow_solns) {
     const double fit_tol = 0.00001;
     double rsqrd = x_des*x_des +y_des*y_des;
-    ROS_INFO("planar arm: rsqrd, L1, L2 = %f, %f %f",rsqrd,L1,L2);
+    //ROS_INFO("planar arm: rsqrd, L1, L2 = %f, %f %f",rsqrd,L1,L2);
     //law of cosines: C^2 = A^2 + B^2 - 2ABcos(C_ang)
     double den = 2.0 * L1*L2;
     double num = rsqrd - L1*L1 - L2*L2;
     //test viability here...
     double c_ang = num / den;
-    ROS_INFO("c_ang, num, den = %f, %f, %f",c_ang,num,den);
+    //ROS_INFO("c_ang, num, den = %f, %f, %f",c_ang,num,den);
     if (c_ang > 1.0) {
-        ROS_WARN("destination out of reach at full elbow extension");
+        //ROS_WARN("destination out of reach at full elbow extension");
         return false;
     }
     //cout<<"num, den, c4 = "<<num<<", "<<den<<", "<<c4<<endl;
     double s_ang = sqrt(1 - c_ang * c_ang);
 
     double q_elbow_a = atan2(s_ang, c_ang);
-    cout<<"q_elbow_a = "<<q_elbow_a<<endl;
+    //cout<<"q_elbow_a = "<<q_elbow_a<<endl;
     q_elbow_solns.clear();
     q_elbow_solns.push_back(q_elbow_a);
     
     double q_elbow_b = -q_elbow_a; //atan2(-s_ang, c_ang);
     q_elbow_solns.push_back(q_elbow_b);
-    cout<<"q_elbow_b = "<<q_elbow_b<<endl;
+    //cout<<"q_elbow_b = "<<q_elbow_b<<endl;
     return true;
 }
 
@@ -713,7 +683,7 @@ bool UR10IkSolver::solve_2R_planar_arm_shoulder_ang(double x_des,double y_des, d
     double x= L1*cos(q_solns[0]) + L2*cos(q_solns[0]+q_elbow);
     double y= L1*sin(q_solns[0]) + L2*sin(q_solns[0]+q_elbow);
     double fit_err = (x_des-x)*(x_des-x)+(y_des-y)*(y_des-y);
-    ROS_INFO("shoulder soln fit err 1: %f",fit_err);
+    //ROS_INFO("shoulder soln fit err 1: %f",fit_err);
     if (fit_err< R2_fit_err_tol) {
         q_shoulder = q_solns[0];
         return true; }
@@ -721,10 +691,10 @@ bool UR10IkSolver::solve_2R_planar_arm_shoulder_ang(double x_des,double y_des, d
     x= L1*cos(q_shoulder) + L2*cos(q_shoulder+q_elbow);
     y= L1*sin(q_shoulder) + L2*sin(q_shoulder+q_elbow);
     fit_err = (x_des-x)*(x_des-x)+(y_des-y)*(y_des-y);
-    ROS_INFO("shoulder soln fit err 2: %f",fit_err);
+    //ROS_INFO("shoulder soln fit err 2: %f",fit_err);
     if (fit_err< R2_fit_err_tol) {
         return true; }  
-    ROS_WARN("Error: 2R shoulder angle has no soln!");
+    //ROS_WARN("Error: 2R shoulder angle has no soln!");
     return false;
 }
 

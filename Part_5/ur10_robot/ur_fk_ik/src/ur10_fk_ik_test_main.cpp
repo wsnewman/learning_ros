@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
         for (int i = 0; i < NJNTS; i++) {
             q_in[i] = g_q_vec[i]; // assign q to actual joint states
         }
-        Eigen::Vector3d reach= fwd_solver.test_w61(g_q_vec);
+        //Eigen::Vector3d reach= fwd_solver.test_w61(g_q_vec);
 
         Eigen::Affine3d A_fwd_DH = fwd_solver.fwd_kin_solve(q_in); //fwd_kin_solve
         // rotate DH frame6 to reconcile with URDF frame7:
