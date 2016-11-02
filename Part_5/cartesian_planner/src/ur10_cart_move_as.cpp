@@ -26,7 +26,7 @@
 #include<moveit_msgs/DisplayTrajectory.h>
 #include <tf/transform_listener.h>
 #include <xform_utils/xform_utils.h>
-int g_done_move = true;
+
 Eigen::VectorXd g_q_vec_arm_Xd;
 vector<int> g_arm_joint_indices;
 vector<string> g_ur_jnt_names;
@@ -36,7 +36,7 @@ const double ARM_ERR_TOL = 0.1; // tolerance btwn last joint commands and curren
 
 const double dt_traj = 0.02; // time step for trajectory interpolation
 
-int g_js_doneCb_flag = 0;
+bool g_js_doneCb_flag = true;
 void set_ur_jnt_names() {
     g_ur_jnt_names.push_back("shoulder_pan_joint");
     g_ur_jnt_names.push_back("shoulder_lift_joint");
@@ -100,7 +100,7 @@ void stuff_trajectory(std::vector<Eigen::VectorXd> qvecs, trajectory_msgs::Joint
             del_time = dt_traj;
         //cout<<"stuff_traj: next pt = "<<q_end.transpose()<<endl; 
         net_time += del_time;
-        //ROS_INFO("iq = %d; del_time = %f; net time = %f",iq,del_time,net_time);        
+        ROS_INFO("iq = %d; del_time = %f; net time = %f",iq,del_time,net_time);        
         for (int i = 0; i < VECTOR_DIM; i++) { //copy over the joint-command values
             trajectory_point1.positions[i] = q_end[i];
         }
@@ -167,7 +167,7 @@ private:
     std::vector<Eigen::VectorXd> des_path;
     trajectory_msgs::JointTrajectory des_trajectory; // empty trajectory   
     //void set_ur_jnt_names(); //fill a vector of joint names in DH order, from base to tip
-    Eigen::VectorXd g_q_vec_arm_Xd; //.resize(VECTOR_DIM);    
+    //Eigen::VectorXd g_q_vec_arm_Xd; //.resize(VECTOR_DIM); //made this one global   
     // create an action client, which will send joint-space goals to the trajectory interpolator service
  
     
@@ -290,8 +290,8 @@ public:
     //Eigen::VectorXd get_joint_angles(void);
     //get joint angles, compute fwd kin, convert result to a stamped pose
     // put answer in current_gripper_stamped_pose_
-    void compute_tool_stamped_pose(void); //helper for RT_ARM_GET_TOOL_POSE
-    void compute_flange_stamped_pose(void); //helper for RT_ARM_GET_FLANGE_POSE
+    void compute_tool_stamped_pose(void); //helper for GET_TOOL_POSE
+    void compute_flange_stamped_pose(void); //helper for GET_FLANGE_POSE
     //void compute_left_tool_stamped_pose(void); 
 
     bool plan_path_current_to_goal_pose(); //uses goal.des_pose_gripper to plan a cartesian path
@@ -332,7 +332,7 @@ void ArmMotionInterface::executeCB(const actionlib::SimpleActionServer<cartesian
             ROS_INFO("responding to request GET_Q_DATA");
             //get_joint_angles(); 
             cart_result_.q_arm.resize(NJNTS);
-            for (int i = 0; i < 7; i++) {
+            for (int i = 0; i < NJNTS; i++) {
                 cart_result_.q_arm[i] = g_q_vec_arm_Xd[i];
             }
             cart_result_.return_code = cartesian_planner::ur10_cart_moveResult::SUCCESS;
@@ -340,14 +340,14 @@ void ArmMotionInterface::executeCB(const actionlib::SimpleActionServer<cartesian
             break;
 
         case cartesian_planner::ur10_cart_moveGoal::GET_TOOL_POSE:
-            ROS_INFO("responding to request RT_ARM_GET_TOOL_POSE");
+            ROS_INFO("responding to request GET_TOOL_POSE");
             compute_tool_stamped_pose();
             cart_result_.current_pose_gripper = current_gripper_stamped_pose_;
             cart_result_.return_code = cartesian_planner::ur10_cart_moveResult::SUCCESS;
             cart_move_as_.setSucceeded(cart_result_);
             break;
          case cartesian_planner::ur10_cart_moveGoal::GET_FLANGE_POSE:
-            ROS_INFO("responding to request RT_ARM_GET_FLANGE_POSE");
+            ROS_INFO("responding to request GET_FLANGE_POSE");
             compute_flange_stamped_pose();
             cart_result_.current_pose_flange = current_flange_stamped_pose_;
             cart_result_.return_code = cartesian_planner::ur10_cart_moveResult::SUCCESS;
@@ -400,7 +400,7 @@ void ArmMotionInterface::executeCB(const actionlib::SimpleActionServer<cartesian
 
             //consults a pre-computed trajectory and invokes execution;
         case cartesian_planner::ur10_cart_moveGoal::EXECUTE_PLANNED_PATH: //assumes there is a valid planned path in optimal_path_
-            ROS_INFO("responding to request RT_ARM_EXECUTE_PLANNED_PATH");
+            ROS_INFO("responding to request EXECUTE_PLANNED_PATH");
             execute_planned_move();
             break;
             
@@ -425,9 +425,10 @@ action_client_("/arm_controller/follow_joint_trajectory", true)
     ROS_INFO("in class constructor of ArmMotionInterface");
     g_q_vec_arm_Xd.resize(VECTOR_DIM);
     //initialize variables here, as needed
-    //q_pre_pose_Xd_ << -0.907528, -0.111813, 2.06622, 1.8737, -1.295, 2.00164, 0;
+    q_pre_pose_Xd_.resize(VECTOR_DIM);
+    q_pre_pose_Xd_ << 1.57, -1.57, -1.57, -1.57, 1.57, 0;
     //q_pre_pose_Xd_ = q_pre_pose_; // copy--in VectorXd format
-    q_vec_start_rqst_.resize(NJNTS); // = q_pre_pose_; // 0,0,0,0,0,0,0; // make this a 7-d vector
+    q_vec_start_rqst_.resize(NJNTS); // = q_pre_pose_; // 0,0,0,0,0,0,0; // make this a N-d vector
     q_vec_end_rqst_.resize(NJNTS); // = q_pre_pose_; //<< 0,0,0,0,0,0,0;
     q_vec_start_resp_.resize(NJNTS);// = q_pre_pose_; //<< 0,0,0,0,0,0,0;
     q_vec_end_resp_.resize(NJNTS);// = q_pre_pose_; //<< 0,0,0,0,0,0,0;
@@ -476,7 +477,8 @@ action_client_("/arm_controller/follow_joint_trajectory", true)
 void ArmMotionInterface::armDoneCb_(const actionlib::SimpleClientGoalState& state,
         const control_msgs::FollowJointTrajectoryResultConstPtr& result) {
     ROS_INFO(" armDoneCb: server responded with state [%s]", state.toString().c_str());
-    g_done_move = true;
+    g_js_doneCb_flag = true;
+    
 }
 
 
@@ -564,14 +566,15 @@ void ArmMotionInterface::execute_planned_move(void) {
     ROS_INFO("sending action request");
     ROS_INFO("computed arrival time is %f", computed_arrival_time_);
     busy_working_on_a_request_ = true;
-    g_js_doneCb_flag = 0;
+    g_js_doneCb_flag = false;
     //arm_action_client.sendGoal(goal, &armDoneCb);
     action_client_.sendGoal(js_goal_, boost::bind(&ArmMotionInterface::armDoneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired
     ROS_INFO("waiting on trajectory streamer...");
-    while (g_js_doneCb_flag == 0) {
+    while (!g_js_doneCb_flag) {
         ROS_INFO("...");
-        ros::Duration(1.0).sleep();
+        ros::Duration(0.5).sleep();
         ros::spinOnce();
+        cout<<"jnt angs: "<<g_q_vec_arm_Xd.transpose()<<endl;
     }
     //finished_before_timeout_ = traj_streamer_action_client_.waitForResult(ros::Duration(computed_arrival_time_ + 2.0));
     /*
@@ -581,7 +584,7 @@ void ArmMotionInterface::execute_planned_move(void) {
         cart_move_as_.setSucceeded(cart_result_); //could say "aborted"
     } else {
      * */
-    ROS_INFO("finished before timeout");
+    ROS_INFO("finished move execution");
     cart_result_.return_code = cartesian_planner::ur10_cart_moveResult::SUCCESS;
     cart_move_as_.setSucceeded(cart_result_);
     //}
@@ -816,8 +819,17 @@ bool ArmMotionInterface::plan_path_current_to_goal_dp_xyz() {
 int main(int argc, char** argv) {
     ros::init(argc, argv, "ur10_cart_move_as");
     ros::NodeHandle nh; //standard ros node handle   
+    set_ur_jnt_names();
     ros::Subscriber joint_state_sub = nh.subscribe("/joint_states", 1, jointStatesCb);
-
+    g_q_vec_arm_Xd.resize(VECTOR_DIM);
+    g_q_vec_arm_Xd[0] = 1000;
+    while (g_q_vec_arm_Xd[0]>20) {
+        ros::spinOnce();
+        ROS_INFO("waiting for valid joint values");
+        ros::Duration(0.5).sleep();
+    }
+    ROS_INFO("current joint values: ");
+    cout<<g_q_vec_arm_Xd.transpose()<<endl;
     ROS_INFO("instantiating an ArmMotionInterface: ");
     ArmMotionInterface armMotionInterface(&nh);
 

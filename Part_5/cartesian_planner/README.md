@@ -1,5 +1,5 @@
 # cartesian_planner
-This package includes separate, but very similar Cartesian planners for Baxter and for arm7dof.
+This package includes separate, but very similar Cartesian planners for Baxter, for arm7dof and for the UR10 robot.
 There are multiple cartesian-plan options, including:
 
 *specify start and end poses w/rt base.  Only orientation of end pose will be considered; orientation of start pose is ignored;
@@ -21,3 +21,13 @@ These values can be edited to test alternative motions.
 
 ## Running tests/demos
 `rosrun  cartesian_planner example_arm7dof_cart_path_planner_main`    
+
+or, for UR10, start up the UR10 Gazebo simulation (or real robot):
+`roslaunch ur_gazebo ur10.launch`
+start up the cartesian planner action server:
+`rosrun cartesian_planner ur10_cart_move_as`
+run a path-planner client:
+`rosrun cartesian_planner ur10_cart_move_action_client`
+
+
+

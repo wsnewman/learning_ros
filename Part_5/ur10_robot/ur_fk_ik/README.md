@@ -1,5 +1,5 @@
 # ur_fk_ik
-Library for FK/IK for UR10 robot.
+Library for FK/IK for UR10 robot, and an example "main" to illustrate use of the library.
 
 ## Example usage
 Start up UR10 in Gazebo with:
@@ -9,5 +9,4 @@ Run example program using FK/IK library with:
 Move the robot around with example client:
 `rosrun ur_traj_client ur_traj_client_pre_pose`
 
-## Running tests/demos
     

@@ -249,6 +249,7 @@ UR10IkSolver::UR10IkSolver() {
     //constructor: 
     L_humerus = DH_a_params[1];
     L_forearm = DH_a_params[2];
+    ROS_INFO("UR10IKSolver constructor");
 }
 
 //solve IK; return solns, in UR coordinates, in q_ik_solns

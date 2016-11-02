@@ -10,23 +10,18 @@
 // file is packed up as a "trajectory" message and delivered within a "goal" message to the trajectory-streamer action server.
 
 #include<ros/ros.h>
-#include <actionlib/client/simple_action_client.h>
-#include <actionlib/client/terminal_state.h>
-#include <arm7dof_trajectory_streamer/arm7dof_trajectory_streamer.h>
-
-#include<arm7dof_traj_as/trajAction.h>
-using namespace std;
-#define VECTOR_DIM 7 // e.g., a 7-dof vector
-
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
 
-
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
+#include <arm7dof_trajectory_streamer/arm7dof_trajectory_streamer.h>
+#include<arm7dof_traj_as/trajAction.h>
+
+#define VECTOR_DIM 7 // e.g., a 7-dof vector
 
 using namespace std;
 typedef vector <double> record_t;
@@ -125,12 +120,13 @@ bool read_and_check_file(ifstream &infile, data_t &data) {
 
 // This function will be called once when the goal completes
 // this is optional, but it is a convenient way to get access to the "result" message sent by the server
-
+bool g_traj_is_done = true;
 void armDoneCb(const actionlib::SimpleClientGoalState& state,
         const arm7dof_traj_as::trajResultConstPtr & result) {
 
     ROS_INFO(" armDoneCb: server responded with state [%s]", state.toString().c_str());
     ROS_INFO("got return val = %d", result->return_val);
+    g_traj_is_done=true;
 }
 
 int main(int argc, char** argv) {
@@ -227,10 +223,14 @@ int main(int argc, char** argv) {
 
     //send out this trajectory goal to the trajectory action server
     ROS_INFO("sending goal to arm: ");
-    arm_action_client.sendGoal(goal); //, &armDoneCb);
+    g_traj_is_done=false;
+    arm_action_client.sendGoal(goal,&armDoneCb);
+    while (!g_traj_is_done) {
         ros::spinOnce();
-        ros::Duration(1.0).sleep();    
-    //finished_before_timeout = arm_action_client.waitForResult(ros::Duration(200.0));
+        ROS_INFO("waiting for traj completion...");
+        ros::Duration(1.0).sleep();
+    }
+    ROS_INFO("trajectory is done; quitting");
 
     return 0;
 }

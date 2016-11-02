@@ -220,9 +220,9 @@ bool CartTrajPlanner::cartesian_path_planner(Eigen::VectorXd q_start,Eigen::Affi
             nsolns = ur10IkSolver_.ik_solve(a_tool_des, q_solns);
             std::cout<<"nsolns = "<<nsolns<<endl;
             //DEBUG:
-            test_IK_solns(q_solns);
-            cout<<"enter 1: ";
-            cin>>ans;
+            //test_IK_solns(q_solns);
+            //cout<<"enter 1: ";
+            //cin>>ans;
             
             single_layer_nodes.clear();
             if (nsolns>0) {
