@@ -114,8 +114,12 @@ public:
     void q_DH_to_q_UR(Eigen::VectorXd q_soln_DH, Eigen::VectorXd &q_soln_UR);
     bool fit_joints_to_range(Eigen::VectorXd &qvec);    
     bool fit_q_to_range(double q_min, double q_max, double &q);    
+    Eigen::Affine3d get_affine_tool_wrt_flange() { return A_tool_wrt_flange_;}
+    void set_affine_tool_wrt_flange(Eigen::Affine3d A_tool_wrt_flange) { 
+        A_tool_wrt_flange_=A_tool_wrt_flange;
+    }    
 private:
-    
+    Eigen::Affine3d A_tool_wrt_flange_;
     Eigen::Matrix4d fwd_kin_solve_(const Eigen::VectorXd& q_vec);
     Eigen::Matrix4d A_mats[6], A_mat_products[6], A_tool; // note: tool A must also handle diff DH vs URDF frame-7 xform
     Eigen::MatrixXd Jacobian;    

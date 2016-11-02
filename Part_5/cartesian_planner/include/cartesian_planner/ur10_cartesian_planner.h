@@ -17,10 +17,10 @@
 #include <iostream>
 
 using namespace std;
-#define VECTOR_DIM 7 // e.g., a 7-dof vector
+#define VECTOR_DIM 6 // e.g., a 6-dof vector
 //choose cartesian-path sampling resolution, e.g. 5cm
 const double CARTESIAN_PATH_SAMPLE_SPACING= 0.05; // choose the resolution of samples along Cartesian path
-
+const double CARTESIAN_PATH_FINE_SAMPLE_SPACING = 0.005; // fine resolution for precision motion
 class CartTrajPlanner {
 private:
     Eigen::Vector3d n_des_, t_des_, b_des_;
@@ -33,10 +33,10 @@ private:
     
     UR10IkSolver ur10IkSolver_; // instantiate an IK solver
     UR10FwdSolver ur10FwdSolver_; //instantiate a forward-kinematics solver   
-    
+    std::vector<Eigen::Affine3d> cartesian_affine_samples_;
     // use this class's  fk solver to compute and return tool-flange pose w/rt base, given arm joint angles  
     //Eigen::Affine3d get_fk_Affine_from_qvec(Vectorq7x1 q_vec);
-
+    Eigen::VectorXd jspace_planner_weights_;
 public:
     CartTrajPlanner(); //define the body of the constructor outside of class definition
 
@@ -45,16 +45,22 @@ public:
     //these planners assume Affine args are right-arm flange w/rt torso
     ///specify start and end poses w/rt torso.  Only orientation of end pose will be considered; orientation of start pose is ignored
     bool cartesian_path_planner(Eigen::Affine3d a_flange_start,Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path);
+    bool cartesian_path_planner(Eigen::Affine3d a_flange_start,Eigen::Affine3d a_flange_end, 
+    std::vector<Eigen::VectorXd> &optimal_path,double dp_scalar);
     /// alt version: specify start as a q_vec, and goal as a Cartesian pose (w/rt torso)    
-    bool cartesian_path_planner(Eigen::VectorXd q_start,Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path);
-    /// alt version--only plan wrist-point motion; don't worry about wrist orientation
-    //bool cartesian_path_planner_wrist(Vectorq7x1 q_start,Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path);
+    bool cartesian_path_planner(Eigen::VectorXd q_start,Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path);   
+    bool cartesian_path_planner(Eigen::VectorXd q_start, Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path,
+            double dp_scalar);
     
     bool jspace_trivial_path_planner(Eigen::VectorXd  q_start,Eigen::VectorXd  q_end,std::vector<Eigen::VectorXd> &optimal_path);
     /// alt version: specify start as a q_vec, and desired z motion (+ is up) while holding x,y and R fixed
     //bool cartesian_path_planner_zmotion(Vectorq7x1 q_start,double z_dist, std::vector<Eigen::VectorXd> &optimal_path);
     ///alt version: compute path from current pose with cartesian move of delta_p with R fixed
     /// return "true" if successful
+    
+    bool jspace_path_planner_to_affine_goal(Eigen::VectorXd q_start, Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path);
+    bool fine_cartesian_path_planner(Eigen::VectorXd q_start, Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path);
+
     bool cartesian_path_planner_delta_p(Eigen::VectorXd  q_start, Eigen::Vector3d delta_p, std::vector<Eigen::VectorXd> &optimal_path);
     Eigen::Matrix3d get_R_gripper_down(void) { return R_gripper_down_;}
     Eigen::Matrix3d get_R_gripper_up(void) { return R_gripper_up_;}

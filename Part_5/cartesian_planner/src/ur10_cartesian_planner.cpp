@@ -39,11 +39,25 @@ CartTrajPlanner::CartTrajPlanner() // optionally w/ args, e.g.
     tool_t_des_horiz_ = tool_b_des_horiz_.cross(tool_n_des_horiz_);
     R_gripper_horiz_.col(0) = tool_n_des_horiz_;
     R_gripper_horiz_.col(1) = tool_t_des_horiz_;
-    R_gripper_horiz_.col(2) = tool_b_des_horiz_;    
+    R_gripper_horiz_.col(2) = tool_b_des_horiz_;   
+    
+    jspace_planner_weights_.resize(NJNTS);
+    jspace_planner_weights_[0] = 5; //turret
+    //penalize shoulder lift more:
+    jspace_planner_weights_[1] = 5; //shoulder
+    jspace_planner_weights_[2] = 3; //elbow
+    //penalize wrist less
+    jspace_planner_weights_[3] = 0.5;
+    jspace_planner_weights_[4] = 0.2;
+    jspace_planner_weights_[5] = 0.2;     
 }
 
+bool CartTrajPlanner::cartesian_path_planner(Eigen::VectorXd q_start,Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path) {
+    return cartesian_path_planner(q_start, a_flange_end, optimal_path, CARTESIAN_PATH_SAMPLE_SPACING);
+}
 
-//specify start and end poses w/rt torso.  Only orientation of end pose will be considered; orientation of start pose is ignored
+//specify start and end poses w/rt base.  Only orientation of end pose will be considered; orientation of start pose is ignored
+
 bool CartTrajPlanner::cartesian_path_planner(Eigen::Affine3d a_flange_start,Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path) {
     std::vector<std::vector<Eigen::VectorXd> > path_options;
     path_options.clear();
@@ -52,7 +66,18 @@ bool CartTrajPlanner::cartesian_path_planner(Eigen::Affine3d a_flange_start,Eige
     Eigen::Affine3d a_flange_des;
     Eigen::Matrix3d R_des = a_flange_end.linear();
     a_flange_des.linear() = R_des;
+ 
 
+    //a_flange_start = ur10FwdSolver_.fwd_kin_solve(q_start);
+    //cout << "fwd kin from q_start: " << a_flange_start.translation().transpose() << endl;
+    //cout << "fwd kin from q_start R: " << endl;
+    //cout << a_flange_start.linear() << endl;
+    //store a vector of Cartesian affine samples for desired path:
+    cartesian_affine_samples_.clear();
+    a_flange_des = a_flange_end;
+    a_flange_start.linear() = R_des; // no interpolation of orientation; set goal orientation immediately   
+    a_flange_des.linear() = R_des; //expected behavior: will try to achieve orientation first, before translating
+            
     int nsolns;
     bool reachable_proposition;
     int nsteps = 0;
@@ -69,10 +94,11 @@ bool CartTrajPlanner::cartesian_path_planner(Eigen::Affine3d a_flange_start,Eige
 
     std::vector<Eigen::VectorXd> q_solns;
     p_des = p_start;
-
+    cartesian_affine_samples_.push_back(a_flange_start);
     for (int istep=0;istep<nsteps;istep++) 
     {
             a_flange_des.translation() = p_des;
+            cartesian_affine_samples_.push_back(a_flange_des);
             cout<<"trying: "<<p_des.transpose()<<endl;
             //int ik_solve(Eigen::Affine3d const& desired_hand_pose,vector<Eigen::VectorXd> &q_ik_solns);
             nsolns = ur10IkSolver_.ik_solve(a_flange_des, q_solns);
@@ -138,8 +164,13 @@ void CartTrajPlanner::test_IK_solns(std::vector<Eigen::VectorXd> &q_solns) {
     }
 }
 
-// alt version: specify start as a q_vec, and goal as a Cartesian pose (w/rt torso)
-bool CartTrajPlanner::cartesian_path_planner(Eigen::VectorXd q_start,Eigen::Affine3d a_tool_end, std::vector<Eigen::VectorXd> &optimal_path) {
+//bool CartTrajPlanner::cartesian_path_planner(Eigen::VectorXd q_start,Eigen::Affine3d a_tool_end, 
+//        std::vector<Eigen::VectorXd> &optimal_path) {
+//    return cartesian_path_planner(q_start,a_tool_end,optimal_path,CARTESIAN_PATH_SAMPLE_SPACING);
+//}
+
+bool CartTrajPlanner::cartesian_path_planner(Eigen::VectorXd q_start,Eigen::Affine3d a_tool_end, 
+          std::vector<Eigen::VectorXd> &optimal_path, double dp_scalar) {
     std::vector<std::vector<Eigen::VectorXd> > path_options;
     path_options.clear();
     std::vector<Eigen::VectorXd> single_layer_nodes;
@@ -165,7 +196,7 @@ bool CartTrajPlanner::cartesian_path_planner(Eigen::VectorXd q_start,Eigen::Affi
     cout<<"p_start: "<<p_start.transpose()<<endl;
     cout<<"p_end: "<<p_end.transpose()<<endl;
     cout<<"del_p: "<<del_p.transpose()<<endl;
-    double dp_scalar = CARTESIAN_PATH_SAMPLE_SPACING;
+    //double dp_scalar = CARTESIAN_PATH_SAMPLE_SPACING;
     nsteps = round(del_p.norm()/dp_scalar);
     if (nsteps<1) nsteps=1;
     dp_vec = del_p/nsteps;
@@ -471,6 +502,94 @@ bool CartTrajPlanner::cartesian_path_planner_wrist(Vectorq7x1 q_start,Eigen::Aff
        optimal_path.push_back(q_end);
        return true;
    }
+   
+   //this version uses a finer Cartesian sampling dp than the default
+
+bool CartTrajPlanner::fine_cartesian_path_planner(Eigen::VectorXd q_start, Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path) {
+    //do trajectory planning w/ fine samples along Cartesian direction, but approximate IK solns:
+    bool valid = cartesian_path_planner(q_start, a_flange_end, optimal_path, CARTESIAN_PATH_FINE_SAMPLE_SPACING);
+    if (!valid) {
+        return false;
+    }
+    return valid;
+}
+
+
+bool CartTrajPlanner::jspace_path_planner_to_affine_goal(Eigen::VectorXd  q_start, Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path) {
+    Eigen::VectorXd qx_end(NJNTS); // need to convert to this type
+    std::vector<Eigen::VectorXd> q_solns;
+    std::vector<std::vector<Eigen::VectorXd> > path_options;
+    path_options.clear();
+    std::vector<Eigen::VectorXd> single_layer_nodes;
+
+    single_layer_nodes.clear();
+    single_layer_nodes.push_back(q_start);
+    
+
+    cout << "jspace planner to Cartesian goal: " << endl;
+    //    int ik_solve(Eigen::Affine3d const& desired_hand_pose,vector<Eigen::VectorXd> &q_ik_solns);
+    int nsolns = ur10IkSolver_.ik_solve(a_flange_end, q_solns);
+    std::cout << "nsolns at goal pose = " << nsolns << endl;
+    single_layer_nodes.clear();
+    if (nsolns<1) return false; // give up
+    //else power on...
+    //single_layer_nodes.resize(nsolns);
+    for (int isoln = 0; isoln < nsolns; isoln++) {
+         single_layer_nodes.push_back(q_solns[isoln]); 
+    }
+    nsolns = single_layer_nodes.size();
+    ROS_INFO("found %d goal IK solns",nsolns);
+    if (nsolns <1) {
+        return false; //no solns
+    }
+    
+    //ok--we have at least one  soln;
+    // 
+    optimal_path.clear();
+    optimal_path.push_back(q_start);
+    //here is where we pick which of the joint-space goal solns is best:
+   
+    Eigen::VectorXd dq_move(NJNTS), q_modified_start(NJNTS);
+    q_modified_start = q_start;
+    //q_modified_start[1] = 0; // bias preference for shoulder elevation near zero,
+                             // regardless of start pose
+    cout<<"q_modified_start: "<<q_modified_start.transpose()<<endl;
+    //from baxter_traj_streamer.h:
+    //const double q0dotmax = 0.5;
+    //const double q1dotmax = 0.5;
+    //const double q2dotmax = 0.5;
+    //const double q3dotmax = 0.5;
+    //const double q4dotmax = 1;
+    //const double q5dotmax = 1;
+    //const double q6dotmax = 1;
+    // should make these speed limits more accessible
+    //jspace_planner_weights_ are defined here, above
+    double penalty_best = 1000000;
+    double penalty;
+
+    cout<<"jspace_planner_weights_: "<<jspace_planner_weights_.transpose()<<endl;    
+    qx_end = single_layer_nodes[0]; //default: first soln   
+    cout<<"qx_end: "<<qx_end.transpose()<<endl;
+    for (int i=0;i<nsolns;i++) {
+        
+        dq_move = q_modified_start-single_layer_nodes[i];
+        cout<<"dq_move: "<<dq_move.transpose()<<endl;
+        penalty=0.0;
+        for (int j=0;j<NJNTS;j++) {
+            penalty+= jspace_planner_weights_[j]*fabs(dq_move[j]); //should scale by speed limits
+        }
+        ROS_INFO("soln %d has penalty = %f",i,penalty);
+        if (penalty<penalty_best) {
+            penalty_best = penalty;
+            qx_end = single_layer_nodes[i];
+        }
+    }
+   
+    optimal_path.push_back(qx_end);
+    return true;
+    //return false; // not debugged, so don't trust!
+}
+
    
 // use this class's  fk solver to compute and return tool-flange pose w/rt base, given arm joint angles
 //Eigen::Affine3d CartTrajPlanner::get_fk_Affine_from_qvec(Eigen::VectorXd q_vec) {

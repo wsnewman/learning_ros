@@ -158,6 +158,11 @@ UR10FwdSolver::UR10FwdSolver() { //(const hand_s& hs, const atlas_frame& base_fr
     A_tool(1, 2) = -1;
     A_tool(2, 0) = 1;
     A_tool(3, 3) = 1;
+    Eigen::Matrix3d R_hand = Eigen:: MatrixXd::Identity(3,3);
+    Eigen::Vector3d O_hand= Eigen::MatrixXd::Zero(3,1);
+    //Eigen::Affine3d A_tool_wrt_flange_;
+    A_tool_wrt_flange_.linear() = R_hand;
+    A_tool_wrt_flange_.translation() = O_hand;
 }
 
 /*  IN CASE WANT JACOBIAN LATER...finish this
