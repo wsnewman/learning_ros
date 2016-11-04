@@ -24,7 +24,8 @@ int g_done_move = true;
 Eigen::VectorXd g_q_vec_arm_Xd;
 vector<int> g_arm_joint_indices;
 vector<string> g_ur_jnt_names;
-double g_qdot_max_vec[] = {1, 1, 1, 1, 1, 1}; //put real vel limits here
+//TEST: deliberately limit joint velocities to very small values
+double g_qdot_max_vec[] = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1}; //put real vel limits here
 
 void set_ur_jnt_names() {
     g_ur_jnt_names.push_back("shoulder_pan_joint");
@@ -63,13 +64,13 @@ void stuff_trajectory(std::vector<Eigen::VectorXd> qvecs, trajectory_msgs::Joint
         new_trajectory.joint_names.push_back(g_ur_jnt_names[i].c_str());
     }
 
-    //new_trajectory.header.stamp = ros::Time::now();  
+    new_trajectory.header.stamp = ros::Time::now();  
     Eigen::VectorXd q_start, q_end, dqvec;
     double del_time;
-    double net_time = 0.0;
+    double net_time = 0.05;
     q_start = qvecs[0];
     q_end = qvecs[0];
-    //cout<<"stuff_traj: start pt = "<<q_start.transpose()<<endl; 
+    cout<<"stuff_traj: start pt = "<<q_start.transpose()<<endl; 
     ROS_INFO("stuffing trajectory");
     //trajectory_point1.positions = qvecs[0];
 
@@ -99,7 +100,15 @@ void stuff_trajectory(std::vector<Eigen::VectorXd> qvecs, trajectory_msgs::Joint
         trajectory_point1.time_from_start = ros::Duration(net_time);
         new_trajectory.points.push_back(trajectory_point1);
     }
-
+  //display trajectory:
+    for (int iq = 1; iq < qvecs.size(); iq++) {
+        cout<<"traj pt: ";
+                for (int j=0;j<VECTOR_DIM;j++) {
+                    cout<<new_trajectory.points[iq].positions[j]<<", ";
+                }
+        cout<<endl;
+        cout<<"arrival time: "<<new_trajectory.points[iq].time_from_start.toSec()<<endl;
+    }
 }
 
 

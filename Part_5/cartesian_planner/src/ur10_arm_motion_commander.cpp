@@ -6,7 +6,8 @@
 ArmMotionCommander::ArmMotionCommander(ros::NodeHandle* nodehandle) : nh_(*nodehandle),
 cart_move_action_client_("cart_move_action_server", true) { // constructor
     ROS_INFO("in constructor of ArmMotionInterface");
-
+    q_vec_.resize(NJNTS);
+    
     // attempt to connect to the server:
     ROS_INFO("waiting for server: ");
     bool server_exists = false;
@@ -264,7 +265,7 @@ int ArmMotionCommander::execute_planned_path(void) {
     ROS_INFO("requesting execution of planned path");
     cart_goal_.command_code = cartesian_planner::ur10_cart_moveGoal::EXECUTE_PLANNED_PATH;
     cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&ArmMotionCommander::doneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired
-    finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(computed_arrival_time_ + 4.0));
+    finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(computed_arrival_time_ + 6.0));
     if (!finished_before_timeout_) {
         ROS_WARN("did not complete move in expected time");
         return (int) cartesian_planner::ur10_cart_moveResult::NOT_FINISHED_BEFORE_TIMEOUT;
@@ -313,7 +314,7 @@ int ArmMotionCommander::request_q_data(void) {
         return (int) cartesian_planner::ur10_cart_moveResult::NOT_FINISHED_BEFORE_TIMEOUT;
     }
     if (cart_result_.return_code != cartesian_planner::ur10_cart_moveResult::SUCCESS) {
-        ROS_WARN("move did not return success; code = %d", cart_result_.return_code);
+        ROS_WARN("did not return success; code = %d", cart_result_.return_code);
         return (int) cart_result_.return_code;
     }
 

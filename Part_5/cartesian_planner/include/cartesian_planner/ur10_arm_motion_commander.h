@@ -23,7 +23,7 @@ private:
     //messages to send/receive cartesian goals / results:
     cartesian_planner::ur10_cart_moveGoal cart_goal_;
     cartesian_planner::ur10_cart_moveResult cart_result_;    
-    std::vector <double> q_vec_; //holder for right-arm angles
+    std::vector <double> q_vec_; //holder for right-arm angles 
     geometry_msgs::PoseStamped tool_pose_stamped_, flange_pose_stamped_;
     //an action client to send goals to cartesian-move action server
     actionlib::SimpleActionClient<cartesian_planner::ur10_cart_moveAction> cart_move_action_client_; //("cartMoveActionServer", true);

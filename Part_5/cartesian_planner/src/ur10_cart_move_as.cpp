@@ -30,6 +30,7 @@
 Eigen::VectorXd g_q_vec_arm_Xd;
 vector<int> g_arm_joint_indices;
 vector<string> g_ur_jnt_names;
+const double SPEED_SCALE_FACTOR=1.0; //increase this to slow down motions
 
 const double ARM_ERR_TOL = 0.1; // tolerance btwn last joint commands and current arm pose
 // used to decide if last command is good start point for new path
@@ -46,11 +47,11 @@ void set_ur_jnt_names() {
     g_ur_jnt_names.push_back("wrist_3_joint");
 }
 double transition_time(Eigen::VectorXd dqvec) {
-    double t_max = fabs(dqvec[0]) / g_qdot_max_vec[0];
+    double t_max = SPEED_SCALE_FACTOR*fabs(dqvec[0]) / g_qdot_max_vec[0];
     //cout<<"qdot max: "<<qdot_max_vec_.transpose()<<endl;
     double ti;
     for (int i = 1; i < VECTOR_DIM; i++) {
-        ti = fabs(dqvec[i]) / g_qdot_max_vec[i];
+        ti = SPEED_SCALE_FACTOR*fabs(dqvec[i]) / g_qdot_max_vec[i];
         if (ti > t_max) t_max = ti;
     }
     return t_max;
@@ -72,10 +73,13 @@ void stuff_trajectory(std::vector<Eigen::VectorXd> qvecs, trajectory_msgs::Joint
         new_trajectory.joint_names.push_back(g_ur_jnt_names[i].c_str());
     }
 
-    //new_trajectory.header.stamp = ros::Time::now();  
+    //try imposing a time delay on first point to work around ros_controller complaints
+    double t_start=0.05;
+
+    new_trajectory.header.stamp = ros::Time::now(); //+ros::Duration(t_start);  
     Eigen::VectorXd q_start, q_end, dqvec;
     double del_time;
-    double net_time = 0.0;
+    double net_time = t_start;
     q_start = qvecs[0];
     q_end = qvecs[0];
     //cout<<"stuff_traj: start pt = "<<q_start.transpose()<<endl; 
@@ -108,7 +112,15 @@ void stuff_trajectory(std::vector<Eigen::VectorXd> qvecs, trajectory_msgs::Joint
         trajectory_point1.time_from_start = ros::Duration(net_time);
         new_trajectory.points.push_back(trajectory_point1);
     }
-
+  //display trajectory:
+    for (int iq = 1; iq < qvecs.size(); iq++) {
+        cout<<"traj pt: ";
+                for (int j=0;j<VECTOR_DIM;j++) {
+                    cout<<new_trajectory.points[iq].positions[j]<<", ";
+                }
+        cout<<endl;
+        cout<<"arrival time: "<<new_trajectory.points[iq].time_from_start.toSec()<<endl;
+    }
 }
 
 //parse the names in joint_names vector; find the corresponding indices of arm joints
@@ -559,8 +571,8 @@ void ArmMotionInterface::execute_planned_move(void) {
     }
 
     // convert path to a trajectory:
-    //baxter_traj_streamer_.stuff_trajectory(optimal_path_, des_trajectory_); //convert from vector of poses to trajectory message   
-    stuff_trajectory(optimal_path_, des_trajectory_);
+    //stuff_trajectory(optimal_path_, des_trajectory_);
+    des_trajectory_.header.stamp = ros::Time::now();
     js_goal_.trajectory = des_trajectory_;
     //computed_arrival_time_ = des_trajectory_.points.back().time_from_start.toSec();
     ROS_INFO("sending action request");
@@ -614,12 +626,13 @@ void ArmMotionInterface::rescale_planned_trajectory_time(double time_stretch_fac
     for (int i = 0; i < npts; i++) {
         arrival_time_sec = des_trajectory_.points[i].time_from_start.toSec();
         new_arrival_time_sec = arrival_time_sec*time_stretch_factor;
+        ROS_INFO("pnt %d: arrival time: %f",i,new_arrival_time_sec);
         ros::Duration arrival_duration(new_arrival_time_sec); //convert time to a ros::Duration type
         des_trajectory_.points[i].time_from_start = arrival_duration;
     }
     computed_arrival_time_ = des_trajectory_.points.back().time_from_start.toSec();
     cart_result_.computed_arrival_time = computed_arrival_time_;
-
+    ROS_INFO("computed arrival time = %f",cart_result_.computed_arrival_time);
     cart_result_.return_code = cartesian_planner::ur10_cart_moveResult::SUCCESS;
     cart_move_as_.setSucceeded(cart_result_);
 }
