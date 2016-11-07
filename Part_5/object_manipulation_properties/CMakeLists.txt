@@ -32,7 +32,8 @@ cs_add_library(object_manipulation_properties src/object_manipulation_properties
 # Executables: uncomment the following and edit arguments to compile new nodes
 # may add more of these lines for more nodes from the same package
 cs_add_executable(object_manipulation_properties_test_main src/object_manipulation_properties_test_main.cpp)
-
+cs_add_executable(object_manipulation_query_svc src/object_manipulation_query_svc.cpp)
+cs_add_executable(example_object_manip_query_client src/example_object_manip_query_client.cpp)
 #the following is required, if desire to link a node in this package with a library created in this same package
 # edit the arguments to reference the named node and named library within this package
 target_link_libraries(object_manipulation_properties_test_main object_manipulation_properties)

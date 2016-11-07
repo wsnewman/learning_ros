@@ -1,0 +1,69 @@
+#object_grabber action message
+#pass in an object code and the object's frame (w/rt named frame_id)
+#object_grabber will plan approach, grasp and lift of object
+#returns codes regarding outcome
+
+int32 UPRIGHT_CYLINDER = 1
+int32 GRAB_UPRIGHT_CYLINDER = 1 #synonym
+int32 TOY_BLOCK = 2
+int32 GRAB_TOY_BLOCK = 2 #synonym
+int32 GRAB_W_TOOL_Z_APPROACH = 2 #another synonym
+int32 PLACE_UPRIGHT_CYLINDER = 3 #new drop-off command
+int32 PLACE_TOY_BLOCK = 4 #drop-off toy block
+int32 DROPOFF_ALONG_TOOL_Z = 4 #synonym
+
+int32 MOVE_FLANGE_TO = 5 #specify flange pose to reach
+int32 FINE_MOVE_FLANGE_TO = 6 #precision move to specified flange pose
+int32 MOVE_TO_PRE_POSE = 7 # get hand out of way of camera
+int32 JSPACE_MOVE_FLANGE_TO = 8 # joint-space move to specified flange pose
+
+int32 CLOSE_GRIPPER = 100  #commands to open/close gripper; should specify test value
+int32 OPEN_GRIPPER = 101
+
+#moved these properties to object_manipulation_properties package/library
+#float64 TOY_BLOCK_APPROACH_DIST = 0.05
+#expect w/ gripper closed on toy block, finger separation should be more than this value:
+#float64 TOY_BLOCK_GRIPPER_CLOSE_TEST_VAL = 80.0
+
+
+#add more objects here...
+
+
+
+#goal:
+int32 action_code
+int32 object_id
+geometry_msgs/PoseStamped desired_frame  
+#float64 gripper_test_val
+
+---
+#result definition
+#  response codes...
+int32 SUCCESS=0
+int32 OBJECT_ACQUIRED=0
+int32 FAILED_CANNOT_REACH=1
+int32 FAILED_CANNOT_APPROACH=2
+int32 FAILED_CANNOT_REACH_GRASP_POSE=3
+int32 FAILED_CANNOT_REACH_DEPART_POSE=4
+int32 FAILED_OBJECT_NOT_IN_GRIPPER=5
+int32 FAILED_OBJECT_UNKNOWN=6
+int32 OBJECT_GRABBER_BUSY=7
+int32 OBJECT_GRABBER_CANCELLED=8
+int32 FAILED_CANNOT_REACH_DROPOFF_POSE=9
+int32 FAILED_CANNOT_REACH_DROPOFF_APPROACH=10
+int32 FAILED_CANNOT_REACH_POSE_CARTESIAN_MOVE=11
+int32 FAILED_CANNOT_REACH_JSPACE_MOVE=12
+int32 FAILED_CANNOT_MOVE_CARTESIAN_FINE=13
+int32 FAILED_CANNOT_MOVE_TO_PRE_POSE=14
+int32 ACTION_CODE_UNKNOWN=15
+int32 GRIPPER_IS_OPEN=16
+int32 GRIPPER_IS_CLOSED=17
+int32 GRIPPER_FAILURE=18
+int32 PENDING=19
+int32 OBJECT_DROPPED_OFF = 20
+
+int32 return_code
+geometry_msgs/PoseStamped des_flange_pose_stamped_wrt_torso
+---
+#feedback: optional; 
+int32 fdbk

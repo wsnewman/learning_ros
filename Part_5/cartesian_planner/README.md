@@ -20,7 +20,15 @@ to maintain orientation of the tool flange pointing up while translating at y-de
 These values can be edited to test alternative motions.
 
 ## Running tests/demos
-`rosrun  cartesian_planner example_arm7dof_cart_path_planner_main`    
+`rosrun  cartesian_planner example_arm7dof_cart_path_planner_main`
+
+For Baxter robot:
+`roslaunch baxter_gazebo baxter_world.launch`
+`rosrun baxter_tools enable_robot.py -e`
+Start a trajectory-interpolation action server:
+`rosrun baxter_trajectory_streamer rt_arm_as`
+`rosrun  cartesian_planner baxter_rt_arm_cart_move_as` 
+`rosrun  cartesian_planner example_baxter_rt_arm_cart_move_ac`   
 
 or, for UR10, start up the UR10 Gazebo simulation (or real robot):
 `roslaunch ur_gazebo ur10.launch`

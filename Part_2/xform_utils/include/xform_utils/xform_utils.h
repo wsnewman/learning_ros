@@ -44,6 +44,8 @@ public:
    void printStampedTf(tf::StampedTransform sTf);
    void printStampedPose(geometry_msgs::PoseStamped stPose); 
    void printPose(geometry_msgs::Pose pose);
+   //overload printPose to work with either Pose or PoseStamped:
+   void printPose(geometry_msgs::PoseStamped stPose) {printStampedPose(stPose);}
 };
 
 #endif

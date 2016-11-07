@@ -1,0 +1,73 @@
+#objectManipulationQuery service message codes
+#send request as a query, e.g., what types of grasp strategies are available
+# for specified object_ID and gripper_ID? 
+
+
+uint8 GRASP_STRATEGY_OPTIONS_QUERY = 1
+uint8 APPROACH_STRATEGY_OPTIONS_QUERY = 2
+uint8 DEPART_STRATEGY_OPTIONS_QUERY = 3
+
+uint8 GET_GRASP_POSE_TRANSFORMS = 10
+uint8 GET_APPROACH_POSE_TRANSFORMS = 11
+uint8 GET_DEPART_POSE_TRANSFORMS =12
+
+#grasp options
+int32 GRASP_FROM_ABOVE = 0 #grasp object from above, e.g. toy block; applicable to vacuum-gripper approach
+                                #along direction normal to object towards grasp pose
+int32 GRASP_FROM_SIDE = 1 #e.g., grab a bottle in power grasp, or slide a hook sideways in/under object 
+
+#approach/depart options: must be same as corresponding response codes below
+int32 APPROACH_Z_TOOL= 11  #e.g., descend vertically to part along tool-z axis
+int32 DEPART_Z_TOOL = 12   # depart from object along neg tool-z axis
+int32 APPROACH_LATERAL_SLIDE = 21 #approach grasp pose by sliding along axis btwn fingertips
+int32 DEPART_LATERAL_SLIDE = 22  #depart grasp pose by sliding along axis btwn fingertips
+
+int32 object_ID
+int32 gripper_ID
+uint8 query_code
+int32 grasp_option
+
+---
+int32 QUERY_SUCCESSFUL =0
+int32 QUERY_NOT_VALID = 1
+int32 APPROACH_Z_TOOL= 11  #e.g., descend vertically to part along tool-z axis
+int32 DEPART_Z_TOOL = 12   # depart from object along neg tool-z axis
+int32 APPROACH_LATERAL_SLIDE = 21 #approach grasp pose by sliding along axis btwn fingertips
+int32 DEPART_LATERAL_SLIDE = 22  #depart grasp pose by sliding along axis btwn fingertips
+
+int32 GRASP_FROM_ABOVE = 0 #grasp object from above, e.g. toy block; applicable to vacuum-gripper approach
+                                #along direction normal to object towards grasp pose
+int32 GRASP_FROM_SIDE = 1 #e.g., grab a bottle in power grasp, or slide a hook sideways in/under object 
+
+#int32 GRASP_OPTIONS_TOOL_ROTZ = 1 #cue that other grasp options correspond to tool-z rotation, e.g. grabbing a ball,
+                                  #or vacuum-gripper rot about z axis options
+#int32 GRASP_OPTIONS_OBJECT_ROTZ = 2 #cue that can grab/approach object from arbitrary angle about object z-axis,
+                                 #e.g. power grasp of a bottle does not care about polar angle of grasp
+#int32 GRASP_OPTIONS_DZ = 3 #for approach_z_tool, can specify range of z values relative to object frame:
+
+bool valid_reply
+int32[] grasp_strategy_options  #these are codes: GRASP_FROM_ABOVE or GRASP_FROM_SIDE, 
+    #APPROACH_Z_TOOL, APPROACH_LATERAL_SLIDE...options relevant to inquiry
+
+
+#return grasp transform for specified object, specified gripper, and specified grasp strategy
+#if this field is returned empty, then the specified gripper cannot grasp the specified object
+#alternatively, may have multiple, discrete options--with tolerances
+geometry_msgs/Pose[] gripper_pose_options  #for a given grasp strategy, e.g. from above, can still have
+                                               #discrete possibilities, e.g. 4 poses for a square block,
+                                               #2 poses for a long block; 6 poses for a hexagonal block, etc
+                                               # can be as simple as unique required grasp pose
+#re-use gripper_pose_options for approach and depart inquiries
+#geometry_msgs/PoseStamped des_depart_transform  #e.g., pure depart along z-axis is same xform, regardless of grasp pose
+#geometry_msgs/PoseStamped des_approach_transform #ditto
+#tolerances on grasp pose: can set these to zero by default--> mandates use of specified grasp pose(s)
+#can specify these tolerances for each listed, discrete grasp solution
+#or, if length=0, do not allow tolerances for any listed grasp transform
+float64[] tool_rotz_max        #valid grasp options may include range of tool-z-rot angles, e.g. grasping ball from above
+float64[] tool_rotz_min        #can specify min and max tool-z-rot angles
+float64[] object_rotz_max      #e.g., can approach an upright cylinder from the side, w/ arbitrary radial approach dir
+float64[] object_rotz_min      #can specify polar angle range allowed for such approach
+float64[] tool_dz_max           #fingertips/gripper origin displacement along tool-z has some tolerance, min-max
+float64[] tool_dz_min          #relative to nominal grasp pose 
+float64[] tool_dslide_max      #tolerance, +/- for grasp in tool lateral direction
+float64[] tool_dslide_min

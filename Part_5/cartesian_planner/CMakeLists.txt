@@ -40,11 +40,12 @@ cs_add_executable(example_arm7dof_cart_path_planner_main2 src/example_arm7dof_ca
 cs_add_executable(example_arm7dof_cart_path_planner_main3 src/example_arm7dof_cart_path_planner_main3.cpp)
 #cs_add_executable(plan_playfile src/plan_playfile.cpp)
 cs_add_executable(baxter_cart_move_as src/baxter_cart_move_as.cpp)
+cs_add_executable(baxter_rt_arm_cart_move_as src/baxter_rt_arm_cart_move_as.cpp)
 cs_add_executable(baxter_cart_move_action_client src/example_baxter_cart_move_action_client.cpp)
 #cs_add_executable(baxter_cart_move_action_client2 src/example_baxter_cart_move_action_client2.cpp)
 #cs_add_executable(baxter_cart_move_action_client3 src/example_baxter_cart_move_action_client3.cpp)
 cs_add_executable(baxter_cart_move_action_client_w_gripper src/example_baxter_cart_move_action_client_w_gripper.cpp)
-
+cs_add_executable(example_baxter_rt_arm_cart_move_ac src/example_baxter_rt_arm_cart_move_ac.cpp)
 cs_add_executable(ur10_cart_move_action_client src/example_ur10_cart_move_action_client.cpp)
 # Executables: uncomment the following and edit arguments to compile new nodes
 # may add more of these lines for more nodes from the same package
@@ -61,6 +62,8 @@ target_link_libraries(example_arm7dof_cart_path_planner_main3 arm7dof_cartesian_
 #target_link_libraries(plan_playfile cartesian_planner ${catkin_LIBRARIES})
 target_link_libraries(example_baxter_cart_path_planner baxter_cartesian_planner ${catkin_LIBRARIES})
 target_link_libraries(baxter_cart_move_as baxter_cartesian_planner ${catkin_LIBRARIES})
+
+target_link_libraries(baxter_rt_arm_cart_move_as baxter_cartesian_planner ${catkin_LIBRARIES})
 target_link_libraries(baxter_cart_move_action_client baxter_arm_motion_commander ${catkin_LIBRARIES})
 #target_link_libraries(baxter_cart_move_action_client2 baxter_arm_motion_commander ${catkin_LIBRARIES})
 #target_link_libraries(baxter_cart_move_action_client3 baxter_arm_motion_commander ${catkin_LIBRARIES})

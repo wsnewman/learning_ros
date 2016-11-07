@@ -1,0 +1,3 @@
+<launch>
+<rosparam command="load" file="$(find example_parameter_server)/launch/jnt1_gains.yaml" />
+</launch>
