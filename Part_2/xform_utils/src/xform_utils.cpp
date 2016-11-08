@@ -65,6 +65,13 @@ Eigen::Affine3d XformUtils::transformPoseToEigenAffine3d(geometry_msgs::Pose pos
     return affine;
 }
 
+   //convert a stamped TF to and Eigen::Affine3d; child and parent frame id's are lost
+   Eigen::Affine3d XformUtils::transformStampedTfToEigenAffine3d(tf::StampedTransform sTf) {
+       tf::Transform transform = get_tf_from_stamped_tf(sTf);
+       Eigen::Affine3d affine = transformTFToAffine3d(transform);
+       return affine;
+   } 
+
 Eigen::Affine3f XformUtils::transformTFToAffine3f(const tf::Transform &t) {
     Eigen::Affine3f e;
     // treat the Eigen::Affine as a 4x4 matrix:
@@ -81,6 +88,7 @@ Eigen::Affine3f XformUtils::transformTFToAffine3f(const tf::Transform &t) {
     return e;
 }
 
+//convert a Tf to an Affine3d; knowledge of named parent and child frames is lost
 Eigen::Affine3d XformUtils::transformTFToAffine3d(const tf::Transform &t) {
     Eigen::Affine3d e;
     // treat the Eigen::Affine as a 4x4 matrix:
@@ -181,6 +189,7 @@ void XformUtils::printTf(tf::Transform tf) {
             << quat.z() << ", " << quat.w() << endl);
 }
 
+//compute C_stf = A_stf*B_stf; 
 bool XformUtils::multiply_stamped_tfs(tf::StampedTransform A_stf,
         tf::StampedTransform B_stf, tf::StampedTransform &C_stf) {
 
