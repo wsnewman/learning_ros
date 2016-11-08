@@ -1,3 +1,4 @@
+-0.3
 // ur10_cart_move_as: 
 // wsn,  Nov, 2016
 // action server to accept commands and perform planning and motion requests
@@ -431,7 +432,7 @@ void ArmMotionInterface::executeCB(const actionlib::SimpleActionServer<cartesian
 //CONSTRUCTOR: pass in a node handle and perform initializations (w/ initializers)
 
 ArmMotionInterface::ArmMotionInterface(ros::NodeHandle* nodehandle) : nh_(*nodehandle),
-cart_move_as_(*nodehandle, "cart_move_action_server", boost::bind(&ArmMotionInterface::executeCB, this, _1), false),
+cart_move_as_(*nodehandle, "cartMoveActionServer", boost::bind(&ArmMotionInterface::executeCB, this, _1), false),
 action_client_("/arm_controller/follow_joint_trajectory", true)
  { // constructor
     ROS_INFO("in class constructor of ArmMotionInterface");

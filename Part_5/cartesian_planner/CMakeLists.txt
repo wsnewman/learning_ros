@@ -46,12 +46,12 @@ cs_add_executable(baxter_cart_move_action_client src/example_baxter_cart_move_ac
 #cs_add_executable(baxter_cart_move_action_client3 src/example_baxter_cart_move_action_client3.cpp)
 cs_add_executable(baxter_cart_move_action_client_w_gripper src/example_baxter_cart_move_action_client_w_gripper.cpp)
 cs_add_executable(example_baxter_rt_arm_cart_move_ac src/example_baxter_rt_arm_cart_move_ac.cpp)
-cs_add_executable(ur10_cart_move_action_client src/example_ur10_cart_move_action_client.cpp)
+#cs_add_executable(ur10_cart_move_action_client src/example_ur10_cart_move_action_client.cpp)
 # Executables: uncomment the following and edit arguments to compile new nodes
 # may add more of these lines for more nodes from the same package
 # cs_add_executable(example src/example.cpp)
 cs_add_executable(example_ur10_cart_path_planner src/example_ur10_cart_path_planner_main.cpp)
-cs_add_executable(ur10_cart_move_as src/ur10_cart_move_as.cpp)
+#cs_add_executable(ur10_cart_move_as src/ur10_cart_move_as.cpp)
 #the following is required, if desire to link a node in this package with a library created in this same package
 # edit the arguments to reference the named node and named library within this package
 # target_link_libraries(example my_lib)
@@ -69,9 +69,9 @@ target_link_libraries(baxter_cart_move_action_client baxter_arm_motion_commander
 #target_link_libraries(baxter_cart_move_action_client3 baxter_arm_motion_commander ${catkin_LIBRARIES})
 target_link_libraries(baxter_cart_move_action_client_w_gripper baxter_arm_motion_commander ${catkin_LIBRARIES})
 
-target_link_libraries(ur10_cart_move_action_client ur10_arm_motion_commander ${catkin_LIBRARIES})
+#target_link_libraries(ur10_cart_move_action_client ur10_arm_motion_commander ${catkin_LIBRARIES})
 target_link_libraries(example_ur10_cart_path_planner ur10_cartesian_planner ${catkin_LIBRARIES})
-target_link_libraries(ur10_cart_move_as ur10_cartesian_planner ${catkin_LIBRARIES})
+#target_link_libraries(ur10_cart_move_as ur10_cartesian_planner ${catkin_LIBRARIES})
 
 cs_install()
 cs_export()

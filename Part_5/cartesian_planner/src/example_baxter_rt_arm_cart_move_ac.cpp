@@ -9,6 +9,8 @@
 #include <Eigen/Eigen>
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
+#include <xform_utils/xform_utils.h>
+XformUtils xformUtils;
 
 //define a class to encapsulate some of the tedium of populating and sending goals,
 // and interpreting responses
@@ -45,9 +47,9 @@ public:
     int plan_path_current_to_goal_pose(geometry_msgs::PoseStamped des_pose);
     int plan_path_current_to_goal_dp_xyz(Eigen::Vector3d dp_displacement);
 
-    //utilities to convert between affine and pose
-    Eigen::Affine3d transformPoseToEigenAffine3d(geometry_msgs::Pose pose); 
-    geometry_msgs::Pose transformEigenAffine3dToPose(Eigen::Affine3d e);
+    //utilities to convert between affine and pose; use xformUtils instead
+    //Eigen::Affine3d transformPoseToEigenAffine3d(geometry_msgs::Pose pose); 
+    //geometry_msgs::Pose transformEigenAffine3dToPose(Eigen::Affine3d e);
 
 };
 
@@ -77,6 +79,7 @@ void ArmMotionCommander::doneCb_(const actionlib::SimpleClientGoalState& state,
     cart_result_=*result;
 }
 
+/* use xformUtilsinstead
 Eigen::Affine3d ArmMotionCommander::transformPoseToEigenAffine3d(geometry_msgs::Pose pose) {
     Eigen::Affine3d affine;
 
@@ -118,7 +121,7 @@ geometry_msgs::Pose ArmMotionCommander::transformEigenAffine3dToPose(Eigen::Affi
 
     return pose;
 }
-
+*/
 
 void ArmMotionCommander::send_test_goal(void) {
     ROS_INFO("sending a test goal");
@@ -197,7 +200,7 @@ int ArmMotionCommander::plan_jspace_path_current_to_qgoal(Eigen::VectorXd q_des_
 int ArmMotionCommander::plan_path_current_to_goal_pose(geometry_msgs::PoseStamped des_pose) {
     
     ROS_INFO("requesting a cartesian-space motion plan");
-    cart_goal_.command_code = cartesian_planner::cart_moveGoal::PLAN_JSPACE_PATH_CURRENT_TO_CART_GRIPPER_POSE;
+    cart_goal_.command_code = cartesian_planner::cart_moveGoal::PLAN_PATH_CURRENT_TO_GOAL_GRIPPER_POSE;
     cart_goal_.des_pose_gripper = des_pose;
     cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&ArmMotionCommander::doneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired
     finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(2.0));
@@ -346,6 +349,7 @@ int main(int argc, char** argv) {
     arm_motion_commander.send_test_goal(); // send a test command
     
     //send a command to plan a joint-space move to pre-defined pose:
+    ROS_INFO("commanding move to waiting pose");
     rtn_val=arm_motion_commander.plan_move_to_pre_pose();
     
     //send command to execute planned motion
@@ -362,7 +366,7 @@ int main(int argc, char** argv) {
     
     //increment all of the joint angles by a fixed amt:
     for (int i=0;i<7;i++) joint_angles[i]+=0.2;
-    
+    ROS_INFO("joint-space move, all joints +0.2 rad");
     //try planning a joint-space motion to this new joint-space pose:
     rtn_val=arm_motion_commander.plan_jspace_path_current_to_qgoal(joint_angles);
 
@@ -373,19 +377,22 @@ int main(int argc, char** argv) {
     rtn_val=arm_motion_commander.request_q_data();
     
     //return to pre-defined pose:
+    ROS_INFO("back to waiting pose");
     rtn_val=arm_motion_commander.plan_move_to_pre_pose();
     rtn_val=arm_motion_commander.execute_planned_path();    
 
     //get tool pose
     rtn_val = arm_motion_commander.request_tool_pose();
     tool_pose = arm_motion_commander.get_tool_pose_stamped();
+    ROS_INFO("tool pose is: ");
+    xformUtils.printPose(tool_pose);
     //alter the tool pose:
     std::cout<<"enter 1: ";
     int ans;
     std::cin>>ans;
     //tool_pose.pose.position.z -= 0.2; // descend 20cm, along z in torso frame
-    ROS_INFO("translating specified dp");
-    tool_pose.pose.position.y += 0.5; // move 20cm, along y in torso frame
+    ROS_INFO("planning Cartesian move to goal pose w/ dpx = 0.2, dpy =0.2");
+    //tool_pose.pose.position.y -= 0.2; // move 20cm, along y in torso frame
     tool_pose.pose.position.x += 0.2; // move 20cm, along x in torso frame
     // send move plan request:
     rtn_val=arm_motion_commander.plan_path_current_to_goal_pose(tool_pose);
@@ -393,7 +400,8 @@ int main(int argc, char** argv) {
     rtn_val=arm_motion_commander.execute_planned_path();
     
     //try vector cartesian displacement at fixed orientation:
-    std::cout<<"enter delta-z: ";
+    ROS_INFO("will plan vertical motion");
+    std::cout<<"enter desired delta-z: ";
     double delta_z;
     std::cin>>delta_z;    
     ROS_INFO("moving dz = %f",delta_z);

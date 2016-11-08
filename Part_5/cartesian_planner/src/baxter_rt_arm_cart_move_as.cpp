@@ -8,7 +8,7 @@
 // move goals are specified as geometry_msgs::PoseStamped;
 // it is assumed that the move goals refer to the tool frame with respect to the torso frame
 
-//NOTE: ARM_PLAN_PATH_CURRENT_TO_GOAL_POSE does: unpack_goal_pose(),
+//NOTE: PLAN_PATH_CURRENT_TO_GOAL_GRIPPER_POSE does: unpack_goal_pose(),
 // which does:     a_flange_end_ = a_tool_end_*A_tool_wrt_flange_.inverse();
 // then ik functions are w/rt desired flange frame
 
@@ -75,6 +75,9 @@ private:
     //current tool poses w/rt torso:
     geometry_msgs::Pose current_gripper_pose_, current_flange_pose_; //cmd for right-arm tool pose
     geometry_msgs::PoseStamped current_gripper_stamped_pose_,current_flange_stamped_pose_; //cmd for right-arm tool pose
+    tf::StampedTransform generic_gripper_frame_wrt_tool_flange_stf_;
+    tf::StampedTransform torso_wrt_system_ref_frame_stf_;   
+    tf::TransformListener* tfListener_; 
 
     Eigen::Affine3d goal_gripper_affine_,goal_flange_affine_;
 
@@ -176,8 +179,8 @@ public:
     void compute_tool_stamped_pose(void); //helper for RT_ARM_GET_TOOL_POSE
     void compute_flange_stamped_pose(void); //helper for RT_ARM_GET_FLANGE_POSE
 
-    // for RT_ARM_PLAN_PATH_CURRENT_TO_GOAL_POSE
-    bool plan_path_current_to_goal_pose(); //uses goal.des_pose_gripper_right to plan a cartesian path
+    // for PLAN_PATH_CURRENT_TO_GOAL_GRIPPER_POSE
+    bool plan_path_current_to_goal_gripper_pose(); //uses goal.des_pose_gripper_right to plan a cartesian path
     bool plan_path_current_to_goal_flange_pose(); //interprets goal.des_pose_flange_right as a des FLANGE pose to plan a cartesian path
     //plan a joint-space path from current jspace pose to some soln of desired toolflange cartesian pose
     bool plan_jspace_path_current_to_cart_pose();
@@ -262,7 +265,7 @@ void ArmMotionInterface::executeCB(const actionlib::SimpleActionServer<cartesian
             }
             break;
         case cartesian_planner::cart_moveGoal::PLAN_PATH_CURRENT_TO_GOAL_GRIPPER_POSE:
-            plan_path_current_to_goal_pose();
+            plan_path_current_to_goal_gripper_pose();
             break;
         case cartesian_planner::cart_moveGoal::PLAN_PATH_CURRENT_TO_GOAL_FLANGE_POSE:
             plan_path_current_to_goal_flange_pose();
@@ -334,8 +337,44 @@ traj_streamer_action_client_("rightArmTrajActionServer", true) { // constructor
     path_is_valid_ = false;
     path_id_ = 0;
     // can also do tests/waits to make sure all required services, topics, etc are alive
+    
+    tfListener_ = new tf::TransformListener;  //create a transform listener and assign its pointer
 
-    A_tool_wrt_flange_ = baxter_fwd_solver_.get_affine_tool_wrt_flange();
+    bool tferr=true;
+    ROS_INFO("waiting for tf between generic gripper frame and tool flange...");
+
+    while (tferr) {
+        tferr=false;
+        try {
+                tfListener_->lookupTransform("right_hand", "generic_gripper_frame", ros::Time(0), generic_gripper_frame_wrt_tool_flange_stf_);
+            } catch(tf::TransformException &exception) {
+                ROS_WARN("%s; retrying...", exception.what());
+                tferr=true;
+                ros::Duration(0.5).sleep(); // sleep for half a second
+                ros::spinOnce();                
+            }   
+    }
+    ROS_INFO("tf is good for generic gripper frame w/rt right tool flange");
+    xformUtils.printStampedTf(generic_gripper_frame_wrt_tool_flange_stf_);
+    
+    
+    tferr=true;
+    ROS_INFO("waiting for tf between system_ref_frame and torso...");
+
+    while (tferr) {
+        tferr=false;
+        try {
+                tfListener_->lookupTransform("system_ref_frame", "torso", ros::Time(0), torso_wrt_system_ref_frame_stf_);
+            } catch(tf::TransformException &exception) {
+                ROS_WARN("%s; retrying...", exception.what());
+                tferr=true;
+                ros::Duration(0.5).sleep(); // sleep for half a second
+                ros::spinOnce();                
+            }   
+    }
+    ROS_INFO("tf is good for generic gripper frame w/rt right tool flange");    
+    xformUtils.printStampedTf(torso_wrt_system_ref_frame_stf_);
+    //A_tool_wrt_flange_ = baxter_fwd_solver_.get_affine_tool_wrt_flange();
 
     //check that joint-space interpolator service is connected:
     // attempt to connect to the right-arm trajectory action server:
@@ -442,6 +481,7 @@ void ArmMotionInterface::execute_planned_move(void) {
         cart_result_.return_code = cartesian_planner::cart_moveResult::PATH_NOT_VALID;
         ROS_WARN("attempted to execute invalid path!");
         cart_move_as_.setAborted(cart_result_); // tell the client we have given up on this goal; send the result message as well
+        return;
     }
 
     // convert path to a trajectory:
@@ -577,12 +617,20 @@ bool ArmMotionInterface::plan_jspace_path_qstart_to_qend(Eigen::VectorXd q_start
 
 //this is a pretty general function:
 // goal contains a desired tool pose;
-// path is planned from current joint state to some joint state that achieves desired tool pose
+// Cartesian path is planned from current joint state to some joint state that achieves desired tool pose
+// assume gripper pose is in frame "generic_gripper_frame"; need to transform this to Baxter gripper frame
+// also, frame_id of this pose needs to get converted to "torso" frame
 
-bool ArmMotionInterface::plan_path_current_to_goal_pose() {
-    ROS_INFO("computing a cartesian trajectory to right-arm goal pose");
+
+bool ArmMotionInterface::plan_path_current_to_goal_gripper_pose() {
+    ROS_INFO("computing a cartesian trajectory to gripper goal pose");
     //unpack the goal pose:
     goal_gripper_pose_ = cart_goal_.des_pose_gripper;
+    //convert this to a tf for transformations:
+    tf::StampedTransform gripper_stf = xformUtils.convert_poseStamped_to_stampedTransform(goal_gripper_pose_, "generic_gripper_frame"); 
+    
+    //transform it to torso frame for IK:
+    
 
     goal_gripper_affine_ = xformUtils.transformPoseToEigenAffine3d(goal_gripper_pose_.pose);
     ROS_INFO("tool frame goal: ");
