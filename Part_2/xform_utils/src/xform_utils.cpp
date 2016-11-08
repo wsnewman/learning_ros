@@ -160,6 +160,8 @@ tf::StampedTransform XformUtils::convert_poseStamped_to_stampedTransform(geometr
  geometry_msgs::Point position = pose.position;
  geometry_msgs::Quaternion orientation = pose.orientation;
  transform.setOrigin( tf::Vector3(position.x, position.y, position.z) );
+ cout<<"reference frame: "<<stPose.header.frame_id<<endl;
+ printStampedPose(stPose);
  transform.setRotation( tf::Quaternion( orientation.x, orientation.y, orientation.z, orientation.w) );
  tf::StampedTransform stTransform(transform, stPose.header.stamp, stPose.header.frame_id,child_frame_id);
  return stTransform;

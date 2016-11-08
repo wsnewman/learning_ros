@@ -44,7 +44,7 @@ public:
     
     Eigen::VectorXd get_joint_angles(void); 
     int plan_jspace_path_current_to_qgoal(Eigen::VectorXd q_des_vec);  
-    int plan_path_current_to_goal_pose(geometry_msgs::PoseStamped des_pose);
+    int plan_path_current_to_goal_gripper_pose(geometry_msgs::PoseStamped des_pose);
     int plan_path_current_to_goal_dp_xyz(Eigen::Vector3d dp_displacement);
 
     //utilities to convert between affine and pose; use xformUtils instead
@@ -197,10 +197,12 @@ int ArmMotionCommander::plan_jspace_path_current_to_qgoal(Eigen::VectorXd q_des_
     
 }
 
-int ArmMotionCommander::plan_path_current_to_goal_pose(geometry_msgs::PoseStamped des_pose) {
+int ArmMotionCommander::plan_path_current_to_goal_gripper_pose(geometry_msgs::PoseStamped des_pose) {
     
     ROS_INFO("requesting a cartesian-space motion plan");
     cart_goal_.command_code = cartesian_planner::cart_moveGoal::PLAN_PATH_CURRENT_TO_GOAL_GRIPPER_POSE;
+    ROS_INFO("des_pose: ");
+    xformUtils.printStampedPose(des_pose);
     cart_goal_.des_pose_gripper = des_pose;
     cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&ArmMotionCommander::doneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired
     finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(2.0));
@@ -395,7 +397,7 @@ int main(int argc, char** argv) {
     //tool_pose.pose.position.y -= 0.2; // move 20cm, along y in torso frame
     tool_pose.pose.position.x += 0.2; // move 20cm, along x in torso frame
     // send move plan request:
-    rtn_val=arm_motion_commander.plan_path_current_to_goal_pose(tool_pose);
+    rtn_val=arm_motion_commander.plan_path_current_to_goal_gripper_pose(tool_pose);
     //send command to execute planned motion
     rtn_val=arm_motion_commander.execute_planned_path();
     

@@ -77,7 +77,7 @@ private:
     geometry_msgs::PoseStamped current_gripper_stamped_pose_,current_flange_stamped_pose_; //cmd for right-arm tool pose
     tf::StampedTransform generic_gripper_frame_wrt_tool_flange_stf_;
     tf::StampedTransform torso_wrt_system_ref_frame_stf_;   
-    tf::TransformListener* tfListener_; 
+
 
     Eigen::Affine3d goal_gripper_affine_,goal_flange_affine_;
 
@@ -161,10 +161,8 @@ public:
     ~ArmMotionInterface(void) {
     }
 
-    //handy utilities, primarily used internally, but publicly accessible
-    //Eigen::Affine3d transformTFToEigen(const tf::Transform &t);
-    //Eigen::Affine3d transformPoseToEigenAffine3d(geometry_msgs::Pose pose);
-    //geometry_msgs::Pose transformEigenAffine3dToPose(Eigen::Affine3d e);
+    tf::TransformListener* tfListener_; //make listener available to main;
+    
     void display_affine(Eigen::Affine3d affine);
 
 
@@ -198,6 +196,8 @@ public:
     //bool jspace_path_planner_current_to_affine_goal(Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path);
     void rescale_planned_trajectory_time(double time_stretch_factor);
     bool refine_cartesian_path_soln();
+    //geometry_msgs/PoseStamped des_pose_gripper
+    Eigen::Affine3d xform_gripper_pose_to_flange_wrt_torso(geometry_msgs::PoseStamped des_pose_gripper);
 
 };
 
@@ -341,6 +341,7 @@ traj_streamer_action_client_("rightArmTrajActionServer", true) { // constructor
     tfListener_ = new tf::TransformListener;  //create a transform listener and assign its pointer
 
     bool tferr=true;
+    int ntries=0;
     ROS_INFO("waiting for tf between generic gripper frame and tool flange...");
 
     while (tferr) {
@@ -351,7 +352,9 @@ traj_streamer_action_client_("rightArmTrajActionServer", true) { // constructor
                 ROS_WARN("%s; retrying...", exception.what());
                 tferr=true;
                 ros::Duration(0.5).sleep(); // sleep for half a second
-                ros::spinOnce();                
+                ros::spinOnce();      
+                ntries++;
+                if (ntries>5) ROS_WARN("did you launch baxter_static_transforms.launch?");
             }   
     }
     ROS_INFO("tf is good for generic gripper frame w/rt right tool flange");
@@ -615,27 +618,45 @@ bool ArmMotionInterface::plan_jspace_path_qstart_to_qend(Eigen::VectorXd q_start
 
 }
 
+//Baxter-robot specific:
+//IK is written for tool flange--called right_hand--w/rt torso frame
+//need to convert gripper request, generic name "generic_gripper_frame", expressed w/rt some frame (e.g. system_ref_frame)
+// into pose of flange w/rt torso frame;  return this result as an Eigen::Affine3d (though frame id's are lost)
+Eigen::Affine3d ArmMotionInterface::xform_gripper_pose_to_flange_wrt_torso(geometry_msgs::PoseStamped des_pose_gripper) {
+    Eigen::Affine3d affine_flange_wrt_torso;
+    tf::StampedTransform flange_stf, flange_wrt_torso_stf;
+    geometry_msgs::PoseStamped flange_gmps, flange_wrt_torso_gmps;
+    //convert des gripper pose to a stamped transform, so we can do more transforms
+    tf::StampedTransform gripper_stf = xformUtils.convert_poseStamped_to_stampedTransform(des_pose_gripper, "generic_gripper_frame"); 
+    //convert to transform of corresponding tool flange w/rt whatever reference frame_id
+    ROS_INFO("gripper_stf: ");
+    xformUtils.printStampedTf(gripper_stf);
+    ROS_INFO("flange_stf");
+    xformUtils.printStampedTf(flange_stf);    
+    bool mult_ok = xformUtils.multiply_stamped_tfs(generic_gripper_frame_wrt_tool_flange_stf_,gripper_stf,flange_stf);
+    if (!mult_ok) { ROS_WARN("stf multiply not legal! "); } //should not happen
+    //ROS_INFO("corresponding flange frame: ");
+    //xformUtils.printStampedTf(flange_stf);
+    //convert stamped ‘tf::StampedTransform to geometry_msgs::PoseStamped
+    flange_gmps = xformUtils.get_pose_from_stamped_tf(flange_stf);
+    //change the reference frame from whatever to "torso":
+    tfListener_->transformPose("torso", flange_gmps, flange_wrt_torso_gmps);    
+    ROS_INFO("corresponding flange frame w/rt torso frame: ");
+    xformUtils.printStampedPose(flange_wrt_torso_gmps);  
+    //convert this to an affine.  parent and child frame id's are lost, so we'll have to remember what this means
+    affine_flange_wrt_torso = xformUtils.transformPoseToEigenAffine3d(flange_wrt_torso_gmps);
+    return affine_flange_wrt_torso;
+}
+
 //this is a pretty general function:
 // goal contains a desired tool pose;
 // Cartesian path is planned from current joint state to some joint state that achieves desired tool pose
 // assume gripper pose is in frame "generic_gripper_frame"; need to transform this to Baxter gripper frame
 // also, frame_id of this pose needs to get converted to "torso" frame
-
-
 bool ArmMotionInterface::plan_path_current_to_goal_gripper_pose() {
-    ROS_INFO("computing a cartesian trajectory to gripper goal pose");
-    //unpack the goal pose:
-    goal_gripper_pose_ = cart_goal_.des_pose_gripper;
-    //convert this to a tf for transformations:
-    tf::StampedTransform gripper_stf = xformUtils.convert_poseStamped_to_stampedTransform(goal_gripper_pose_, "generic_gripper_frame"); 
+    ROS_INFO("computing a cartesian trajectory to gripper goal pose");   
+    goal_flange_affine_ = xform_gripper_pose_to_flange_wrt_torso(goal_gripper_pose_);
     
-    //transform it to torso frame for IK:
-    
-
-    goal_gripper_affine_ = xformUtils.transformPoseToEigenAffine3d(goal_gripper_pose_.pose);
-    ROS_INFO("tool frame goal: ");
-    display_affine(goal_gripper_affine_);
-    goal_flange_affine_ = goal_gripper_affine_ * A_tool_wrt_flange_.inverse();
     ROS_INFO("flange goal");
     display_affine(goal_flange_affine_);
     Vectorq7x1 q_start;
