@@ -57,4 +57,14 @@ int main(int argc, char** argv) {
     gripper_pose_stamped.header.frame_id = "torso";
     ROS_INFO("desired gripper pose: ");
     xformUtils.printStampedPose(gripper_pose_stamped); //display the output
+    
+    //create a StampedTransform naming the gripper frame:
+    geometry_msgs::PoseStamped test_pst;
+    std::string child_frame = "generic_gripper_frame";
+    cout<<"stf from stamped pose: "<<endl;
+            
+    //tf::StampedTransform gripper_stf = xformUtils.convert_poseStamped_to_stampedTransform(gripper_pose_stamped, child_frame);
+    tf::StampedTransform gripper_stf = xformUtils.convert_poseStamped_to_stampedTransform(gripper_pose_stamped, "generic_gripper_frame");    
+    xformUtils.printStampedTf(gripper_stf);
+
 }

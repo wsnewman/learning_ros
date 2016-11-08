@@ -143,6 +143,25 @@ geometry_msgs::PoseStamped XformUtils::get_pose_from_stamped_tf(tf::StampedTrans
     return stPose;
 }
 
+//tf::StampedTransform convert_poseStamped_to_stampedTransform(geometry_msgs::PoseStamped stPose, std::string child_frame_id); 
+tf::StampedTransform XformUtils::convert_poseStamped_to_stampedTransform(geometry_msgs::PoseStamped stPose, std::string child_frame_id) {
+
+ tf::Transform transform;
+ geometry_msgs::Pose pose = stPose.pose;
+
+ geometry_msgs::Point position = pose.position;
+ geometry_msgs::Quaternion orientation = pose.orientation;
+ transform.setOrigin( tf::Vector3(position.x, position.y, position.z) );
+ transform.setRotation( tf::Quaternion( orientation.x, orientation.y, orientation.z, orientation.w) );
+ tf::StampedTransform stTransform(transform, stPose.header.stamp, stPose.header.frame_id,child_frame_id);
+ return stTransform;
+}
+
+
+void XformUtils::test_stf(geometry_msgs::PoseStamped stPose) {
+    printStampedPose(stPose);
+}
+
 void XformUtils::printTf(tf::Transform tf) {
     tf::Vector3 tfVec;
     tf::Matrix3x3 tfR;
@@ -240,4 +259,6 @@ void XformUtils::printStampedPose(geometry_msgs::PoseStamped stPose) {
             << stPose.pose.orientation.z << ", " << stPose.pose.orientation.w << endl);
 }
 
-
+void XformUtils::printAffine(Eigen::Affine3d affine) {
+    ROS_INFO_STREAM("origin: "<<affine.translation().transpose()<<endl);
+}
