@@ -30,7 +30,7 @@ const double q6_dot_max = 0.4;
 Eigen::VectorXd g_q_des; //want to get this via a topic/callback
 Eigen::VectorXd g_q_vec_actual, g_qdot_vec_actual;
 Vectorq7x1 g_q_actual_7x1;
-Eigen::VectorXd g_qdot_max_vec;
+//Eigen::VectorXd g_qdot_max_vec;
 Eigen::VectorXd J_transpose_f;
 Eigen::Vector3d g_f_sensor;
 double g_force_z=0.0;
@@ -155,6 +155,7 @@ int main(int argc, char **argv) {
     B_on_H = 1.0*I7x7;
     //B_on_H(6,6) = 2.0;
     //set max vel values; better would be to read these from parameter server
+    /*
     cout<<"g_qdot_max_vec..."<<endl;
     g_qdot_max_vec= q_vec_err;
     cout<<"assign vel limits..."<<endl;
@@ -166,7 +167,7 @@ int main(int argc, char **argv) {
     g_qdot_max_vec[5] = q5_dot_max;
     g_qdot_max_vec[6] = q6_dot_max;
     cout<<"so far, so good..."<<endl;
-    
+    */
     double dt = 0.001; // 1000Hz loop rate desired
     ros::Rate naptime(1/dt);    
     
