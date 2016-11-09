@@ -49,6 +49,7 @@ cs_add_executable(example_arm7dof_cart_path_planner_main3 src/example_arm7dof_ca
 #cartesian-move action service nodes specialized for target robots
 cs_add_executable(baxter_rt_arm_cart_move_as src/baxter_rt_arm_cart_move_as.cpp)
 cs_add_executable(ur10_cart_move_as src/ur10_cart_move_as.cpp)
+#cs_add_executable(arm7dof_cart_move_as src/arm7dof_cart_move_as.cpp)
 #should add arm7dof as well
 
 #cs_add_executable(baxter_cart_move_action_client src/example_baxter_cart_move_action_client.cpp)
@@ -79,6 +80,7 @@ target_link_libraries(example_ur10_cart_path_planner ur10_cartesian_planner ${ca
 #link action servers w/ respective planner libraries
 target_link_libraries(baxter_rt_arm_cart_move_as baxter_cartesian_planner ${catkin_LIBRARIES})
 target_link_libraries(ur10_cart_move_as ur10_cartesian_planner ${catkin_LIBRARIES})
+#target_link_libraries(arm7dof_cart_move_as arm7dof_cartesian_planner ${catkin_LIBRARIES})
 
 #target_link_libraries(baxter_cart_move_action_client baxter_arm_motion_commander ${catkin_LIBRARIES})
 #target_link_libraries(baxter_cart_move_action_client2 baxter_arm_motion_commander ${catkin_LIBRARIES})

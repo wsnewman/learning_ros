@@ -1,5 +1,5 @@
 // library of useful functions for controlling Arm7dof arm motions
-#include <arm7dof_trajectory_streamer/arm7dof_trajectory_streamer.h>
+#include <arm7dof_traj_as/arm7dof_traj_as.h>
 
 
 Arm7dof_traj_streamer::Arm7dof_traj_streamer(ros::NodeHandle* nodehandle){

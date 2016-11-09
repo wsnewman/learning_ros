@@ -2,7 +2,7 @@
 // as commands to arm7dof;
 // action server is called: trajActionServer
 
-#include <arm7dof_trajectory_streamer/arm7dof_trajectory_streamer.h>
+#include <arm7dof_traj_as/arm7dof_traj_as.h>
 #include <actionlib/server/simple_action_server.h>
 #include <std_msgs/Float64MultiArray.h>
 #include<arm7dof_traj_as/trajAction.h>

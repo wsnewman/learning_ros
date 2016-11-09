@@ -5,7 +5,7 @@
 #include<ros/ros.h>
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
-#include <arm7dof_trajectory_streamer/arm7dof_trajectory_streamer.h>
+#include <arm7dof_traj_as/arm7dof_traj_as.h>
 
 #include<arm7dof_traj_as/trajAction.h>
 using namespace std;

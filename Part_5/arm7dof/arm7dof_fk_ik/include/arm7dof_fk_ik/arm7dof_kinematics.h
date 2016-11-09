@@ -120,6 +120,8 @@ const double DQ_YAW = 0.1; // increment dq0 this much is search of indexed null-
 //const int MAX_JINV_ITERS = 5;
 const double W_ERR_TOL = 0.0001; //100-micron tolerance on precise solution
 //const double DQ_ITER_MAX = 0.05; // only allow this large of a step per Jacobian iteration
+//const double g_qdot_max_vec[] = {2.16, 2.16, 3.15, 3.2, 3.2, 3.2};
+const double g_qdot_max_vec[] = {0.2, 0.2, 0.3, 0.3, 0.4, 0.5, 0.4}; //values per URDF 
 
 class Arm7dof_fwd_solver {
 public:
