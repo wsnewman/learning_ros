@@ -1,5 +1,5 @@
-// cart_path_planner_lib: 
-// wsn, June, 2015
+// baxter_rt_arm_cart_path_planner.cpp: 
+// wsn, Nov, 2016
 // a library of arm-motion planning functions
 // assumes use of tool-flange frame (to allow for interchangeable grippers)
 // uses package joint_space_planner to find a good joint-space path among options
