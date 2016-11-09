@@ -1,7 +1,8 @@
--0.3
 // ur10_cart_move_as: 
 // wsn,  Nov, 2016
 // action server to accept commands and perform planning and motion requests
+
+//for UR10, reference tool0 for tool flange and base_link
 
 
 //NOTE: ARM_PLAN_PATH_CURRENT_TO_GOAL_POSE does: unpack_goal_pose(),
@@ -10,8 +11,8 @@
 
 // uses library of arm-motion planning functions
 #include <cartesian_planner/ur10_cartesian_planner.h>
-#include <cartesian_planner/ur10_cart_moveAction.h>
-
+//#include <cartesian_planner/ur10_cart_moveAction.h>
+#include <cartesian_planner/cart_moveAction.h> 
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
 #include <actionlib/server/simple_action_server.h>
@@ -176,7 +177,7 @@ private:
     XformUtils xformUtils;
     //create an action server, which will be called "cartMoveActionServer"
     //this service will accept goals in Cartesian coordinates
-    actionlib::SimpleActionServer<cartesian_planner::ur10_cart_moveAction> cart_move_as_;
+    actionlib::SimpleActionServer<cartesian_planner::cart_moveAction> cart_move_as_;
     std::vector<Eigen::VectorXd> des_path;
     trajectory_msgs::JointTrajectory des_trajectory; // empty trajectory   
     //void set_ur_jnt_names(); //fill a vector of joint names in DH order, from base to tip
@@ -188,8 +189,8 @@ private:
     actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> action_client_;
     
     //messages to receive cartesian goals / return results:
-    cartesian_planner::ur10_cart_moveGoal cart_goal_;
-    cartesian_planner::ur10_cart_moveResult cart_result_;
+    cartesian_planner::cart_moveGoal cart_goal_;
+    cartesian_planner::cart_moveResult cart_result_;
 
     //callback fnc for joint-space action server to return result to this node:
     //void js_doneCb_(const actionlib::SimpleClientGoalState& state,
@@ -199,17 +200,19 @@ private:
     //callback function to receive and act on cartesian move goal requests
     //this is the key method in this node;
     // can/should be extended to cover more motion-planning cases
-    void executeCB(const actionlib::SimpleActionServer<cartesian_planner::ur10_cart_moveAction>::GoalConstPtr& goal);
+    void executeCB(const actionlib::SimpleActionServer<cartesian_planner::cart_moveAction>::GoalConstPtr& goal);
 
     double computed_arrival_time_; //when a move time is computed, result is stored here
 
     //poses, from goal message:
-    geometry_msgs::PoseStamped goal_gripper_; //cmd for  tool pose
-
+    geometry_msgs::PoseStamped goal_gripper_pose_; //cmd for  tool pose
+    tf::StampedTransform generic_toolflange_frame_wrt_gripper_frame_stf_;
+    tf::StampedTransform generic_gripper_frame_wrt_tool_flange_stf_;
+    tf::StampedTransform base_link_wrt_system_ref_frame_stf_; 
     //current tool poses w/rt base_frame:
     geometry_msgs::Pose current_gripper_pose_, current_flange_pose_; //cmd for tool pose
     geometry_msgs::PoseStamped current_gripper_stamped_pose_,current_flange_stamped_pose_; //cmd for rtool pose
-    geometry_msgs::PoseStamped goal_gripper_pose_;
+
     Eigen::Affine3d goal_gripper_affine_;
     Eigen::Affine3d goal_flange_affine_;
 
@@ -221,7 +224,7 @@ private:
     Eigen::VectorXd q_vec_; //alt representation of above, for convenience
     Eigen::VectorXd q_start_Xd_;
 
-    Eigen::Affine3d affine_tool_,affine_flange_;
+    Eigen::Affine3d affine_tool_wrt_base_,affine_flange_wrt_base_;
 
     Eigen::Affine3d A_tool_wrt_flange_;
 
@@ -243,7 +246,7 @@ private:
     //sensor_msgs::JointState joint_states_;
     moveit_msgs::DisplayTrajectory display_trajectory_;
 
-    UR10IkSolver ur10_IK_solver_; // instantiate an IK solver
+    //UR10IkSolver ur10_IK_solver_; // instantiate an IK solver
     UR10FwdSolver ur10_fwd_solver_; //instantiate a forward-kinematics solver 
     CartTrajPlanner cartTrajPlanner_; // from cartesian trajectory planner library
 
@@ -287,7 +290,8 @@ public:
 
     ~ArmMotionInterface(void) {
     }
-
+    tf::TransformListener* tfListener_; //make listener available to main;
+    
     //handy utilities, primarily used internally, but publicly accessible
     //Eigen::Affine3d transformTFToEigen(const tf::Transform &t);
     //Eigen::Affine3d transformPoseToEigenAffine3d(geometry_msgs::Pose pose);
@@ -307,12 +311,12 @@ public:
     void compute_flange_stamped_pose(void); //helper for GET_FLANGE_POSE
     //void compute_left_tool_stamped_pose(void); 
 
-    bool plan_path_current_to_goal_pose(); //uses goal.des_pose_gripper to plan a cartesian path
+    bool plan_path_current_to_goal_gripper_pose(); //uses goal.des_pose_gripper to plan a cartesian path
     bool plan_path_current_to_goal_flange_pose(); //interprets goal.des_pose_flange  as a des FLANGE pose to plan a cartesian path
     //plan a joint-space path from current jspace pose to some soln of desired toolflange cartesian pose
-    bool plan_jspace_path_current_to_cart_pose();
+    bool plan_jspace_path_current_to_cart_gripper_pose();
     bool plan_fine_path_current_to_goal_flange_pose(); //interprets goal.des_pose_flange as a des FLANGE pose to plan a cartesian path
-
+    bool plan_fine_path_current_to_goal_gripper_pose();
     //for 
     bool plan_path_current_to_goal_dp_xyz(); //plans cartesian motion by specified 3-D displacement at fixed orientation
     bool plan_cartesian_delta_p(Eigen::VectorXd q_start, Eigen::Vector3d delta_p); //helper for above
@@ -324,10 +328,38 @@ public:
     //bool jspace_path_planner_current_to_affine_goal(Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path);
     void rescale_planned_trajectory_time(double time_stretch_factor);
     bool refine_cartesian_path_soln();
+    Eigen::Affine3d xform_gripper_pose_to_affine_flange_wrt_base(geometry_msgs::PoseStamped des_pose_gripper);
 
 };
+Eigen::Affine3d ArmMotionInterface::xform_gripper_pose_to_affine_flange_wrt_base(geometry_msgs::PoseStamped des_pose_gripper) {
+    Eigen::Affine3d affine_flange_wrt_base;
+    tf::StampedTransform flange_stf, flange_wrt_base_stf;
+    geometry_msgs::PoseStamped flange_gmps, flange_wrt_base_gmps;
+    //convert des gripper pose to a stamped transform, so we can do more transforms
+    ROS_WARN("xform_gripper_pose_to_affine_flange_wrt_base: input pose-stamped: ");
+    xformUtils.printStampedPose(des_pose_gripper);
+    tf::StampedTransform gripper_stf = xformUtils.convert_poseStamped_to_stampedTransform(des_pose_gripper, "generic_gripper_frame"); 
+    //convert to transform of corresponding tool flange w/rt whatever reference frame_id
+    ROS_INFO("gripper_stf: ");
+    xformUtils.printStampedTf(gripper_stf);
+    ROS_INFO("flange_stf");
+    xformUtils.printStampedTf(flange_stf);    
+    bool mult_ok = xformUtils.multiply_stamped_tfs(gripper_stf,generic_toolflange_frame_wrt_gripper_frame_stf_,flange_stf);
+    if (!mult_ok) { ROS_WARN("stf multiply not legal! "); } //should not happen
+    //ROS_INFO("corresponding flange frame: ");
+    //xformUtils.printStampedTf(flange_stf);
+    //convert stamped ‘tf::StampedTransform to geometry_msgs::PoseStamped
+    flange_gmps = xformUtils.get_pose_from_stamped_tf(flange_stf);
+    //change the reference frame from whatever to "base":
+    tfListener_->transformPose("base_link", flange_gmps, flange_wrt_base_gmps);    
+    ROS_INFO("corresponding flange frame w/rt base frame: ");
+    xformUtils.printStampedPose(flange_wrt_base_gmps);  
+    //convert this to an affine.  parent and child frame id's are lost, so we'll have to remember what this means
+    affine_flange_wrt_base = xformUtils.transformPoseToEigenAffine3d(flange_wrt_base_gmps);
+    return affine_flange_wrt_base;
+}    
 
-void ArmMotionInterface::executeCB(const actionlib::SimpleActionServer<cartesian_planner::ur10_cart_moveAction>::GoalConstPtr& goal) {
+void ArmMotionInterface::executeCB(const actionlib::SimpleActionServer<cartesian_planner::cart_moveAction>::GoalConstPtr& goal) {
     ROS_INFO("in executeCB of ArmMotionInterface");
     cart_goal_ = *goal; // copy of goal held in member var
     command_mode_ = goal->command_code;
@@ -335,54 +367,54 @@ void ArmMotionInterface::executeCB(const actionlib::SimpleActionServer<cartesian
     int njnts;
 
     switch (command_mode_) {
-        case cartesian_planner::ur10_cart_moveGoal::ARM_TEST_MODE:
+        case cartesian_planner::cart_moveGoal::ARM_TEST_MODE:
             ROS_INFO("responding to request TEST_MODE: ");
-            cart_result_.return_code = cartesian_planner::ur10_cart_moveResult::SUCCESS;
+            cart_result_.return_code = cartesian_planner::cart_moveResult::SUCCESS;
             cart_move_as_.setSucceeded(cart_result_);
             break;
             //looks up current arm joint angles and returns them to client
-        case cartesian_planner::ur10_cart_moveGoal::GET_Q_DATA:
+        case cartesian_planner::cart_moveGoal::GET_Q_DATA:
             ROS_INFO("responding to request GET_Q_DATA");
             //get_joint_angles(); 
             cart_result_.q_arm.resize(NJNTS);
             for (int i = 0; i < NJNTS; i++) {
                 cart_result_.q_arm[i] = g_q_vec_arm_Xd[i];
             }
-            cart_result_.return_code = cartesian_planner::ur10_cart_moveResult::SUCCESS;
+            cart_result_.return_code = cartesian_planner::cart_moveResult::SUCCESS;
             cart_move_as_.setSucceeded(cart_result_);
             break;
 
-        case cartesian_planner::ur10_cart_moveGoal::GET_TOOL_POSE:
+        case cartesian_planner::cart_moveGoal::GET_TOOL_POSE:
             ROS_INFO("responding to request GET_TOOL_POSE");
             compute_tool_stamped_pose();
             cart_result_.current_pose_gripper = current_gripper_stamped_pose_;
-            cart_result_.return_code = cartesian_planner::ur10_cart_moveResult::SUCCESS;
+            cart_result_.return_code = cartesian_planner::cart_moveResult::SUCCESS;
             cart_move_as_.setSucceeded(cart_result_);
             break;
-         case cartesian_planner::ur10_cart_moveGoal::GET_FLANGE_POSE:
+         case cartesian_planner::cart_moveGoal::GET_FLANGE_POSE:
             ROS_INFO("responding to request GET_FLANGE_POSE");
             compute_flange_stamped_pose();
             cart_result_.current_pose_flange = current_flange_stamped_pose_;
-            cart_result_.return_code = cartesian_planner::ur10_cart_moveResult::SUCCESS;
+            cart_result_.return_code = cartesian_planner::cart_moveResult::SUCCESS;
             cart_move_as_.setSucceeded(cart_result_);
             break;           
             //prepares a trajectory plan to move arm from current pose to pre-defined pose
-        case cartesian_planner::ur10_cart_moveGoal::PLAN_JSPACE_PATH_CURRENT_TO_PRE_POSE:
-            ROS_INFO("responding to request PLAN_JSPACE_PATH_CURRENT_TO_PRE_POSE");
+        case cartesian_planner::cart_moveGoal::PLAN_PATH_CURRENT_TO_WAITING_POSE:
+            ROS_INFO("responding to request PLAN_PATH_CURRENT_TO_WAITING_POSE");
             q_start_Xd_ = g_q_vec_arm_Xd;//get_jspace_start_();
             //q_start=q_start_Xd; // convert to fixed-size vector;
             plan_jspace_path_qstart_to_qend(q_start_Xd_, q_pre_pose_Xd_);
             busy_working_on_a_request_ = false;
             break;
 
-        case cartesian_planner::ur10_cart_moveGoal::PLAN_JSPACE_PATH_CURRENT_TO_QGOAL:
+        case cartesian_planner::cart_moveGoal::PLAN_JSPACE_PATH_CURRENT_TO_QGOAL:
             ROS_INFO("responding to request PLAN_JSPACE_PATH_CURRENT_TO_QGOAL");
             q_start_Xd_ = g_q_vec_arm_Xd; //get_jspace_start_();
             q_goal_pose_Xd_.resize(NJNTS);
             njnts = goal->q_goal.size();
             if (njnts != NJNTS) {
                 ROS_WARN("joint-space goal is wrong dimension");
-                cart_result_.return_code = cartesian_planner::ur10_cart_moveResult::PATH_NOT_VALID;
+                cart_result_.return_code = cartesian_planner::cart_moveResult::PATH_NOT_VALID;
             } else {
                 for (int i = 0; i < NJNTS; i++) q_goal_pose_Xd_[i] = goal->q_goal[i];
                 //q_start=q_start_Xd; // convert to fixed-size vector;
@@ -390,40 +422,40 @@ void ArmMotionInterface::executeCB(const actionlib::SimpleActionServer<cartesian
                 busy_working_on_a_request_ = false;
             }
             break;
-        case cartesian_planner::ur10_cart_moveGoal::PLAN_PATH_CURRENT_TO_GOAL_POSE:
-            plan_path_current_to_goal_pose();
+        case cartesian_planner::cart_moveGoal::PLAN_PATH_CURRENT_TO_GOAL_GRIPPER_POSE:
+            plan_path_current_to_goal_gripper_pose();
             break;
-        case cartesian_planner::ur10_cart_moveGoal::PLAN_PATH_CURRENT_TO_GOAL_FLANGE_POSE:
+        case cartesian_planner::cart_moveGoal::PLAN_PATH_CURRENT_TO_GOAL_FLANGE_POSE:
             plan_path_current_to_goal_flange_pose();
             break;
 
-        case cartesian_planner::ur10_cart_moveGoal::PLAN_FINE_PATH_CURRENT_TO_GOAL_FLANGE_POSE:
+        case cartesian_planner::cart_moveGoal::PLAN_FINE_PATH_CURRENT_TO_GOAL_FLANGE_POSE:
             plan_fine_path_current_to_goal_flange_pose();
             
             break;
             
-        case cartesian_planner::ur10_cart_moveGoal::PLAN_PATH_CURRENT_TO_GOAL_DP_XYZ:
+        case cartesian_planner::cart_moveGoal::PLAN_PATH_CURRENT_TO_GOAL_DP_XYZ:
             plan_path_current_to_goal_dp_xyz();
             break;
 
-        case cartesian_planner::ur10_cart_moveGoal::TIME_RESCALE_PLANNED_TRAJECTORY:
+        case cartesian_planner::cart_moveGoal::TIME_RESCALE_PLANNED_TRAJECTORY:
             time_scale_stretch_factor_ = goal->time_scale_stretch_factor;
             rescale_planned_trajectory_time(time_scale_stretch_factor_);
             break;
 
             //consults a pre-computed trajectory and invokes execution;
-        case cartesian_planner::ur10_cart_moveGoal::EXECUTE_PLANNED_PATH: //assumes there is a valid planned path in optimal_path_
+        case cartesian_planner::cart_moveGoal::EXECUTE_PLANNED_PATH: //assumes there is a valid planned path in optimal_path_
             ROS_INFO("responding to request EXECUTE_PLANNED_PATH");
             execute_planned_move();
             break;
             
-        case cartesian_planner::ur10_cart_moveGoal::PLAN_JSPACE_PATH_CURRENT_TO_CART_POSE:          
-            plan_jspace_path_current_to_cart_pose();   
+        case cartesian_planner::cart_moveGoal::PLAN_JSPACE_PATH_CURRENT_TO_CART_GRIPPER_POSE:          
+            plan_jspace_path_current_to_cart_gripper_pose();   
             break;
                 
         default:
             ROS_WARN("this command mode is not defined: %d", command_mode_);
-            cart_result_.return_code = cartesian_planner::ur10_cart_moveResult::COMMAND_CODE_NOT_RECOGNIZED;
+            cart_result_.return_code = cartesian_planner::cart_moveResult::COMMAND_CODE_NOT_RECOGNIZED;
             cart_move_as_.setAborted(cart_result_); // tell the client we have given up on this goal; send the result message as well
     }
 }
@@ -448,7 +480,7 @@ action_client_("/arm_controller/follow_joint_trajectory", true)
     R_gripper_down_ = cartTrajPlanner_.get_R_gripper_down();
 
     //access constants defined in action message this way:
-    command_mode_ = cartesian_planner::ur10_cart_moveGoal::ARM_TEST_MODE;
+    command_mode_ = cartesian_planner::cart_moveGoal::ARM_TEST_MODE;
 
     received_new_request_ = false;
     busy_working_on_a_request_ = false;
@@ -456,8 +488,45 @@ action_client_("/arm_controller/follow_joint_trajectory", true)
     path_id_ = 0;
     // can also do tests/waits to make sure all required services, topics, etc are alive
 
-    A_tool_wrt_flange_ = ur10_fwd_solver_.get_affine_tool_wrt_flange();
+    //A_tool_wrt_flange_ = ur10_fwd_solver_.get_affine_tool_wrt_flange();
+    tfListener_ = new tf::TransformListener;  //create a transform listener and assign its pointer
+    bool tferr=true;
+    int ntries=0;
+    ROS_INFO("waiting for tf between generic gripper frame and tool flange...");
 
+    while (tferr) {
+        tferr=false;
+        try {
+                tfListener_->lookupTransform("generic_gripper_frame","tool0",  ros::Time(0), generic_toolflange_frame_wrt_gripper_frame_stf_);
+            } catch(tf::TransformException &exception) {
+                ROS_WARN("%s; retrying...", exception.what());
+                tferr=true;
+                ros::Duration(0.5).sleep(); // sleep for half a second
+                ros::spinOnce();      
+                ntries++;
+                if (ntries>5) ROS_WARN("did you launch cartesian_planner/ur10_static_transforms.launch?");
+            }   
+    }
+    ROS_INFO("tf is good for generic gripper frame w/rt tool flange");
+    xformUtils.printStampedTf(generic_toolflange_frame_wrt_gripper_frame_stf_);
+ 
+        tferr=true;
+    ROS_INFO("waiting for tf between system_ref_frame and base_link...");
+
+    while (tferr) {
+        tferr=false;
+        try {
+                tfListener_->lookupTransform("system_ref_frame", "base_link", ros::Time(0), base_link_wrt_system_ref_frame_stf_);
+            } catch(tf::TransformException &exception) {
+                ROS_WARN("%s; retrying...", exception.what());
+                tferr=true;
+                ros::Duration(0.5).sleep(); // sleep for half a second
+                ros::spinOnce();                
+            }   
+    }
+    ROS_INFO("tf is good for generic gripper frame w/rt tool flange");    
+    xformUtils.printStampedTf(base_link_wrt_system_ref_frame_stf_);
+    
     //check that joint-space interpolator service is connected:
     // attempt to connect to the trajectory action server:
     //instantiate client of the arm server:
@@ -545,20 +614,20 @@ Eigen::VectorXd ArmMotionInterface::get_joint_angles(void) {
 void ArmMotionInterface::compute_tool_stamped_pose(void) {
     //get_joint_angles(); //will update q_vec
     q_vec_= g_q_vec_arm_Xd;
-    affine_tool_ =
+    affine_tool_wrt_base_ =
             ur10_fwd_solver_.fwd_kin_solve(q_vec_); //rtns pose w/rt base frame
-    current_gripper_pose_ = xformUtils.transformEigenAffine3dToPose(affine_tool_);
+    current_gripper_pose_ = xformUtils.transformEigenAffine3dToPose(affine_tool_wrt_base_);
     current_gripper_stamped_pose_.pose = current_gripper_pose_;
-    current_gripper_stamped_pose_.header.stamp = ros::Time::now();
+    current_gripper_stamped_pose_.header.stamp = ros::Time::now(); 
     current_gripper_stamped_pose_.header.frame_id = "base_link";
 }
 
 void ArmMotionInterface::compute_flange_stamped_pose(void) {
     //get_joint_angles(); //will update q_vec_Xd_ 
     q_vec_ = g_q_vec_arm_Xd;
-    affine_flange_ =
+    affine_flange_wrt_base_ =
             ur10_fwd_solver_.fwd_kin_solve(q_vec_); //rtns pose w/rt base frame
-    current_flange_pose_ = xformUtils.transformEigenAffine3dToPose(affine_flange_);
+    current_flange_pose_ = xformUtils.transformEigenAffine3dToPose(affine_flange_wrt_base_);
     current_flange_stamped_pose_.pose = current_flange_pose_;
     current_flange_stamped_pose_.header.stamp = ros::Time::now();
     current_flange_stamped_pose_.header.frame_id = "base_link";
@@ -566,7 +635,7 @@ void ArmMotionInterface::compute_flange_stamped_pose(void) {
 
 void ArmMotionInterface::execute_planned_move(void) {
     if (!path_is_valid_) {
-        cart_result_.return_code = cartesian_planner::ur10_cart_moveResult::PATH_NOT_VALID;
+        cart_result_.return_code = cartesian_planner::cart_moveResult::PATH_NOT_VALID;
         ROS_WARN("attempted to execute invalid path!");
         cart_move_as_.setAborted(cart_result_); // tell the client we have given up on this goal; send the result message as well
     }
@@ -598,7 +667,7 @@ void ArmMotionInterface::execute_planned_move(void) {
     } else {
      * */
     ROS_INFO("finished move execution");
-    cart_result_.return_code = cartesian_planner::ur10_cart_moveResult::SUCCESS;
+    cart_result_.return_code = cartesian_planner::cart_moveResult::SUCCESS;
     cart_move_as_.setSucceeded(cart_result_);
     //}
     path_is_valid_ = false; // reset--require new path before next move
@@ -616,7 +685,7 @@ void ArmMotionInterface::execute_planned_move(void) {
 
 void ArmMotionInterface::rescale_planned_trajectory_time(double time_stretch_factor) {
     if (!path_is_valid_) {
-        cart_result_.return_code = cartesian_planner::ur10_cart_moveResult::PATH_NOT_VALID;
+        cart_result_.return_code = cartesian_planner::cart_moveResult::PATH_NOT_VALID;
         ROS_WARN("do not have a valid path!");
         cart_move_as_.setAborted(cart_result_); // tell the client we have given up on this goal; send the result message as well
     }
@@ -634,7 +703,7 @@ void ArmMotionInterface::rescale_planned_trajectory_time(double time_stretch_fac
     computed_arrival_time_ = des_trajectory_.points.back().time_from_start.toSec();
     cart_result_.computed_arrival_time = computed_arrival_time_;
     ROS_INFO("computed arrival time = %f",cart_result_.computed_arrival_time);
-    cart_result_.return_code = cartesian_planner::ur10_cart_moveResult::SUCCESS;
+    cart_result_.return_code = cartesian_planner::cart_moveResult::SUCCESS;
     cart_move_as_.setSucceeded(cart_result_);
 }
 
@@ -668,11 +737,11 @@ bool ArmMotionInterface::plan_jspace_path_qstart_to_qend(Eigen::VectorXd q_start
 
         stuff_trajectory(optimal_path_, des_trajectory_); //convert from vector of poses to trajectory message   
         computed_arrival_time_ = des_trajectory_.points.back().time_from_start.toSec();
-        cart_result_.return_code = cartesian_planner::ur10_cart_moveResult::SUCCESS;
+        cart_result_.return_code = cartesian_planner::cart_moveResult::SUCCESS;
         cart_result_.computed_arrival_time = computed_arrival_time_;
         cart_move_as_.setSucceeded(cart_result_);
     } else {
-        cart_result_.return_code = cartesian_planner::ur10_cart_moveResult::PATH_NOT_VALID;
+        cart_result_.return_code = cartesian_planner::cart_moveResult::PATH_NOT_VALID;
         cart_result_.computed_arrival_time = -1.0; //impossible arrival time        
         cart_move_as_.setSucceeded(cart_result_); //the communication was a success, but not the computation 
     }
@@ -684,15 +753,13 @@ bool ArmMotionInterface::plan_jspace_path_qstart_to_qend(Eigen::VectorXd q_start
 // goal contains a desired tool pose;
 // path is planned from current joint state to some joint state that achieves desired tool pose
 
-bool ArmMotionInterface::plan_path_current_to_goal_pose() {
-    ROS_INFO("computing a cartesian trajectory to goal pose");
-    //unpack the goal pose:
-    goal_gripper_pose_ = cart_goal_.des_pose_gripper;
+bool ArmMotionInterface::plan_path_current_to_goal_gripper_pose() {
+    ROS_INFO("computing a cartesian trajectory to gripper goal pose");
 
-    goal_gripper_affine_ = xformUtils.transformPoseToEigenAffine3d(goal_gripper_pose_.pose);
-    ROS_INFO("tool frame goal: ");
-    display_affine(goal_gripper_affine_);
-    goal_flange_affine_ = goal_gripper_affine_ * A_tool_wrt_flange_.inverse();
+    goal_gripper_pose_ = cart_goal_.des_pose_gripper;
+    xformUtils.printStampedPose(goal_gripper_pose_);
+    goal_flange_affine_ = xform_gripper_pose_to_affine_flange_wrt_base(goal_gripper_pose_);
+
     ROS_INFO("flange goal");
     display_affine(goal_flange_affine_);
     Eigen::VectorXd q_start;
@@ -702,11 +769,11 @@ bool ArmMotionInterface::plan_path_current_to_goal_pose() {
     if (path_is_valid_) {
         stuff_trajectory(optimal_path_, des_trajectory_); //convert from vector of poses to trajectory message   
         computed_arrival_time_ = des_trajectory_.points.back().time_from_start.toSec();
-        cart_result_.return_code = cartesian_planner::ur10_cart_moveResult::SUCCESS;
+        cart_result_.return_code = cartesian_planner::cart_moveResult::SUCCESS;
         cart_result_.computed_arrival_time = computed_arrival_time_;
         cart_move_as_.setSucceeded(cart_result_);
     } else {
-        cart_result_.return_code = cartesian_planner::ur10_cart_moveResult::PATH_NOT_VALID;
+        cart_result_.return_code = cartesian_planner::cart_moveResult::PATH_NOT_VALID;
         cart_result_.computed_arrival_time = -1.0; //impossible arrival time        
         cart_move_as_.setSucceeded(cart_result_); //the communication was a success, but not the computation 
     }
@@ -729,11 +796,11 @@ bool ArmMotionInterface::plan_path_current_to_goal_flange_pose() {
     if (path_is_valid_) {
         stuff_trajectory(optimal_path_, des_trajectory_); //convert from vector of poses to trajectory message   
         computed_arrival_time_ = des_trajectory_.points.back().time_from_start.toSec();
-        cart_result_.return_code = cartesian_planner::ur10_cart_moveResult::SUCCESS;
+        cart_result_.return_code = cartesian_planner::cart_moveResult::SUCCESS;
         cart_result_.computed_arrival_time = computed_arrival_time_;
         cart_move_as_.setSucceeded(cart_result_);
     } else {
-        cart_result_.return_code = cartesian_planner::ur10_cart_moveResult::PATH_NOT_VALID;
+        cart_result_.return_code = cartesian_planner::cart_moveResult::PATH_NOT_VALID;
         cart_result_.computed_arrival_time = -1.0; //impossible arrival time        
         cart_move_as_.setSucceeded(cart_result_); //the communication was a success, but not the computation 
     }
@@ -741,10 +808,12 @@ bool ArmMotionInterface::plan_path_current_to_goal_flange_pose() {
     return path_is_valid_;
 }
 
-bool ArmMotionInterface::plan_jspace_path_current_to_cart_pose() {
-    ROS_INFO("computing a jspace trajectory to flange goal pose");
-    //unpack the goal pose:
-    goal_flange_affine_ = xformUtils.transformPoseToEigenAffine3d(cart_goal_.des_pose_flange.pose);
+bool ArmMotionInterface::plan_jspace_path_current_to_cart_gripper_pose() {
+    ROS_INFO("computing a jspace trajectory to gripper goal pose");
+    goal_gripper_pose_ = cart_goal_.des_pose_gripper;
+    xformUtils.printStampedPose(goal_gripper_pose_);
+    goal_flange_affine_ = xform_gripper_pose_to_affine_flange_wrt_base(goal_gripper_pose_);  
+    
 
     ROS_INFO("flange goal");
     display_affine(goal_flange_affine_);
@@ -757,11 +826,11 @@ bool ArmMotionInterface::plan_jspace_path_current_to_cart_pose() {
     if (path_is_valid_) {
         stuff_trajectory(optimal_path_, des_trajectory_); //convert from vector of poses to trajectory message   
         computed_arrival_time_ = des_trajectory_.points.back().time_from_start.toSec();
-        cart_result_.return_code = cartesian_planner::ur10_cart_moveResult::SUCCESS;
+        cart_result_.return_code = cartesian_planner::cart_moveResult::SUCCESS;
         cart_result_.computed_arrival_time = computed_arrival_time_;
         cart_move_as_.setSucceeded(cart_result_);
     } else {
-        cart_result_.return_code = cartesian_planner::ur10_cart_moveResult::PATH_NOT_VALID;
+        cart_result_.return_code = cartesian_planner::cart_moveResult::PATH_NOT_VALID;
         cart_result_.computed_arrival_time = -1.0; //impossible arrival time        
         cart_move_as_.setSucceeded(cart_result_); //the communication was a success, but not the computation 
     }
@@ -769,6 +838,10 @@ bool ArmMotionInterface::plan_jspace_path_current_to_cart_pose() {
     return path_is_valid_;
 }
 
+//FINISH ME
+bool ArmMotionInterface::plan_fine_path_current_to_goal_gripper_pose() {
+    return false; 
+}
 
 bool ArmMotionInterface::plan_fine_path_current_to_goal_flange_pose() {
     ROS_INFO("computing a hi-res cartesian trajectory to flange goal pose");
@@ -784,11 +857,11 @@ bool ArmMotionInterface::plan_fine_path_current_to_goal_flange_pose() {
     if (path_is_valid_) {
         stuff_trajectory(optimal_path_, des_trajectory_); //convert from vector of poses to trajectory message   
         computed_arrival_time_ = des_trajectory_.points.back().time_from_start.toSec();
-        cart_result_.return_code = cartesian_planner::ur10_cart_moveResult::SUCCESS;
+        cart_result_.return_code = cartesian_planner::cart_moveResult::SUCCESS;
         cart_result_.computed_arrival_time = computed_arrival_time_;
         cart_move_as_.setSucceeded(cart_result_);
     } else {
-        cart_result_.return_code = cartesian_planner::ur10_cart_moveResult::PATH_NOT_VALID;
+        cart_result_.return_code = cartesian_planner::cart_moveResult::PATH_NOT_VALID;
         cart_result_.computed_arrival_time = -1.0; //impossible arrival time        
         cart_move_as_.setSucceeded(cart_result_); //the communication was a success, but not the computation 
     }
@@ -804,7 +877,7 @@ bool ArmMotionInterface::plan_path_current_to_goal_dp_xyz() {
     int ndim = cart_goal_.arm_dp.size();
     if (ndim != 3) {
         ROS_WARN("requested displacement, arm_dp, is wrong dimension");
-        cart_result_.return_code = cartesian_planner::ur10_cart_moveResult::PATH_NOT_VALID;
+        cart_result_.return_code = cartesian_planner::cart_moveResult::PATH_NOT_VALID;
         path_is_valid_ = false;
         return path_is_valid_;
     }
@@ -817,11 +890,11 @@ bool ArmMotionInterface::plan_path_current_to_goal_dp_xyz() {
     if (path_is_valid_) {
         stuff_trajectory(optimal_path_, des_trajectory_); //convert from vector of poses to trajectory message   
         computed_arrival_time_ = des_trajectory_.points.back().time_from_start.toSec();
-        cart_result_.return_code = cartesian_planner::ur10_cart_moveResult::SUCCESS;
+        cart_result_.return_code = cartesian_planner::cart_moveResult::SUCCESS;
         cart_result_.computed_arrival_time = computed_arrival_time_;
         cart_move_as_.setSucceeded(cart_result_);
     } else {
-        cart_result_.return_code = cartesian_planner::ur10_cart_moveResult::PATH_NOT_VALID;
+        cart_result_.return_code = cartesian_planner::cart_moveResult::PATH_NOT_VALID;
         cart_result_.computed_arrival_time = -1.0; //impossible arrival time        
         cart_move_as_.setSucceeded(cart_result_); //the communication was a success, but not the computation 
     }
