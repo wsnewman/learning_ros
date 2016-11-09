@@ -52,5 +52,12 @@ start up the cartesian planner action server:
 run a generic cartesian-motion action client (same as above): 
 `rosrun cartesian_planner example_generic_cart_move_ac`
 
+For arm7dof:
+`roslaunch gazebo_ros empty_world.launch` 
+`roslaunch arm7dof_model arm7dof_w_pos_controller.launch`
+`rosrun arm7dof_traj_as arm7dof_traj_as`
+`roslaunch cartesian_planner arm7dof_static_transforms.launch`
+`rosrun cartesian_planner arm7dof_cart_move_as` NOT WORKING YET
+`rosrun cartesian_planner example_generic_cart_move_ac` 
 
 
