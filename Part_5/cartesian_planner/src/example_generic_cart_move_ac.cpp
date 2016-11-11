@@ -14,7 +14,7 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-    ros::init(argc, argv, "example_baxter_rt_arm_cart_move_ac"); // name this node 
+    ros::init(argc, argv, "example_arm_cart_move_ac"); // name this node 
     ros::NodeHandle nh; //standard ros node handle     
     ArmMotionCommander arm_motion_commander(&nh);
     XformUtils xformUtils;

@@ -7,7 +7,7 @@ cart_move_action_client_("cartMoveActionServer", true) { // constructor
     ROS_INFO("in constructor of ArmMotionInterface");
 
     // attempt to connect to the server:
-    ROS_INFO("waiting for server: ");
+    ROS_INFO("waiting for cartMoveActionServer: ");
     bool server_exists = false;
     while ((!server_exists)&&(ros::ok())) {
         server_exists = cart_move_action_client_.waitForServer(ros::Duration(0.5)); // 

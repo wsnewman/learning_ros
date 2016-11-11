@@ -1,3 +1,6 @@
+//organize this service such that the first (0'th) option for
+//approach, grasp and depart correspond to the preferred default options
+
 #include <ros/ros.h>
 #include <Eigen/Eigen>
 #include <Eigen/Dense>
@@ -22,15 +25,24 @@ using namespace std;
 
 bool callback(object_manipulation_properties::objectManipulationQueryRequest& request,
         object_manipulation_properties::objectManipulationQueryResponse& response) {
+    int query_code = request.query_code;
+    //special case to test if service is alive; merely replies "valid_reply=true", but no data
+    if (query_code == object_manipulation_properties::objectManipulationQueryRequest::TEST_PING) {
+        ROS_INFO("object manipulation query service received a test ping");
+        response.valid_reply = true;
+        return true;
+    }
+    //more interesting cases:
     int object_id = request.object_ID;
     int gripper_id = request.gripper_ID;
-    int query_code = request.query_code;
+
     int grasp_option = request.grasp_option; //does this crash?
     ROS_INFO("grasp_option = %d ", grasp_option);
     //only examine grasp_option if it is relevant (and presumably filled in)
     if (query_code >= object_manipulation_properties::objectManipulationQueryRequest::GET_GRASP_POSE_TRANSFORMS) {
         grasp_option = request.grasp_option;
     }
+    //have to invoke this svc 3x to get approach pose, grasp pose and depart pose
     switch (gripper_id) { //exhaustive cases for gripper options:
         case GripperIdCodes::RETHINK_ELECTRIC_GRIPPER_RT:
             ROS_INFO("rethink gripper query: object_id, query_code, grasp_option: %d, %d, %d",

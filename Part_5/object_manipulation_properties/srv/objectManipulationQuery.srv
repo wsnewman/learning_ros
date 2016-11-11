@@ -2,7 +2,7 @@
 #send request as a query, e.g., what types of grasp strategies are available
 # for specified object_ID and gripper_ID? 
 
-
+uint8 TEST_PING = 0
 uint8 GRASP_STRATEGY_OPTIONS_QUERY = 1
 uint8 APPROACH_STRATEGY_OPTIONS_QUERY = 2
 uint8 DEPART_STRATEGY_OPTIONS_QUERY = 3
