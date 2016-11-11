@@ -27,16 +27,20 @@ find_package(Boost REQUIRED COMPONENTS system thread)
 # SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 # Libraries: uncomment the following and edit arguments to create a new library
-cs_add_library(object_grabber src/object_grabber.cpp)   
-
+#cs_add_library(object_grabber src/object_grabber.cpp)   
+cs_add_library(object_grabber3 src/object_grabber3.cpp) 
 # Executables: uncomment the following and edit arguments to compile new nodes
 # may add more of these lines for more nodes from the same package
-cs_add_executable(object_grabber_as src/object_grabber_as.cpp)
-cs_add_executable(example_object_grabber_ac src/example_object_grabber_action_client.cpp)
+#cs_add_executable(object_grabber_as src/object_grabber_as.cpp)
+cs_add_executable(object_grabber_as3 src/object_grabber_as3.cpp)
+#cs_add_executable(example_object_grabber_ac src/example_object_grabber_action_client.cpp)
+#cs_add_executable(example_object_grabber_ac2 src/example_object_grabber_action_client2.cpp)
+cs_add_executable(example_object_grabber_ac3 src/example_object_grabber_action_client3.cpp)
+cs_add_executable(set_baxter_gripper_param src/set_baxter_gripper_param.cpp)
 #the following is required, if desire to link a node in this package with a library created in this same package
 # edit the arguments to reference the named node and named library within this package
-target_link_libraries(object_grabber_as object_grabber)
-
+#target_link_libraries(object_grabber_as object_grabber)
+target_link_libraries(object_grabber_as3 object_grabber3)
 cs_install()
 cs_export()
     
