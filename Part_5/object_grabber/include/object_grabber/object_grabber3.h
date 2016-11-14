@@ -17,6 +17,7 @@
 #include <object_manipulation_properties/objectManipulationQuery.h>
 #include <std_msgs/Bool.h>
 #include <tf/transform_listener.h>
+#include<generic_gripper_services/genericGripperInterface.h>
 class ObjectGrabber {
 private:
     ros::NodeHandle nh_;
@@ -24,15 +25,30 @@ private:
     ArmMotionCommander arm_motion_commander_; //robot-independent class to interact w/ cartesian-moves action server 
     ros::ServiceClient manip_properties_client_; // = n.serviceClient<object_manipulation_properties::objectManipulationQuery>("object_manip_query_svc");
     object_manipulation_properties::objectManipulationQuery manip_properties_srv_;
-    
+
+    ros::ServiceClient gripper_client_; //generic gripper interface
+    generic_gripper_services::genericGripperInterface gripper_srv_;
+
     //messages to send/receive cartesian goals / results:
     object_grabber::object_grabber3Goal grab_goal_;
     object_grabber::object_grabber3Result grab_result_; 
     object_grabber::object_grabber3Feedback grab_fdbk_;    
     geometry_msgs::PoseStamped object_pose_stamped_;
     //pose of object w/rt generic_gripper_frame for grasp, approach, depart:
-    geometry_msgs::PoseStamped grasp_pose_,approach_pose_,depart_pose_;
-    
+    geometry_msgs::PoseStamped grasp_pose_,approach_pose_,depart_pose_,dropoff_pose_;
+    //from object_manip service, defines poses as:
+    // where is the object w/rt the gripper for: approach, grasp, depart
+    // separate calls for GET_GRASP_POSE_TRANSFORMS, GET_APPROACH_POSE_TRANSFORMS, GET_DEPART_POSE_TRANSFORMS
+    geometry_msgs::Pose grasp_object_pose_wrt_gripper_;
+    geometry_msgs::Pose approach_object_pose_wrt_gripper_; //from gripper viewpoint, where is object
+                                                                  //when gripper is at approach pose for current
+                                                                  //grasp strategy
+    geometry_msgs::Pose depart_object_pose_wrt_gripper_;   //departure strategy depends on how object
+                                                                  //is grasped and how want to lift it
+                                                                  
+    //geometry_msgs::PoseStamped lift_object_pose_wrt_gripper_; // depart for lifting object can be different
+    //geometry_msgs::PoseStamped withdraw_object_pose_wrt_gripper_; //from depart after releasing object
+
     cartesian_planner::cart_moveGoal cart_goal_;
     cartesian_planner::cart_moveResult cart_result_; 
     double computed_arrival_time_;
@@ -85,6 +101,11 @@ private:
     //action callback fnc
     void executeCB(const actionlib::SimpleActionServer<object_grabber::object_grabber3Action>::GoalConstPtr& goal);  
     bool get_gripper_id();
+    bool get_default_grab_poses(int object_id,geometry_msgs::PoseStamped object_pose_stamped);   
+    bool get_default_dropoff_poses(int object_id,geometry_msgs::PoseStamped object_dropoff_pose_stamped);
+    int grab_object(int object_id,geometry_msgs::PoseStamped object_pose_stamped);   
+    int dropoff_object(int object_id,geometry_msgs::PoseStamped desired_object_pose_stamped);
+    
     //void vertical_cylinder_power_grasp(geometry_msgs::PoseStamped object_pose);    
     //void grasp_from_approach_pose(geometry_msgs::PoseStamped approach_pose, double approach_dist);
 

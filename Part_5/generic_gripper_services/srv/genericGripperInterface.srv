@@ -1,0 +1,14 @@
+#generic gripper service interface message
+uint8 TEST_PING = 0
+uint8 GRASP = 1
+uint8 RELEASE = 2
+uint8 TEST_GRASP = 3
+uint8 GRASP_W_PARAMS=4 #useful for Baxter gripper: provide optional param values
+                       #to test for successful grasp completion of a known object
+
+uint8 cmd_code
+float64 test_upper_val #may need these as parameters to check status
+float64 test_lower_val #e.g., fingers opened/closed or object is grasped
+---
+#response:
+bool success

@@ -16,7 +16,7 @@ using namespace std;
 int main(int argc, char** argv) {
     ros::init(argc, argv, "example_arm_cart_move_ac"); // name this node 
     ros::NodeHandle nh; //standard ros node handle     
-    ArmMotionCommander arm_motion_commander(&nh);
+    ArmMotionCommander arm_motion_commander;
     XformUtils xformUtils;
     Eigen::VectorXd joint_angles;
     Eigen::Vector3d dp_displacement;

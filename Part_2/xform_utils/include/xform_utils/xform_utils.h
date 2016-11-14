@@ -39,7 +39,7 @@ public:
    tf::StampedTransform stamped_transform_inverse(tf::StampedTransform sTf);
    geometry_msgs::Pose transformEigenAffine3dToPose(Eigen::Affine3d e);
    Eigen::Affine3d transformPoseToEigenAffine3d(geometry_msgs::Pose pose);
-   Eigen::Affine3d transformPoseToEigenAffine3d(geometry_msgs::PoseStamped stPose) {transformPoseToEigenAffine3d(stPose.pose);}
+   Eigen::Affine3d transformPoseToEigenAffine3d(geometry_msgs::PoseStamped stPose); 
    Eigen::Affine3d transformStampedTfToEigenAffine3d(tf::StampedTransform sTf);   
    tf::StampedTransform convert_poseStamped_to_stampedTransform(geometry_msgs::PoseStamped stPose, std::string child_frame_id);  
   void test_stf(geometry_msgs::PoseStamped stPose);

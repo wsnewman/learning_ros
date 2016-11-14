@@ -12,9 +12,9 @@ BaxterGripper::BaxterGripper(ros::NodeHandle* nodehandle): nh_(*nodehandle) {
     gripper_cmd_close.command ="go";
     gripper_cmd_close.args = "{'position': 0.0}'";
     gripper_cmd_close.sender = "gripper_publisher"; 
-    gripper_pos_filter_val_ = 0.1;
-    right_gripper_pos_ = -1;
-    left_gripper_pos_ = -1;
+    gripper_pos_filter_val_ = 0.2;
+    right_gripper_pos_ = -0.2;
+    left_gripper_pos_ = -10.2;
     initializeSubscribers(); 
     initializePublishers();
 }

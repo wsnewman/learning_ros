@@ -76,6 +76,7 @@ int32 GRIPPER_IS_CLOSED=17
 int32 GRIPPER_FAILURE=18
 int32 PENDING=19
 int32 OBJECT_DROPPED_OFF = 20
+int32 NO_KNOWN_GRASP_OPTIONS_THIS_GRIPPER_AND_OBJECT = 21
 
 int32 return_code
 #geometry_msgs/PoseStamped des_flange_pose_stamped_wrt_torso

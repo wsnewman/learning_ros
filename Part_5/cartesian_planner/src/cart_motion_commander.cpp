@@ -2,9 +2,10 @@
 // wsn, Nov, 2016
 #include <cartesian_planner/cart_motion_commander.h>
 
-ArmMotionCommander::ArmMotionCommander(ros::NodeHandle* nodehandle): nh_(*nodehandle),
+ArmMotionCommander::ArmMotionCommander(): 
 cart_move_action_client_("cartMoveActionServer", true) { // constructor
     ROS_INFO("in constructor of ArmMotionInterface");
+    ROS_WARN("test warning...");
 
     // attempt to connect to the server:
     ROS_INFO("waiting for cartMoveActionServer: ");
@@ -134,6 +135,35 @@ int ArmMotionCommander::plan_path_current_to_goal_gripper_pose(geometry_msgs::Po
     computed_arrival_time_= cart_result_.computed_arrival_time; //action_client.get_computed_arrival_time();
     ROS_INFO("computed move time: %f",computed_arrival_time_);
     return (int) cart_result_.return_code;        
+}
+
+int ArmMotionCommander::plan_jspace_path_current_to_cart_gripper_pose(geometry_msgs::PoseStamped des_pose_gripper) {
+    ROS_WARN("requesting a joint-space motion plan to cartesian gripper pose");
+    cart_goal_.command_code = cartesian_planner::cart_moveGoal::PLAN_JSPACE_PATH_CURRENT_TO_CART_GRIPPER_POSE; 
+    cart_goal_.des_pose_gripper = des_pose_gripper;
+    cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&ArmMotionCommander::doneCb_, this, _1, _2));
+    finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(2.0));
+    ROS_INFO("return code: %d",cart_result_.return_code);
+    if (!finished_before_timeout_) {
+            ROS_WARN("giving up waiting on result");
+            return (int) cartesian_planner::cart_moveResult::NOT_FINISHED_BEFORE_TIMEOUT;
+        } 
+    
+    ROS_INFO("finished before timeout");
+    if (cart_result_.return_code==cartesian_planner::cart_moveResult::PATH_NOT_VALID) {
+        ROS_WARN(" arm plan not valid");
+        return (int) cart_result_.return_code;
+    }
+    if (cart_result_.return_code!=cartesian_planner::cart_moveResult::SUCCESS) {
+        ROS_WARN("unknown return code... not SUCCESS");
+        return (int) cart_result_.return_code;            
+    }   
+ 
+    //here if success return code
+    ROS_INFO("returned SUCCESS from planning request");
+    computed_arrival_time_= cart_result_.computed_arrival_time; //action_client.get_computed_arrival_time();
+    ROS_INFO("computed move time: %f",computed_arrival_time_);
+    return (int) cart_result_.return_code;            
 }
 
 int ArmMotionCommander::plan_path_current_to_goal_dp_xyz(Eigen::Vector3d dp_displacement) {

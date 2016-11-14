@@ -42,16 +42,17 @@ geometry_msgs::Pose XformUtils::transformEigenAffine3dToPose(Eigen::Affine3d e) 
 
     return pose;
 }
-
-Eigen::Affine3d XformUtils::transformPoseToEigenAffine3d(geometry_msgs::Pose pose) {
+Eigen::Affine3d XformUtils::transformPoseToEigenAffine3d(geometry_msgs::PoseStamped stPose) {
     Eigen::Affine3d affine;
-
+    geometry_msgs::Pose pose = stPose.pose;
     Eigen::Vector3d Oe;
-
+    ROS_WARN("xformUtils: input pose:");
+    printPose(pose);
     Oe(0) = pose.position.x;
     Oe(1) = pose.position.y;
     Oe(2) = pose.position.z;
     affine.translation() = Oe;
+    
     
     Eigen::Quaterniond q;
     q.x() = pose.orientation.x;
@@ -62,6 +63,32 @@ Eigen::Affine3d XformUtils::transformPoseToEigenAffine3d(geometry_msgs::Pose pos
 
     affine.linear() = Re;
     affine.translation() = Oe;
+    printAffine(affine);
+    return affine;
+}
+
+Eigen::Affine3d XformUtils::transformPoseToEigenAffine3d(geometry_msgs::Pose pose) {
+    Eigen::Affine3d affine;
+
+    Eigen::Vector3d Oe;
+    ROS_WARN("xformUtils: input pose:");
+    printPose(pose);
+    Oe(0) = pose.position.x;
+    Oe(1) = pose.position.y;
+    Oe(2) = pose.position.z;
+    affine.translation() = Oe;
+    
+    
+    Eigen::Quaterniond q;
+    q.x() = pose.orientation.x;
+    q.y() = pose.orientation.y;
+    q.z() = pose.orientation.z;
+    q.w() = pose.orientation.w;
+    Eigen::Matrix3d Re(q);
+
+    affine.linear() = Re;
+    affine.translation() = Oe;
+    printAffine(affine);
     return affine;
 }
 

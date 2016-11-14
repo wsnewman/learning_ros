@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<robot
+  xmlns:xacro="http://www.ros.org/wiki/xacro" name="baxter_on_pedestal">
+
+  <!-- Baxter Base URDF -->
+  <xacro:include filename="$(find baxter_description)/urdf/baxter_base/baxter_base.urdf.xacro">
+    <xacro:arg name="gazebo" value="${gazebo}"/>
+  </xacro:include>
+  <!--grippers-->
+  <xacro:include filename="$(find baxter_description)/urdf/left_end_effector.urdf.xacro" />
+  <xacro:include filename="$(find baxter_description)/urdf/right_end_effector.urdf.xacro" />
+  
+  <!--retrofit with Kinect and pedestal-->
+  <xacro:include filename="$(find baxter_variations)/kinect_link.urdf.xacro" />
+  <xacro:include filename="$(find baxter_variations)/baxter_pedestal.xacro" />
+
+  <!-- attach baxter torso to the pedestal -->
+  <!-- results in torso 0.760 above ground plane-->
+    <link name="world"/>
+  <joint name="baxter_base_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="base" />
+    <origin rpy="0 0 0 " xyz="0 0 0.91"/>
+  </joint>   
+  <joint name="glue_base_to_world" type="fixed">
+    <parent link="world" />
+    <child link="base_link" />
+    <origin rpy="0 0 0 " xyz="0 0 0"/>
+  </joint>   
+
+</robot>

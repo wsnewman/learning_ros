@@ -15,7 +15,7 @@
 // and interpreting responses
 class ArmMotionCommander {
 private:
-    ros::NodeHandle nh_;
+    //ros::NodeHandle *nh_;
     //XformUtils xformUtils_;
     //messages to send/receive cartesian goals / results:
     cartesian_planner::cart_moveGoal cart_goal_;
@@ -30,7 +30,7 @@ private:
     void doneCb_(const actionlib::SimpleClientGoalState& state,
     const cartesian_planner::cart_moveResultConstPtr& result);
 public:
-        ArmMotionCommander(ros::NodeHandle* nodehandle); //define the body of the constructor outside of class definition
+        ArmMotionCommander(); //define the body of the constructor outside of class definition
 
     ~ArmMotionCommander(void) {
     }
@@ -45,6 +45,8 @@ public:
     int plan_jspace_path_current_to_qgoal(Eigen::VectorXd q_des_vec);  
     int plan_path_current_to_goal_gripper_pose(geometry_msgs::PoseStamped des_pose);
     int plan_path_current_to_goal_dp_xyz(Eigen::Vector3d dp_displacement);
+    int plan_jspace_path_current_to_cart_gripper_pose(geometry_msgs::PoseStamped des_pose);
+
 
 };
 #endif

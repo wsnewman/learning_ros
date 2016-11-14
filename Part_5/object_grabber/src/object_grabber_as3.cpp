@@ -13,6 +13,7 @@ int main(int argc, char** argv) {
     ROS_INFO("going into spin");
     while (ros::ok()) {
         ros::spinOnce(); //normally, can simply do: ros::spin();  
+        ros::Duration(0.1).sleep(); //spinOnce() in a loop w/o timer will crash
     }
     return 0;
 }

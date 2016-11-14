@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<robot 
+     xmlns:xacro="http://www.ros.org/wiki/xacro" name="pedestal">
+     <!-- a simple box onto which  robot can be mounted-->
+    <xacro:property name="bodylen" value="0.3" />
+    <xacro:property name="bodywidth" value="0.3" />
+    <xacro:property name="bodyheight" value="0.85" />
+
+    
+    <!--this will be referred to as the "base_link", so code can be
+    compatible with baxter on mobot-->
+    <link name="pedestal_base_link">
+        <visual>
+            <geometry>
+                <box size="${bodylen} ${bodywidth} ${bodyheight}"/>
+            </geometry>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="${bodylen} ${bodywidth} ${bodyheight-0.01}"/>
+            </geometry>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </collision>
+     <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="1"/>
+      <inertia
+        ixx="1.0" ixy="0.0" ixz="0.0"
+        iyy="1.0" iyz="0.0"
+        izz="1.0"/>
+    </inertial>       
+    </link>
+    
+  
+</robot>

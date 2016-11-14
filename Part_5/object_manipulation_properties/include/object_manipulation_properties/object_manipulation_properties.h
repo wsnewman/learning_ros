@@ -7,10 +7,9 @@
 #include <Eigen/Geometry>
 #include <xform_utils/xform_utils.h> //these could be handy in the future
 #include <geometry_msgs/PoseStamped.h>
+#include <object_manipulation_properties/gripper_ID_codes.h>
+#include <object_manipulation_properties/object_ID_codes.h>
 
-
-const int TOY_BLOCK_ID = 1000;
-//const int ANOTHER_OBJECT_ID= ...
 
 class ObjectManipulationProperties {
 private:
