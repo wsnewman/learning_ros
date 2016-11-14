@@ -5,7 +5,7 @@
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/server/simple_action_server.h>
 #include <actionlib/client/terminal_state.h>
-#include <object_grabber/object_grabber3Action.h>
+#include <object_grabber/object_grabberAction.h>
 #include <cartesian_planner/cart_moveAction.h>
 #include <cartesian_planner/cart_motion_commander.h>
 #include <Eigen/Eigen>
@@ -25,14 +25,14 @@ private:
     ArmMotionCommander arm_motion_commander_; //robot-independent class to interact w/ cartesian-moves action server 
     ros::ServiceClient manip_properties_client_; // = n.serviceClient<object_manipulation_properties::objectManipulationQuery>("object_manip_query_svc");
     object_manipulation_properties::objectManipulationQuery manip_properties_srv_;
-
+ 
     ros::ServiceClient gripper_client_; //generic gripper interface
     generic_gripper_services::genericGripperInterface gripper_srv_;
 
     //messages to send/receive cartesian goals / results:
-    object_grabber::object_grabber3Goal grab_goal_;
-    object_grabber::object_grabber3Result grab_result_; 
-    object_grabber::object_grabber3Feedback grab_fdbk_;    
+    object_grabber::object_grabberGoal grab_goal_;
+    object_grabber::object_grabberResult grab_result_; 
+    object_grabber::object_grabberFeedback grab_fdbk_;    
     geometry_msgs::PoseStamped object_pose_stamped_;
     //pose of object w/rt generic_gripper_frame for grasp, approach, depart:
     geometry_msgs::PoseStamped grasp_pose_,approach_pose_,depart_pose_,dropoff_pose_;
@@ -89,8 +89,8 @@ private:
 
 //int32 SET_SPEED_FACTOR = 10    #use arg speed_factor to change time scale of trajectory plan; larger than 1.0--> slower
 
-            
-    actionlib::SimpleActionServer<object_grabber::object_grabber3Action> object_grabber_as_;
+             
+    actionlib::SimpleActionServer<object_grabber::object_grabberAction> object_grabber_as_;
     actionlib::SimpleActionClient<cartesian_planner::cart_moveAction> cart_move_action_client_;
     void cartMoveDoneCb_(const actionlib::SimpleClientGoalState& state,
         const cartesian_planner::cart_moveResultConstPtr& result);
@@ -99,7 +99,7 @@ private:
     //bool set_gripper_transforms(int gripper_id,int object_id, geometry_msgs::PoseStamped &grasp_pose,
     //  geometry_msgs::PoseStamped &approach_pose,geometry_msgs::PoseStamped &depart_pose);      
     //action callback fnc
-    void executeCB(const actionlib::SimpleActionServer<object_grabber::object_grabber3Action>::GoalConstPtr& goal);  
+    void executeCB(const actionlib::SimpleActionServer<object_grabber::object_grabberAction>::GoalConstPtr& goal);  
     bool get_gripper_id();
     bool get_default_grab_poses(int object_id,geometry_msgs::PoseStamped object_pose_stamped);   
     bool get_default_dropoff_poses(int object_id,geometry_msgs::PoseStamped object_dropoff_pose_stamped);

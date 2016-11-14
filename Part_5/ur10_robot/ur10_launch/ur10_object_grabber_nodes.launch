@@ -4,9 +4,9 @@
   <include file="$(find cartesian_planner)/launch/ur10_static_transforms.launch"/>
   <include file="$(find exmpl_models)/launch/add_table_and_block.launch"/>  
 
-  <node pkg="object_grabber" type="set_sticky_fingers_gripper_param" name="set_baxter_gripper_param"  output="screen"/>  
+  <node pkg="object_grabber" type="set_sticky_fingers_gripper_param" name="set_sticky_fingers_gripper_param"  output="screen"/>  
   <node pkg="object_manipulation_properties" type="object_manipulation_query_svc" name="object_manipulation_query_svc"  output="screen"/>    
   <node pkg="generic_gripper_services" type="virtual_vacuum_gripper_service" name="virtual_vacuum_gripper_service"  output="screen"/>    
 
- <node pkg="object_grabber" type="object_grabber_as3" name="object_grabber_action_server"  output="screen"/> 
+ <node pkg="object_grabber" type="object_grabber_action_server" name="object_grabber_action_server"  output="screen"/> 
 </launch>
