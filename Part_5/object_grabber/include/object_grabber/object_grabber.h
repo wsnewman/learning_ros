@@ -1,109 +1,123 @@
-//define a class to encapsulate some of the tedium of populating and sending goals,
-// and interpreting responses
-#ifndef BAXTER_OBJECT_GRABBER_H
-#define	BAXTER_OBJECT_GRABBER_H
-#include <ros/ros.h>
-#include <actionlib/server/simple_action_server.h>
+//define ObjectGrabber class; contains functionality to
+// serve manipulation goals
+#ifndef OBJECT_GRABBER_H
+#define	OBJECT_GRABBER_H
 #include <actionlib/client/simple_action_client.h>
+#include <actionlib/server/simple_action_server.h>
 #include <actionlib/client/terminal_state.h>
+#include <object_grabber/object_grabber3Action.h>
 #include <cartesian_planner/cart_moveAction.h>
 #include <cartesian_planner/cart_motion_commander.h>
-#include <geometry_msgs/PoseStamped.h>
-#include <object_grabber/object_grabberAction.h>
 #include <Eigen/Eigen>
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 #include <xform_utils/xform_utils.h>
-//#include <cartesian_planner/baxter_arm_motion_commander.h>
-//#include <simple_baxter_gripper_interface/simple_baxter_gripper_interface.h>
-//#include <baxter_fk_ik/baxter_kinematics.h> 
+#include <object_manipulation_properties/gripper_ID_codes.h>
+#include <object_manipulation_properties/object_ID_codes.h>
+#include <object_manipulation_properties/objectManipulationQuery.h>
 #include <std_msgs/Bool.h>
-#include <object_manipulation_properties/object_manipulation_properties.h>
 #include <tf/transform_listener.h>
-double GRIPPER_TIMEOUT = 5.0; //max waiting time for gripper open/close
-
+#include<generic_gripper_services/genericGripperInterface.h>
 class ObjectGrabber {
 private:
     ros::NodeHandle nh_;
     XformUtils xformUtils;
-    ArmMotionCommander armMotionCommander;
-    //BaxterGripper baxterGripper;  //generalize this
-    ObjectManipulationProperties objectManipulationProperties;
+    ArmMotionCommander arm_motion_commander_; //robot-independent class to interact w/ cartesian-moves action server 
+    ros::ServiceClient manip_properties_client_; // = n.serviceClient<object_manipulation_properties::objectManipulationQuery>("object_manip_query_svc");
+    object_manipulation_properties::objectManipulationQuery manip_properties_srv_;
+
+    ros::ServiceClient gripper_client_; //generic gripper interface
+    generic_gripper_services::genericGripperInterface gripper_srv_;
 
     //messages to send/receive cartesian goals / results:
-    object_grabber::object_grabberGoal grab_goal_;
-    object_grabber::object_grabberResult grab_result_;
-    object_grabber::object_grabberFeedback grab_fdbk_;
+    object_grabber::object_grabber3Goal grab_goal_;
+    object_grabber::object_grabber3Result grab_result_; 
+    object_grabber::object_grabber3Feedback grab_fdbk_;    
     geometry_msgs::PoseStamped object_pose_stamped_;
-    geometry_msgs::PoseStamped object_pose_stamped_wrt_torso_;
-    //geometry_msgs::PoseStamped des_flange_pose_stamped_;
-    //geometry_msgs::PoseStamped des_flange_pose_stamped_wrt_torso_;
-    geometry_msgs::PoseStamped des_gripper_pose_stamped_wrt_base_;
-    int object_code_;
-    //std_msgs::Bool gripper_open,gripper_close;
+    //pose of object w/rt generic_gripper_frame for grasp, approach, depart:
+    geometry_msgs::PoseStamped grasp_pose_,approach_pose_,depart_pose_,dropoff_pose_;
+    //from object_manip service, defines poses as:
+    // where is the object w/rt the gripper for: approach, grasp, depart
+    // separate calls for GET_GRASP_POSE_TRANSFORMS, GET_APPROACH_POSE_TRANSFORMS, GET_DEPART_POSE_TRANSFORMS
+    geometry_msgs::Pose grasp_object_pose_wrt_gripper_;
+    geometry_msgs::Pose approach_object_pose_wrt_gripper_; //from gripper viewpoint, where is object
+                                                                  //when gripper is at approach pose for current
+                                                                  //grasp strategy
+    geometry_msgs::Pose depart_object_pose_wrt_gripper_;   //departure strategy depends on how object
+                                                                  //is grasped and how want to lift it
+                                                                  
+    //geometry_msgs::PoseStamped lift_object_pose_wrt_gripper_; // depart for lifting object can be different
+    //geometry_msgs::PoseStamped withdraw_object_pose_wrt_gripper_; //from depart after releasing object
 
-    double gripper_theta_;
-    double z_depart_, L_approach_, dz_approach_offset_;
-    double gripper_table_z_;
+    cartesian_planner::cart_moveGoal cart_goal_;
+    cartesian_planner::cart_moveResult cart_result_; 
+    double computed_arrival_time_;
+    
+    
+    int object_code_;
+    std_msgs::Bool grasp_,release_;
+  
+    int gripper_id_;
+    
     Eigen::Vector3d gripper_b_des_;
     Eigen::Vector3d gripper_n_des_;
     Eigen::Vector3d gripper_t_des_;
-    Eigen::Vector3d grasp_origin_, approach_origin_, depart_origin_;
+    Eigen::Vector3d grasp_origin_,approach_origin_,depart_origin_;
     Eigen::Matrix3d R_gripper_vert_cyl_grasp_;
-    Eigen::Affine3d a_gripper_start_, a_gripper_end_;
-    Eigen::Affine3d a_gripper_approach_, a_gripper_depart_, a_gripper_grasp_;
-    //Eigen::Affine3d a_flange_approach_, a_flange_depart_, a_flange_grasp_;
-    //Eigen::Affine3d a_right_gripper_frame_wrt_flange_;
-    //Baxter_IK_solver baxter_IK_solver_; // instantiate an IK solver
-    tf::TransformListener tfListener;
+    Eigen::Affine3d a_gripper_start_,a_gripper_end_;
+    Eigen::Affine3d a_gripper_approach_,a_gripper_depart_, a_gripper_grasp_;
+    Eigen::Affine3d a_gripper_frame_wrt_flange;
 
-    actionlib::SimpleActionServer<object_grabber::object_grabberAction> object_grabber_as_;
+    ros::Publisher gripper_publisher_;
+ //want these functions:
+    //int32 MOVE_TO_WAITING_POSE = 1 #move to a pose, defined on param server, that is convenient
+                               //#e.g., prepared to approach a surface, but out of way of sensors
+//int32 PLAN_MOVE_TO_GRASP_POSE  =2   #expects parameters of current_object_pose, object_ID, grasp_option, approach_option
+                               //#must send separate "grasp" command to gripper
+//int32 PLAN_MOVE_FINE_TO_GRASP_POSE  =3   #as above, but finer/slower approach motion
+//int32 PLAN_MOVE_OBJECT_JSPACE =4    #move a grasped object to a destination pose using simple, joint-space move
+                               //#expects params: des_object_pose, object_ID, grasp_option (need to know how object is grasped)
+//int32 PLAN_MOVE_OBJECT_CSPACE = 5   #move a grasped object with Cartesian motion to a desired object pose
+                               //#params:  des_object_pose, object_ID, grasp_option
+//int32 PLAN_MOVE_FINE_OBJECT_CSPACE = 6 #as above, but w/ finer, slower motion
+
+//int32 PLAN_WITHDRAW_FROM_OBJECT = 7 #with object grasp released, perform departure from object using specified depart strategy
+                               //#params: object_ID, grasp_option, depart_option
+//int32 PLAN_WITHDRAW_FINE_FROM_OBJECT = 8 #as above, but slower/more precise motion
+
+//int32 PLAN_OBJECT_GRASP = 9  #combine multiple elements above to acquire an object
+
+//int32 SET_SPEED_FACTOR = 10    #use arg speed_factor to change time scale of trajectory plan; larger than 1.0--> slower
+
+            
+    actionlib::SimpleActionServer<object_grabber::object_grabber3Action> object_grabber_as_;
+    actionlib::SimpleActionClient<cartesian_planner::cart_moveAction> cart_move_action_client_;
+    void cartMoveDoneCb_(const actionlib::SimpleClientGoalState& state,
+        const cartesian_planner::cart_moveResultConstPtr& result);
+    //this is a complex fnc that interacts with the object_manipulation_query_svc
+    // get get grasp poses/strategies given a gripper_id and object_id
+    //bool set_gripper_transforms(int gripper_id,int object_id, geometry_msgs::PoseStamped &grasp_pose,
+    //  geometry_msgs::PoseStamped &approach_pose,geometry_msgs::PoseStamped &depart_pose);      
     //action callback fnc
-    void executeCB(const actionlib::SimpleActionServer<object_grabber::object_grabberAction>::GoalConstPtr& goal);
-
-    int vertical_cylinder_power_grasp(geometry_msgs::PoseStamped object_pose);
-
-    //cmd to approach an object along toolframe z-axis direction and grasp it
-    //provide grasp pose, expressed as toolframe pose w/rt torso, approach distance, and
-    // a test value for gripper closure to confirm successful grasp
-    int grasp_approach_tool_z_axis(geometry_msgs::PoseStamped des_grasp_pose,
-            double approach_dist, double gripper_close_test_val);
-    int dropoff_from_above(geometry_msgs::PoseStamped des_gripper_pose, double approach_dist);
-    //int move_flange_to(geometry_msgs::PoseStamped flange_pose_wrt_torso);
-    //int fine_move_flange_to(geometry_msgs::PoseStamped des_flange_pose_wrt_torso);
-    int jspace_move_to_pre_pose(void);
-    //int jspace_move_flange_to(geometry_msgs::PoseStamped des_flange_pose_wrt_torso);
-
-    geometry_msgs::PoseStamped convert_pose_to_base_frame(geometry_msgs::PoseStamped pose_stamped);
-
-    //given object_id and given object's pose, compute corresponding right-arm toolflange pose for grasp
-    //input an object poseStamped and object_id; return a corresponding right-arm toolflange poseStamped for grasp
-    //geometry_msgs::PoseStamped object_to_flange_grasp_transform(int object_id, geometry_msgs::PoseStamped object_pose);
-
-    //specialized fncs: describes a grasp transform for a specific object (TOY_BLOCK)
-    Eigen::Affine3d block_grasp_transform(Eigen::Affine3d block_affine);
-    geometry_msgs::PoseStamped block_grasp_transform(geometry_msgs::PoseStamped block_pose);
-    //geometry_msgs::PoseStamped block_to_flange_grasp_transform(geometry_msgs::PoseStamped block_pose);
-
-    Eigen::Affine3d grasp_transform_;
-    double approach_dist_, gripper_test_val_;
-    int object_id_;
+    void executeCB(const actionlib::SimpleActionServer<object_grabber::object_grabber3Action>::GoalConstPtr& goal);  
+    bool get_gripper_id();
+    bool get_default_grab_poses(int object_id,geometry_msgs::PoseStamped object_pose_stamped);   
+    bool get_default_dropoff_poses(int object_id,geometry_msgs::PoseStamped object_dropoff_pose_stamped);
+    int grab_object(int object_id,geometry_msgs::PoseStamped object_pose_stamped);   
+    int dropoff_object(int object_id,geometry_msgs::PoseStamped desired_object_pose_stamped);
+    
+    //void vertical_cylinder_power_grasp(geometry_msgs::PoseStamped object_pose);    
+    //void grasp_from_approach_pose(geometry_msgs::PoseStamped approach_pose, double approach_dist);
 
 public:
 
-    ObjectGrabber(ros::NodeHandle* nodehandle); //define the body of the constructor outside of class definition
-    //command open gripper, and wait for opening to exceed "open_val_test" (e.g. 95.0)
-    int open_gripper(double open_val_test);
-    //command close gripper, and wait for opening to be less than "close_val_test" (e.g. 90.0, for block)
-    int close_gripper(double close_val_test);
-
-    //void set_right_tool_xform(Eigen::Affine3d xform) {
-    //    a_right_gripper_frame_wrt_flange_ = xform;
-    //};
+        ObjectGrabber(ros::NodeHandle* nodehandle); //define the body of the constructor outside of class definition
+        //void set_tool_xform(Eigen::Affine3d xform) { a_gripper_frame_wrt_flange = xform; };
 
     ~ObjectGrabber(void) {
     }
-    Eigen::Affine3d get_right_tool_transform(void);
+    //define some member methods here
 
 };
+
 #endif

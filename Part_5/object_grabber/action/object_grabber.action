@@ -3,39 +3,57 @@
 #object_grabber will plan approach, grasp and lift of object
 #returns codes regarding outcome
 
-int32 UPRIGHT_CYLINDER = 1
-int32 GRAB_UPRIGHT_CYLINDER = 1 #synonym
-int32 TOY_BLOCK = 2
-int32 GRAB_TOY_BLOCK = 2 #synonym
-int32 GRAB_W_TOOL_Z_APPROACH = 2 #another synonym
-int32 PLACE_UPRIGHT_CYLINDER = 3 #new drop-off command
-int32 PLACE_TOY_BLOCK = 4 #drop-off toy block
-int32 DROPOFF_ALONG_TOOL_Z = 4 #synonym
+#action codes:
+int32 TEST_CODE = 0   #a simple "ping" to action server
+int32 MOVE_TO_WAITING_POSE = 1 #move to a pose, defined on param server, that is convenient
+                               #e.g., prepared to approach a surface, but out of way of sensors
+int32 PLAN_MOVE_TO_GRASP_POSE  =2   #expects parameters of current_object_pose, object_ID, grasp_option, approach_option
+                               #must send separate "grasp" command to gripper
+int32 PLAN_MOVE_FINE_TO_GRASP_POSE  =3   #as above, but finer/slower approach motion
+int32 PLAN_MOVE_OBJECT_JSPACE =4    #move a grasped object to a destination pose using simple, joint-space move
+                               #expects params: des_object_pose, object_ID, grasp_option (need to know how object is grasped)
+int32 PLAN_MOVE_OBJECT_CSPACE = 5   #move a grasped object with Cartesian motion to a desired object pose
+                               #params:  des_object_pose, object_ID, grasp_option
+int32 PLAN_MOVE_FINE_OBJECT_CSPACE = 6 #as above, but w/ finer, slower motion
 
-int32 MOVE_FLANGE_TO = 5 #specify flange pose to reach
-int32 FINE_MOVE_FLANGE_TO = 6 #precision move to specified flange pose
-int32 MOVE_TO_PRE_POSE = 7 # get hand out of way of camera
-int32 JSPACE_MOVE_FLANGE_TO = 8 # joint-space move to specified flange pose
+int32 PLAN_WITHDRAW_FROM_OBJECT = 7 #with object grasp released, perform departure from object using specified depart strategy
+                               #params: object_ID, grasp_option, depart_option
+int32 PLAN_WITHDRAW_FINE_FROM_OBJECT = 8 #as above, but slower/more precise motion
 
-int32 CLOSE_GRIPPER = 100  #commands to open/close gripper; should specify test value
-int32 OPEN_GRIPPER = 101
+int32 PLAN_OBJECT_GRASP = 9  #combine multiple elements above to acquire an object
 
-#moved these properties to object_manipulation_properties package/library
-#float64 TOY_BLOCK_APPROACH_DIST = 0.05
-#expect w/ gripper closed on toy block, finger separation should be more than this value:
-#float64 TOY_BLOCK_GRIPPER_CLOSE_TEST_VAL = 80.0
+int32 GRAB_OBJECT = 101 #plan and attempt to execute object acquisition, including grasp and lift
+int32 DROPOFF_OBJECT = 102 #plan and attempt to execute object placement and arm withdrawal
 
+int32 SET_SPEED_FACTOR = 10    #use arg speed_factor to change time scale of trajectory plan; larger than 1.0--> slower
 
-#add more objects here...
+#manipulation strategy options:
+int32 DEFAULT_GRASP_STRATEGY = 0
+#has corresponding default approach and depart strategies
 
+int32 EXECUTE_PLANNED_MOVE = 100 #accept arm-motion plan and enable its execution
 
+#generalized gripper commands:
+int32 GRIPPER_PREPARE_GRASP_OBJECT = 20 #may require gripper to prepare for grasp approach, e.g. open fingers
+int32 GRIPPER_GRASP_OBJECT = 21        #command to perform appropriate action to grasp object, 
+                               #assumes gripper is in appropriate pose, prepared to grasp object
+                               #client does not need to know what type of gripper is used
+int32 GRIPPER_RELEASE_OBJECT = 22      #command to gripper to release a grasped object
+                               #params: object ID and grasp option used; 
+int32 GRIPPER_IS_OBJECT_GRASPED = 23   #a query; may require object_ID, grasp option used, and/or corresponding grasp test parameters; 
+                               #should return true/false
 
 #goal:
 int32 action_code
 int32 object_id
-geometry_msgs/PoseStamped desired_frame  
-#float64 gripper_test_val
-
+int32 grasp_option
+int32 approach_strategy
+int32 lift_object_strategy
+int32 dropoff_strategy
+int32 dropoff_withdraw_strategy
+geometry_msgs/PoseStamped object_frame  #should be w/rt system_ref_frame, or have tf to this frame available
+float64 speed_factor #default to 1.0
+float64[] gripper_test_params
 ---
 #result definition
 #  response codes...
@@ -49,10 +67,7 @@ int32 FAILED_OBJECT_NOT_IN_GRIPPER=5
 int32 FAILED_OBJECT_UNKNOWN=6
 int32 OBJECT_GRABBER_BUSY=7
 int32 OBJECT_GRABBER_CANCELLED=8
-int32 FAILED_CANNOT_REACH_DROPOFF_POSE=9
-int32 FAILED_CANNOT_REACH_DROPOFF_APPROACH=10
-int32 FAILED_CANNOT_REACH_POSE_CARTESIAN_MOVE=11
-int32 FAILED_CANNOT_REACH_JSPACE_MOVE=12
+int32 FAILED_CANNOT_REACH_DESIRED_POSE=9
 int32 FAILED_CANNOT_MOVE_CARTESIAN_FINE=13
 int32 FAILED_CANNOT_MOVE_TO_PRE_POSE=14
 int32 ACTION_CODE_UNKNOWN=15
@@ -61,9 +76,11 @@ int32 GRIPPER_IS_CLOSED=17
 int32 GRIPPER_FAILURE=18
 int32 PENDING=19
 int32 OBJECT_DROPPED_OFF = 20
+int32 NO_KNOWN_GRASP_OPTIONS_THIS_GRIPPER_AND_OBJECT = 21
 
 int32 return_code
-geometry_msgs/PoseStamped des_flange_pose_stamped_wrt_torso
+#geometry_msgs/PoseStamped des_flange_pose_stamped_wrt_torso
+float64 computed_move_time
 ---
 #feedback: optional; 
 int32 fdbk

@@ -1,9 +1,9 @@
-// object_grabber_as: 
-// wsn, August, 2016
-// illustrates use of ObjectGrabber action server
+// object_grabber_as3: 
+// wsn, November, 2016
+// ObjectGrabber action server w/ ObjectGrabber class
 
 #include<ros/ros.h>
-#include <object_grabber/object_grabber.h>
+#include <object_grabber/object_grabber3.h>
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "object_grabber_action_server_node"); // name this node 
@@ -13,6 +13,7 @@ int main(int argc, char** argv) {
     ROS_INFO("going into spin");
     while (ros::ok()) {
         ros::spinOnce(); //normally, can simply do: ros::spin();  
+        ros::Duration(0.1).sleep(); //spinOnce() in a loop w/o timer will crash
     }
     return 0;
 }
