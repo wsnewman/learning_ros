@@ -1,0 +1,69 @@
+object grabber organization:
+  object grabber client: specify goals only in task space
+    can specify goals:
+      TEST_CODE
+      MOVE_TO_WAITING_POSE
+      GRAB_OBJECT (must specify object_ID, strategy, and object pose w/rt some frame in tree)
+      DROPOFF_OBJECT (must specify as above)
+  no reference to robot type, gripper type, gripper mount transform, grasp transform
+    (except as implied by grasp strategy code).  Only refers to object_ID and
+    poses (which may be supplied by sensing)
+    
+  action interface defined in object_grabber.action
+  
+    
+  object grabber action server:  this is also robot-agnostic, but does lookup gripper to be used
+      
+    on instantiation of ObjectGrabber object:
+     creates an action server, object_grabber_action_service
+     creates an action client of cartMoveActionServer
+     checks parameter server for gripper ID
+     checks if object_manip_query_svc is alive
+     checks if generic_gripper_svc is alive (must launch appropriate version)
+     instantiates an ArmMotionCommander object, defined in cartesian_planner/cart_motion_commander.cpp
+     
+    on receiving a goal, switch/case points to one of the action-code options
+      (test, move_to_waiting_pose, grab_object, dropoff_object)
+      uses class arm_motion_commander to send commands to cartesian-motion action server, w/ goals
+       specified as gripper poses;  is arm-agnostic, and refers to generic frames:
+       system_ref_frame and generic_gripper_frame
+       launch file must launch static_transform_publishers appropriate for robot base-link name,
+         mounting config, and gripper frame
+         
+     grab_object() function within object_grabber action server:
+       does grasp/release of via generic gripper interface (gripper agnostic, but appropriately mapped)
+       calls get_default_grab_poses(...), which asks manip_properties service re/ approach, grasp
+       and depart strategy options, chooses default (first option), and asks for corresponding
+       approach, grasp and depart gripper poses, relative to object frame
+       this is specific to gripper_ID and object_ID, but independent of arm and object pose
+       grasp_strategy, object_ID, gripper_ID--> transforms btwn object/gripper_frame
+       combine w/ object pose w/rt frame_id --> gripper poses w/rt frame_id
+       requires nasty transforms in get_default_grab_poses
+         converts object poseStamped to stampedTransform; preserves reference frame_id, adds "object" child frame
+         does stf inverse
+         does stf multiply
+         gets poseStamped from stf = grasp_pose_ = generic_gripper_frame w/rt object's frame_id
+         repeats for approach and depart frames
+       grab_object uses these computed frames w/ arm_motion_commander motion plans
+       
+       cartesian motion action server IS robot dependent; must launch robot-appropriate server
+       it is responsible for converting from 
+       generic_gripper_frame poses w/rt whatever frame_id, and xform into robot-specific flange frame w/rt
+       robot-specific base_link (whatever is appropriate for associated custom FK/IK).  Computes robot-specific
+       joint commands to achieved desired Cartesian motion
+             
+     e.g., ur10 nodes to launch:
+ these are specific to UR10:
+     "cartesian_planner" type="ur10_cart_move_as"
+     $(find cartesian_planner)/launch/ur10_static_transforms.launch
+     "object_grabber" type="set_sticky_fingers_gripper_param"
+     "generic_gripper_services" type="virtual_vacuum_gripper_service"
+
+these are generic:
+     "object_manipulation_properties" type="object_manipulation_query_svc"     
+     "object_grabber" type="object_grabber_action_server"
+ task-specific client:
+       rosrun object_grabber example_object_grabber_client  
+    
+    
+    

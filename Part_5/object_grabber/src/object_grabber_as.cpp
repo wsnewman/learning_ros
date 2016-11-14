@@ -3,7 +3,7 @@
 // ObjectGrabber action server w/ ObjectGrabber class
 
 #include<ros/ros.h>
-#include <object_grabber/object_grabber3.h>
+#include <object_grabber/object_grabber.h>
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "object_grabber_action_server_node"); // name this node 

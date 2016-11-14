@@ -111,8 +111,8 @@ bool ObjectGrabber::get_default_grab_poses(int object_id,geometry_msgs::PoseStam
                 }
     
     grasp_object_pose_wrt_gripper_ = manip_properties_srv_.response.gripper_pose_options[0];
-    ROS_INFO("default grasped pose of object w/rt gripper: ");
-    xformUtils.printPose(grasp_object_pose_wrt_gripper_);
+    //ROS_INFO("default grasped pose of object w/rt gripper: ");
+    //xformUtils.printPose(grasp_object_pose_wrt_gripper_);
     
     //--------------now get the approach pose; first, find the default approach strategy:
      manip_properties_srv_.request.query_code =
@@ -135,8 +135,8 @@ bool ObjectGrabber::get_default_grab_poses(int object_id,geometry_msgs::PoseStam
                     return false;
                 }   
     approach_object_pose_wrt_gripper_= manip_properties_srv_.response.gripper_pose_options[0]; //using the 0'th, i.e. default option
-    ROS_INFO("default approach pose, expressed as pose of object w/rt gripper at approach: ");
-    xformUtils.printPose(approach_object_pose_wrt_gripper_);   
+    //ROS_INFO("default approach pose, expressed as pose of object w/rt gripper at approach: ");
+    //xformUtils.printPose(approach_object_pose_wrt_gripper_);   
 
     //now get the depart (w/ grasped object) pose:  
     manip_properties_srv_.request.query_code =
@@ -163,8 +163,8 @@ bool ObjectGrabber::get_default_grab_poses(int object_id,geometry_msgs::PoseStam
     //this is expressed somewhat strangely.  Often, this pose will be identical to approach_object_pose_wrt_gripper_
     //expresses original (ungrasped) pose of object from viewpoint of gripper when gripper is at the depart pose,
     // though this depart pose presumably would be holding the object of interest
-    ROS_INFO("default depart pose, expressed as original pose of object w/rt gripper at depart: ");
-    xformUtils.printPose(depart_object_pose_wrt_gripper_);   
+    //ROS_INFO("default depart pose, expressed as original pose of object w/rt gripper at depart: ");
+    //xformUtils.printPose(depart_object_pose_wrt_gripper_);   
     
     //use these relative values to compute gripper poses w/rt system ref frame--using the object's pose w/rt
     // it's named frame_id
@@ -182,11 +182,11 @@ bool ObjectGrabber::get_default_grab_poses(int object_id,geometry_msgs::PoseStam
     object_wrt_gripper_ps.header.frame_id = "generic_gripper_frame";
     tf::StampedTransform object_wrt_gripper_stf = 
             xformUtils.convert_poseStamped_to_stampedTransform(object_wrt_gripper_ps, "object_frame"); 
-    ROS_INFO("object w/rt gripper stf: ");
-    xformUtils.printStampedTf(object_wrt_gripper_stf);
+    //ROS_INFO("object w/rt gripper stf: ");
+    //xformUtils.printStampedTf(object_wrt_gripper_stf);
     tf::StampedTransform gripper_wrt_object_stf = xformUtils.stamped_transform_inverse(object_wrt_gripper_stf); //object_wrt_gripper_stf.inverse();
-    ROS_INFO("gripper w/rt object stf: ");
-    xformUtils.printStampedTf(gripper_wrt_object_stf);
+    //ROS_INFO("gripper w/rt object stf: ");
+    //xformUtils.printStampedTf(gripper_wrt_object_stf);
     //now compute gripper pose w/rt whatever frame object was expressed in:
     tf::StampedTransform gripper_stf;
     if (!xformUtils.multiply_stamped_tfs(object_stf,gripper_wrt_object_stf,gripper_stf)) {
@@ -196,8 +196,8 @@ bool ObjectGrabber::get_default_grab_poses(int object_id,geometry_msgs::PoseStam
     //extract stamped pose from stf; this is the desired generic_gripper_frame w/rt a named frame_id
     // that corresponds to desired grasp transform for given object at a given pose w/rt frame_id
     grasp_pose_ = xformUtils.get_pose_from_stamped_tf(gripper_stf);
-    ROS_INFO("computed gripper pose at grasp location: ");
-    xformUtils.printStampedPose(grasp_pose_);
+    //ROS_INFO("computed gripper pose at grasp location: ");
+    //xformUtils.printStampedPose(grasp_pose_);
     
     //do same for approach and depart poses:
     //approach_object_pose_wrt_gripper_
@@ -205,11 +205,11 @@ bool ObjectGrabber::get_default_grab_poses(int object_id,geometry_msgs::PoseStam
     object_wrt_gripper_ps.pose = approach_object_pose_wrt_gripper_; //transform approach pose
     object_wrt_gripper_ps.header.frame_id = "generic_gripper_frame";
     object_wrt_gripper_stf = xformUtils.convert_poseStamped_to_stampedTransform(object_wrt_gripper_ps, "object_frame"); 
-    ROS_INFO("object w/rt gripper stf: ");
-    xformUtils.printStampedTf(object_wrt_gripper_stf);
+    //ROS_INFO("object w/rt gripper stf: ");
+    //xformUtils.printStampedTf(object_wrt_gripper_stf);
     gripper_wrt_object_stf = xformUtils.stamped_transform_inverse(object_wrt_gripper_stf); //object_wrt_gripper_stf.inverse();
-    ROS_INFO("gripper w/rt object stf: ");
-    xformUtils.printStampedTf(gripper_wrt_object_stf);
+    //ROS_INFO("gripper w/rt object stf: ");
+    //xformUtils.printStampedTf(gripper_wrt_object_stf);
     //now compute gripper pose w/rt whatever frame object was expressed in:
     if (!xformUtils.multiply_stamped_tfs(object_stf,gripper_wrt_object_stf,gripper_stf)) {
           ROS_WARN("illegal stamped-transform multiply");
@@ -218,19 +218,19 @@ bool ObjectGrabber::get_default_grab_poses(int object_id,geometry_msgs::PoseStam
     //extract stamped pose from stf; this is the desired generic_gripper_frame w/rt a named frame_id
     // that corresponds to desired grasp transform for given object at a given pose w/rt frame_id
     approach_pose_ = xformUtils.get_pose_from_stamped_tf(gripper_stf);    
-     ROS_INFO("computed gripper pose at approach location: ");
-    xformUtils.printStampedPose(approach_pose_);   
+    // ROS_INFO("computed gripper pose at approach location: ");
+    //xformUtils.printStampedPose(approach_pose_);   
     
     //finally, repeat for depart pose:
-    ROS_INFO("computing depart stf: ");
+    //ROS_INFO("computing depart stf: ");
     object_wrt_gripper_ps.pose = depart_object_pose_wrt_gripper_; //transform depart pose
     object_wrt_gripper_ps.header.frame_id = "generic_gripper_frame";
     object_wrt_gripper_stf = xformUtils.convert_poseStamped_to_stampedTransform(object_wrt_gripper_ps, "object_frame"); 
-    ROS_INFO("object w/rt gripper stf: ");
-    xformUtils.printStampedTf(object_wrt_gripper_stf);
+    //ROS_INFO("object w/rt gripper stf: ");
+    //xformUtils.printStampedTf(object_wrt_gripper_stf);
     gripper_wrt_object_stf = xformUtils.stamped_transform_inverse(object_wrt_gripper_stf); //object_wrt_gripper_stf.inverse();
-    ROS_INFO("gripper w/rt object stf: ");
-    xformUtils.printStampedTf(gripper_wrt_object_stf);
+    //ROS_INFO("gripper w/rt object stf: ");
+    //xformUtils.printStampedTf(gripper_wrt_object_stf);
     //now compute gripper pose w/rt whatever frame object was expressed in:
     if (!xformUtils.multiply_stamped_tfs(object_stf,gripper_wrt_object_stf,gripper_stf)) {
           ROS_WARN("illegal stamped-transform multiply");
@@ -239,8 +239,8 @@ bool ObjectGrabber::get_default_grab_poses(int object_id,geometry_msgs::PoseStam
     //extract stamped pose from stf; this is the desired generic_gripper_frame w/rt a named frame_id
     // that corresponds to desired grasp transform for given object at a given pose w/rt frame_id
     depart_pose_ = xformUtils.get_pose_from_stamped_tf(gripper_stf);      
-     ROS_INFO("computed gripper pose at depart location: ");
-    xformUtils.printStampedPose(depart_pose_);      
+    // ROS_INFO("computed gripper pose at depart location: ");
+    //xformUtils.printStampedPose(depart_pose_);      
     
     return true;
 }
@@ -540,7 +540,7 @@ void ObjectGrabber::executeCB(const actionlib::SimpleActionServer<object_grabber
         case object_grabber::object_grabberGoal::TEST_CODE:
             ROS_INFO("got test ping");
             arm_motion_commander_.send_test_goal(); // send a test command
-            grab_result_.return_code = object_grabber::object_grabber3Result::SUCCESS;
+            grab_result_.return_code = object_grabber::object_grabberResult::SUCCESS;
             object_grabber_as_.setSucceeded(grab_result_);
             break;
 
