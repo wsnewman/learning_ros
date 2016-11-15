@@ -371,11 +371,53 @@ void ArmMotionInterface::executeCB(const actionlib::SimpleActionServer<cartesian
     int njnts;
 
     switch (command_mode_) {
+        //a simple "is-alive" test
         case cartesian_planner::cart_moveGoal::ARM_TEST_MODE:
             ROS_INFO("responding to request TEST_MODE: ");
             cart_result_.return_code = cartesian_planner::cart_moveResult::SUCCESS;
             cart_move_as_.setSucceeded(cart_result_);
             break;
+            
+            //prepares a trajectory plan to move arm from current pose to pre-defined pose
+        case cartesian_planner::cart_moveGoal::PLAN_PATH_CURRENT_TO_WAITING_POSE:
+            ROS_INFO("responding to request PLAN_PATH_CURRENT_TO_WAITING_POSE");
+            q_start_Xd_ = g_q_vec_arm_Xd;//get_jspace_start_();
+            //q_start=q_start_Xd; // convert to fixed-size vector;
+            plan_jspace_path_qstart_to_qend(q_start_Xd_, q_pre_pose_Xd_);
+            busy_working_on_a_request_ = false;
+            break;   
+         
+        //computes a joint-space path from current pose to a gripper Cartesian destination
+        case cartesian_planner::cart_moveGoal::PLAN_JSPACE_PATH_CURRENT_TO_CART_GRIPPER_POSE:  
+            ROS_WARN("responding to request PLAN_JSPACE_PATH_CURRENT_TO_CART_GRIPPER_POSE");
+            plan_jspace_path_current_to_cart_gripper_pose();   
+            break;            
+        
+        //computes a Cartesian-space path from current pose to a desired gripper pose
+        case cartesian_planner::cart_moveGoal::PLAN_PATH_CURRENT_TO_GOAL_GRIPPER_POSE:
+            plan_path_current_to_goal_gripper_pose();
+            break;
+
+        //computes a Cartesian-space path from current pose with pure translation along
+        //a specified 3-D displacement while keeping gripper orientation constant
+        case cartesian_planner::cart_moveGoal::PLAN_PATH_CURRENT_TO_GOAL_DP_XYZ:
+            plan_path_current_to_goal_dp_xyz();
+            break;
+        
+        //for a computed trajectory, this fnc rescales the speed along the path
+        case cartesian_planner::cart_moveGoal::TIME_RESCALE_PLANNED_TRAJECTORY:
+            time_scale_stretch_factor_ = goal->time_scale_stretch_factor;
+            rescale_planned_trajectory_time(time_scale_stretch_factor_);
+            break;            
+
+        //consults a pre-computed trajectory and invokes execution;
+        case cartesian_planner::cart_moveGoal::EXECUTE_PLANNED_PATH: //assumes there is a valid planned path in optimal_path_
+            ROS_INFO("responding to request EXECUTE_PLANNED_PATH");
+            execute_planned_move();
+            break;
+
+         //the following functions are less generic--should avoid use of flange
+         //reference frame or use of joint-space goals
             //looks up current arm joint angles and returns them to client
         case cartesian_planner::cart_moveGoal::GET_Q_DATA:
             ROS_INFO("responding to request GET_Q_DATA");
@@ -402,14 +444,7 @@ void ArmMotionInterface::executeCB(const actionlib::SimpleActionServer<cartesian
             cart_result_.return_code = cartesian_planner::cart_moveResult::SUCCESS;
             cart_move_as_.setSucceeded(cart_result_);
             break;           
-            //prepares a trajectory plan to move arm from current pose to pre-defined pose
-        case cartesian_planner::cart_moveGoal::PLAN_PATH_CURRENT_TO_WAITING_POSE:
-            ROS_INFO("responding to request PLAN_PATH_CURRENT_TO_WAITING_POSE");
-            q_start_Xd_ = g_q_vec_arm_Xd;//get_jspace_start_();
-            //q_start=q_start_Xd; // convert to fixed-size vector;
-            plan_jspace_path_qstart_to_qend(q_start_Xd_, q_pre_pose_Xd_);
-            busy_working_on_a_request_ = false;
-            break;
+
 
         case cartesian_planner::cart_moveGoal::PLAN_JSPACE_PATH_CURRENT_TO_QGOAL:
             ROS_INFO("responding to request PLAN_JSPACE_PATH_CURRENT_TO_QGOAL");
@@ -426,9 +461,7 @@ void ArmMotionInterface::executeCB(const actionlib::SimpleActionServer<cartesian
                 busy_working_on_a_request_ = false;
             }
             break;
-        case cartesian_planner::cart_moveGoal::PLAN_PATH_CURRENT_TO_GOAL_GRIPPER_POSE:
-            plan_path_current_to_goal_gripper_pose();
-            break;
+
         case cartesian_planner::cart_moveGoal::PLAN_PATH_CURRENT_TO_GOAL_FLANGE_POSE:
             plan_path_current_to_goal_flange_pose();
             break;
@@ -437,27 +470,7 @@ void ArmMotionInterface::executeCB(const actionlib::SimpleActionServer<cartesian
             plan_fine_path_current_to_goal_flange_pose();
             
             break;
-            
-        case cartesian_planner::cart_moveGoal::PLAN_PATH_CURRENT_TO_GOAL_DP_XYZ:
-            plan_path_current_to_goal_dp_xyz();
-            break;
-
-        case cartesian_planner::cart_moveGoal::TIME_RESCALE_PLANNED_TRAJECTORY:
-            time_scale_stretch_factor_ = goal->time_scale_stretch_factor;
-            rescale_planned_trajectory_time(time_scale_stretch_factor_);
-            break;
-
-            //consults a pre-computed trajectory and invokes execution;
-        case cartesian_planner::cart_moveGoal::EXECUTE_PLANNED_PATH: //assumes there is a valid planned path in optimal_path_
-            ROS_INFO("responding to request EXECUTE_PLANNED_PATH");
-            execute_planned_move();
-            break;
-            
-        case cartesian_planner::cart_moveGoal::PLAN_JSPACE_PATH_CURRENT_TO_CART_GRIPPER_POSE:  
-            ROS_WARN("responding to request PLAN_JSPACE_PATH_CURRENT_TO_CART_GRIPPER_POSE");
-            plan_jspace_path_current_to_cart_gripper_pose();   
-            break;
-                
+ 
         default:
             ROS_WARN("this command mode is not defined: %d", command_mode_);
             cart_result_.return_code = cartesian_planner::cart_moveResult::COMMAND_CODE_NOT_RECOGNIZED;
