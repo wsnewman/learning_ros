@@ -35,7 +35,7 @@ public:
     ~ArmMotionCommander(void) {
     }
     void send_test_goal(void);
-    int plan_move_to_pre_pose(void);
+    int plan_move_to_waiting_pose(void); 
     int plan_path_current_to_goal_gripper_pose(geometry_msgs::PoseStamped des_pose);
     int plan_path_current_to_goal_dp_xyz(Eigen::Vector3d dp_displacement);
     int plan_jspace_path_current_to_cart_gripper_pose(geometry_msgs::PoseStamped des_pose);    

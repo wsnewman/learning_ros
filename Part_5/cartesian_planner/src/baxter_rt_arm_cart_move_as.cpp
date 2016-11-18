@@ -181,10 +181,10 @@ public:
 
     // for PLAN_PATH_CURRENT_TO_GOAL_GRIPPER_POSE
     bool plan_path_current_to_goal_gripper_pose(); //uses goal.des_pose_gripper_right to plan a cartesian path
-    bool plan_path_current_to_goal_flange_pose(); //interprets goal.des_pose_flange_right as a des FLANGE pose to plan a cartesian path
+    //bool plan_path_current_to_goal_flange_pose(); //interprets goal.des_pose_flange_right as a des FLANGE pose to plan a cartesian path
     //plan a joint-space path from current jspace pose to some soln of desired toolflange cartesian pose
     bool plan_jspace_path_current_to_cart_gripper_pose();
-    bool plan_fine_path_current_to_goal_flange_pose(); //interprets goal.des_pose_flange_right as a des FLANGE pose to plan a cartesian path
+    //bool plan_fine_path_current_to_goal_flange_pose(); //interprets goal.des_pose_flange_right as a des FLANGE pose to plan a cartesian path
     bool plan_fine_path_current_to_goal_gripper_pose();
     
     //for RT_ARM_PLAN_PATH_CURRENT_TO_GOAL_DP_XYZ
@@ -235,13 +235,14 @@ void ArmMotionInterface::executeCB(const actionlib::SimpleActionServer<cartesian
             cart_result_.return_code = cartesian_planner::cart_moveResult::SUCCESS;
             cart_move_as_.setSucceeded(cart_result_);
             break;
+            /*
          case cartesian_planner::cart_moveGoal::GET_FLANGE_POSE:
             ROS_INFO("responding to request GET_FLANGE_POSE");
             compute_flange_stamped_pose();
             cart_result_.current_pose_flange = current_flange_stamped_pose_;
             cart_result_.return_code = cartesian_planner::cart_moveResult::SUCCESS;
             cart_move_as_.setSucceeded(cart_result_);
-            break;           
+            break; */          
             //prepares a trajectory plan to move arm from current pose to pre-defined pose
         case cartesian_planner::cart_moveGoal::PLAN_PATH_CURRENT_TO_WAITING_POSE:
             ROS_INFO("responding to request PLAN_PATH_CURRENT_TO_WAITING_POSE");
@@ -269,14 +270,7 @@ void ArmMotionInterface::executeCB(const actionlib::SimpleActionServer<cartesian
         case cartesian_planner::cart_moveGoal::PLAN_PATH_CURRENT_TO_GOAL_GRIPPER_POSE:
             plan_path_current_to_goal_gripper_pose();
             break;
-        case cartesian_planner::cart_moveGoal::PLAN_PATH_CURRENT_TO_GOAL_FLANGE_POSE:
-            plan_path_current_to_goal_flange_pose();
-            break;
 
-        case cartesian_planner::cart_moveGoal::PLAN_FINE_PATH_CURRENT_TO_GOAL_FLANGE_POSE:
-            plan_fine_path_current_to_goal_flange_pose();
-            
-            break;
             
         case cartesian_planner::cart_moveGoal::PLAN_FINE_PATH_CURRENT_TO_GOAL_GRIPPER_POSE:
             plan_fine_path_current_to_goal_gripper_pose();
@@ -686,6 +680,7 @@ bool ArmMotionInterface::plan_path_current_to_goal_gripper_pose() {
 }
 
 //this version uses des_pose_flange_right as desired FLANGE pose
+/*
 bool ArmMotionInterface::plan_path_current_to_goal_flange_pose() {
     ROS_INFO("computing a joint-space trajectory to right-arm flange goal pose");
     //unpack the goal pose:
@@ -711,7 +706,7 @@ bool ArmMotionInterface::plan_path_current_to_goal_flange_pose() {
 
     return path_is_valid_;
 }
-
+*/
 bool ArmMotionInterface::plan_jspace_path_current_to_cart_gripper_pose() {
     ROS_INFO("computing a jspace trajectory to right-arm gripper goal pose");
     //unpack the goal pose:
@@ -747,6 +742,7 @@ bool ArmMotionInterface::plan_jspace_path_current_to_cart_gripper_pose() {
 bool ArmMotionInterface::plan_fine_path_current_to_goal_gripper_pose() {
     return false; 
 }
+/*
 bool ArmMotionInterface::plan_fine_path_current_to_goal_flange_pose() {
     ROS_INFO("computing a hi-res cartesian trajectory to right-arm flange goal pose");
     //unpack the goal pose:
@@ -772,7 +768,7 @@ bool ArmMotionInterface::plan_fine_path_current_to_goal_flange_pose() {
 
     return path_is_valid_;
 }
-
+*/
 bool ArmMotionInterface::plan_path_current_to_goal_dp_xyz() {
     Eigen::Vector3d dp_vec;
 

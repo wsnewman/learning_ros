@@ -1,4 +1,4 @@
-// baxter_rt_arm_cart_path_planner.cpp: 
+// baxter_cartesian_planner.cpp: 
 // wsn, Nov, 2016
 // a library of arm-motion planning functions
 // assumes use of tool-flange frame (to allow for interchangeable grippers)

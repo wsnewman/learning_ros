@@ -312,10 +312,10 @@ public:
     //void compute_left_tool_stamped_pose(void); 
 
     bool plan_path_current_to_goal_gripper_pose(); //uses goal.des_pose_gripper to plan a cartesian path
-    bool plan_path_current_to_goal_flange_pose(); //interprets goal.des_pose_flange  as a des FLANGE pose to plan a cartesian path
+    //bool plan_path_current_to_goal_flange_pose(); //interprets goal.des_pose_flange  as a des FLANGE pose to plan a cartesian path
     //plan a joint-space path from current jspace pose to some soln of desired toolflange cartesian pose
     bool plan_jspace_path_current_to_cart_gripper_pose();
-    bool plan_fine_path_current_to_goal_flange_pose(); //interprets goal.des_pose_flange as a des FLANGE pose to plan a cartesian path
+    //bool plan_fine_path_current_to_goal_flange_pose(); //interprets goal.des_pose_flange as a des FLANGE pose to plan a cartesian path
     bool plan_fine_path_current_to_goal_gripper_pose();
     //for 
     bool plan_path_current_to_goal_dp_xyz(); //plans cartesian motion by specified 3-D displacement at fixed orientation
@@ -437,14 +437,6 @@ void ArmMotionInterface::executeCB(const actionlib::SimpleActionServer<cartesian
             cart_result_.return_code = cartesian_planner::cart_moveResult::SUCCESS;
             cart_move_as_.setSucceeded(cart_result_);
             break;
-         case cartesian_planner::cart_moveGoal::GET_FLANGE_POSE:
-            ROS_INFO("responding to request GET_FLANGE_POSE");
-            compute_flange_stamped_pose();
-            cart_result_.current_pose_flange = current_flange_stamped_pose_;
-            cart_result_.return_code = cartesian_planner::cart_moveResult::SUCCESS;
-            cart_move_as_.setSucceeded(cart_result_);
-            break;           
-
 
         case cartesian_planner::cart_moveGoal::PLAN_JSPACE_PATH_CURRENT_TO_QGOAL:
             ROS_INFO("responding to request PLAN_JSPACE_PATH_CURRENT_TO_QGOAL");
@@ -462,14 +454,6 @@ void ArmMotionInterface::executeCB(const actionlib::SimpleActionServer<cartesian
             }
             break;
 
-        case cartesian_planner::cart_moveGoal::PLAN_PATH_CURRENT_TO_GOAL_FLANGE_POSE:
-            plan_path_current_to_goal_flange_pose();
-            break;
-
-        case cartesian_planner::cart_moveGoal::PLAN_FINE_PATH_CURRENT_TO_GOAL_FLANGE_POSE:
-            plan_fine_path_current_to_goal_flange_pose();
-            
-            break;
  
         default:
             ROS_WARN("this command mode is not defined: %d", command_mode_);
@@ -590,41 +574,6 @@ void ArmMotionInterface::display_affine(Eigen::Affine3d affine) {
     cout << affine.linear() << endl;
 }
 
-
-//compare last command on record to current joint states
-// need this to eval if last command is viable to use as start point for motion plan
-// if within tolerance, return last command (for bumpless transition)
-// if not within tolerance, return current joint state angles
-
-/*
-Eigen::VectorXd ArmMotionInterface::get_jspace_(void) {
-    //get the current joint state
-    q_vec_ = g_q_vec_arm_Xd; // get_joint_angles(); //this also sets q_vec_right_arm_
-
-    double arm_err = (last_arm_jnt_cmd_ - q_vec_).norm();
-    if (arm_err < ARM_ERR_TOL) {
-        return last_arm_jnt_cmd_;
-    } else {
-        return q_vec_;
-    }
-}
-*/
-/*
-Eigen::VectorXd ArmMotionInterface::get_joint_angles(void) {
-    //not sure this is necessary; DO want "fresh" angles, so make sure values are updated:
-    q_vec_[0] = 1000;
-    while (fabs(q_vec_[0]) > 3) { // keep trying until see viable value populated by fnc
-        q_vec_ = baxter_traj_streamer_.get_qvec_right_arm();
-        ros::spinOnce();
-        ros::Duration(0.01).sleep();
-    }
-    Eigen::VectorXd q_vec_xd;
-    q_vec_xd = q_vec_right_arm_; // convert from 7DOF to Xd
-    //while we're at it, fill in mem variable as well:
-    q_vec_right_arm_Xd_ = q_vec_xd;
-    return q_vec_xd;
-}
-*/
 //handy fnc to get current  tool pose
 // gets current joint angles, does fwd kin, includes tool xform
 // converts result to a geometry_msgs::PoseStamped
@@ -799,32 +748,6 @@ bool ArmMotionInterface::plan_path_current_to_goal_gripper_pose() {
     return path_is_valid_;
 }
 
-//this version uses des_pose_flange_ as desired FLANGE pose
-bool ArmMotionInterface::plan_path_current_to_goal_flange_pose() {
-    ROS_INFO("computing a joint-space trajectory to flange goal pose");
-    //unpack the goal pose:
-    goal_flange_affine_ = xformUtils.transformPoseToEigenAffine3d(cart_goal_.des_pose_flange.pose);
-
-    ROS_INFO("flange goal");
-    display_affine(goal_flange_affine_);
-    Eigen::VectorXd q_start;
-    q_start = g_q_vec_arm_Xd; //get_jspace_(); // choose last cmd, or current joint angles
-    path_is_valid_ = cartTrajPlanner_.cartesian_path_planner(q_start, goal_flange_affine_, optimal_path_);
-
-    if (path_is_valid_) {
-        stuff_trajectory(optimal_path_, des_trajectory_); //convert from vector of poses to trajectory message   
-        computed_arrival_time_ = des_trajectory_.points.back().time_from_start.toSec();
-        cart_result_.return_code = cartesian_planner::cart_moveResult::SUCCESS;
-        cart_result_.computed_arrival_time = computed_arrival_time_;
-        cart_move_as_.setSucceeded(cart_result_);
-    } else {
-        cart_result_.return_code = cartesian_planner::cart_moveResult::PATH_NOT_VALID;
-        cart_result_.computed_arrival_time = -1.0; //impossible arrival time        
-        cart_move_as_.setSucceeded(cart_result_); //the communication was a success, but not the computation 
-    }
-
-    return path_is_valid_;
-}
 
 bool ArmMotionInterface::plan_jspace_path_current_to_cart_gripper_pose() {
     ROS_INFO("computing a jspace trajectory to gripper goal pose");
@@ -859,32 +782,6 @@ bool ArmMotionInterface::plan_jspace_path_current_to_cart_gripper_pose() {
 //FINISH ME
 bool ArmMotionInterface::plan_fine_path_current_to_goal_gripper_pose() {
     return false; 
-}
-
-bool ArmMotionInterface::plan_fine_path_current_to_goal_flange_pose() {
-    ROS_INFO("computing a hi-res cartesian trajectory to flange goal pose");
-    //unpack the goal pose:
-    goal_flange_affine_ = xformUtils.transformPoseToEigenAffine3d(cart_goal_.des_pose_flange.pose);
-
-    ROS_INFO("flange goal");
-    display_affine(goal_flange_affine_);
-    Eigen::VectorXd q_start;
-    q_start = g_q_vec_arm_Xd;//get_jspace_start_(); // choose last cmd, or current joint angles
-    path_is_valid_ = cartTrajPlanner_.fine_cartesian_path_planner(q_start, goal_flange_affine_, optimal_path_);
-
-    if (path_is_valid_) {
-        stuff_trajectory(optimal_path_, des_trajectory_); //convert from vector of poses to trajectory message   
-        computed_arrival_time_ = des_trajectory_.points.back().time_from_start.toSec();
-        cart_result_.return_code = cartesian_planner::cart_moveResult::SUCCESS;
-        cart_result_.computed_arrival_time = computed_arrival_time_;
-        cart_move_as_.setSucceeded(cart_result_);
-    } else {
-        cart_result_.return_code = cartesian_planner::cart_moveResult::PATH_NOT_VALID;
-        cart_result_.computed_arrival_time = -1.0; //impossible arrival time        
-        cart_move_as_.setSucceeded(cart_result_); //the communication was a success, but not the computation 
-    }
-
-    return path_is_valid_;
 }
 
 bool ArmMotionInterface::plan_path_current_to_goal_dp_xyz() {

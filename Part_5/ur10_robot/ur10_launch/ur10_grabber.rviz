@@ -99,6 +99,11 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        vvg:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         world:
           Alpha: 1
           Show Axes: false
@@ -143,7 +148,7 @@ Visualization Manager:
       Length: 1
       Name: Axes
       Radius: 0.002
-      Reference Frame: tool0
+      Reference Frame: generic_gripper_frame
       Value: true
     - Class: rviz/Axes
       Enabled: true
@@ -196,10 +201,10 @@ Visualization Manager:
         Z: 0.300407
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.0498011
+      Pitch: 1.2298
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.627211
+      Yaw: 0.727211
     Saved: ~
 Window Geometry:
   Displays:
@@ -217,5 +222,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1141
-  X: 14
-  Y: 138
+  X: 627
+  Y: 297

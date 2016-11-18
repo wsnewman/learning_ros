@@ -547,7 +547,7 @@ void ObjectGrabber::executeCB(const actionlib::SimpleActionServer<object_grabber
             //need ability to get hand out of way of camera
         case object_grabber::object_grabberGoal::MOVE_TO_WAITING_POSE:
             ROS_INFO("planning move to waiting pose");
-            rtn_val = arm_motion_commander_.plan_move_to_pre_pose(); //this should always be successful
+            rtn_val = arm_motion_commander_.plan_move_to_waiting_pose(); //this should always be successful
             ROS_INFO("commanding plan execution");
             rtn_val = arm_motion_commander_.execute_planned_path();
             grab_result_.return_code = rtn_val;

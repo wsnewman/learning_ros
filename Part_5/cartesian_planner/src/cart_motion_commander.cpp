@@ -45,7 +45,7 @@ void ArmMotionCommander::send_test_goal(void) {
         }        
 }
 
-int ArmMotionCommander::plan_move_to_pre_pose(void) {
+int ArmMotionCommander::plan_move_to_waiting_pose(void) {
     ROS_INFO("requesting a joint-space motion plan");
     cart_goal_.command_code = cartesian_planner::cart_moveGoal::PLAN_PATH_CURRENT_TO_WAITING_POSE;
     cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&ArmMotionCommander::doneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired

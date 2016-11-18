@@ -23,22 +23,51 @@
     <child link="base_link" />
     <origin rpy="0 0 0 " xyz="0 0 0.426"/>
   </joint>   
+  
   <joint name="glue_base_to_world" type="fixed">
     <parent link="world" />
     <child link="pedestal_base_link" />
     <origin rpy="0 0 0 " xyz="0 0 0.426"/>
     <origin rpy="0 0 0 " xyz="0 0 0"/>
-  </joint>   
+  </joint>
   
-  <xacro:include filename="$(find ur10_launch)/sticky_disc.urdf.xacro" />
-  
+    <!--xacro:include filename="$(find ur10_launch)/sticky_disc.urdf.xacro" /-->
   
   <joint name="gripper_joint" type="fixed">
     <parent link="tool0" />
     <!--ur10 base link is child-->
     <child link="vvg" />
-    <origin rpy="0 0 0.01 " xyz="0 0 0.0"/>
+    <origin rpy="0 0 0" xyz="0 0 0.01"/>
+    <!---limit effort="0" velocity="0"/-->
   </joint>   
   
-
+  <link name= "vvg">
+		<origin rpy="0 0 0 " xyz="0 0 0"/>
+		<visual>
+			<geometry>
+				<cylinder length="0.02" radius="0.04"/>
+			</geometry>
+			<material name="blue">
+				<color rgba="0 0 .8 1"/>
+			</material>
+		</visual>
+		<collision name="vvg_collision">
+			<geometry>
+              			<cylinder length="0.02" radius="0.04"/>
+			</geometry>
+		</collision>
+		<inertial>
+			<mass value="0.01"/>
+			<inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+  		</inertial>
+	</link>
+	
+  	<gazebo>
+		<plugin name="virtual_vacuum_gripper_finger" filename="libsticky_fingers.so">
+			<capacity>10</capacity>
+			<link>ur10_on_pedestal::wrist_3_link</link>
+			<!--link>ur10_on_pedestal::tool0</link-->
+		</plugin>
+	</gazebo>
+  
 </robot>

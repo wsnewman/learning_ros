@@ -1,6 +1,9 @@
-// example_baxter_rt_arm_cart_move_ac: 
+// example_generic_cart_move_ac: 
 // wsn, Nov, 2016
-// illustrates use of baxter_rt_arm_cart_move_as, action server called "cartMoveActionServer"
+// illustrates use of a generic action client that communicates with
+// an action server called "cartMoveActionServer"
+// the actual action server can be customized for a specific robot, whereas
+// this client is robot agnostic
 
 #include<ros/ros.h>
 #include <actionlib/client/simple_action_client.h>
@@ -28,7 +31,7 @@ int main(int argc, char** argv) {
     
     //send a command to plan a joint-space move to pre-defined pose:
     ROS_INFO("commanding move to waiting pose");
-    rtn_val=arm_motion_commander.plan_move_to_pre_pose();
+    rtn_val=arm_motion_commander.plan_move_to_waiting_pose();
     
     //send command to execute planned motion
     rtn_val=arm_motion_commander.execute_planned_path();
@@ -56,7 +59,7 @@ int main(int argc, char** argv) {
     
     //return to pre-defined pose:
     ROS_INFO("back to waiting pose");
-    rtn_val=arm_motion_commander.plan_move_to_pre_pose();
+    rtn_val=arm_motion_commander.plan_move_to_waiting_pose();
     rtn_val=arm_motion_commander.execute_planned_path();    
 
     //get tool pose
