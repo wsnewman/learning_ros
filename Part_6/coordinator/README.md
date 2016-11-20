@@ -40,8 +40,7 @@ Mobile manipulation:
 Start up the manipulator controls and nav-stack.  Wait for simulator to stabilize.  Then launch:
 `roslaunch coordinator command_bundler.launch`
 
-The above launch file includes the launchfile: 
-`roslaunch baxter_variations mobot_startup_navstack.launch`
+The above launch file includes the launchfile: baxter_variations/mobot_startup_navstack.launch`
 
 The launch sequence may result in the blocks having fallen to the floor.  Reset the model
 poses via Gazebo using Edit->reset model poses.
@@ -68,4 +67,7 @@ computing a drop-off pose to stack the grasped block, computing arm motion comma
 and executing this plan.
 `rosrun coordinator stack_block_client`
 
-
+These operations are combined in a single client program as well.  After launching coordinator/command_bundler.launch,
+run:
+`rosrun coordinator fetch_and_stack_client`
+which picks up a block from table-1, navigates to table-2, and stacks the block on top of a block already on table-2.

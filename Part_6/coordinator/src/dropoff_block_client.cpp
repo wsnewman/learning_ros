@@ -6,7 +6,7 @@
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
 #include<coordinator/ManipTaskAction.h>
-#include <object_manipulation_properties/object_manipulation_properties.h>
+#include <object_manipulation_properties/object_ID_codes.h>
 #include <example_gazebo_set_state/SrvInt.h> // this message type is defined in the current package
 #include <gazebo_msgs/ModelState.h>
 #include <gazebo_msgs/SetModelState.h>
@@ -99,7 +99,7 @@ int main(int argc, char** argv) {
     goal.action_code = coordinator::ManipTaskGoal::DROPOFF_OBJECT;
     //goal.dropoff_frame = dropoff_pose_ = goal->dropoff_frame;
     goal.dropoff_frame = dropoff_pose; //test--put it back where found it
-    goal.object_code= TOY_BLOCK_ID; //assumes robot is holding TOY_BLOCK object
+    goal.object_code= ObjectIdCodes::TOY_BLOCK_ID; //assumes robot is holding TOY_BLOCK object
     action_client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
     while (!g_goal_done) {
         ros::Duration(0.1).sleep();

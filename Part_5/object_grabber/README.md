@@ -23,7 +23,7 @@ and withdraw the gripper.
 
 or, for UR10, start up the UR10 Gazebo simulation (or real robot).
 Use this launch file to launch UR10 on a pedestal:
-`roslaunch ur10_launch ur10.launch`
+`roslaunch ur10_launch ur10_w_gripper.launch`
 
 start up all nodes needed for object manipulation:
 `roslaunch ur10_launch ur10_object_grabber_nodes.launch`

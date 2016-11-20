@@ -49,7 +49,8 @@ float64 time_scale_stretch_factor
 ---
 #result definition
 #  response codes...
-uint8 ARM_STATUS_UNDEFINED=0
+uint8 SUCCESS=0
+
 uint8 ARM_RECEIVED_AND_INITIATED_RQST=1
 uint8 ARM_REQUEST_REJECTED_ALREADY_BUSY=2
 uint8 ARM_SERVER_NOT_BUSY=3
@@ -59,7 +60,7 @@ uint8 PATH_IS_VALID=6
 uint8 PATH_NOT_VALID=7
 
 uint8 COMMAND_CODE_NOT_RECOGNIZED=8
-uint8 SUCCESS=9
+uint8 ARM_STATUS_UNDEFINED=9
 uint8 NOT_FINISHED_BEFORE_TIMEOUT=10
 int32 return_code
 int32 err_code

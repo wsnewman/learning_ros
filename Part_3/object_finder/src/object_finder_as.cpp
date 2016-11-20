@@ -5,6 +5,7 @@
 #include <actionlib/server/simple_action_server.h>
 #include<pcl_utils/pcl_utils.h>
 #include<object_finder/objectFinderAction.h>
+#include <object_manipulation_properties/object_ID_codes.h>
 #include <xform_utils/xform_utils.h>
 
 Eigen::Affine3f g_affine_kinect_wrt_base;
@@ -134,7 +135,6 @@ void ObjectFinder::executeCB(const actionlib::SimpleActionServer<object_finder::
         surface_height = goal->surface_ht;
     }
     bool found_object = false;
-
     //get a fresh snapshot:
     pclUtils_.reset_got_kinect_cloud();
     while (!pclUtils_.got_kinect_cloud()) {
@@ -142,6 +142,7 @@ void ObjectFinder::executeCB(const actionlib::SimpleActionServer<object_finder::
         ros::Duration(0.1).sleep();
         ROS_INFO("waiting for snapshot...");
     }
+    
     //if here, have a new cloud in *pclKinect_ptr_; transform this cloud to base-frame coords:
     ROS_INFO("transforming point cloud");
     pclUtils_.transform_kinect_cloud(g_affine_kinect_wrt_base);
@@ -159,7 +160,7 @@ void ObjectFinder::executeCB(const actionlib::SimpleActionServer<object_finder::
 
 
     switch (object_id) {
-        case object_finder::objectFinderGoal::COKE_CAN_UPRIGHT:
+        case ObjectIdCodes::COKE_CAN_UPRIGHT:
             //specialized function to find an upright Coke can on a horizontal surface of known height:
             found_object = find_upright_coke_can(surface_height, object_pose); //special case for Coke can;
             if (found_object) {
@@ -172,7 +173,7 @@ void ObjectFinder::executeCB(const actionlib::SimpleActionServer<object_finder::
                 object_finder_as_.setAborted(result_);
             }
             break;
-        case object_finder::objectFinderGoal::TOY_BLOCK:
+        case ObjectIdCodes::TOY_BLOCK_ID:
             //specialized function to find toy block model
             found_object = find_toy_block(surface_height, object_pose); //special case for toy block
             if (found_object) {
@@ -186,7 +187,7 @@ void ObjectFinder::executeCB(const actionlib::SimpleActionServer<object_finder::
                 object_finder_as_.setAborted(result_);
             }
             break;
-        case object_finder::objectFinderGoal::TABLE_SURFACE:
+        case ObjectIdCodes::TABLE_SURFACE:
             //if called with !known_surface_ht, then surface height was found above;
             // return the computed surface_height within an object_pose
             ROS_INFO("object finder: finding/returning table height");
@@ -227,7 +228,6 @@ int main(int argc, char** argv) {
     while (tferr) {
         tferr = false;
         try {
-            //try to lookup transform from target frame "odom" to source frame "link2"
             //The direction of the transform returned will be from the target_frame to the source_frame. 
             //Which if applied to data, will transform data in the source_frame into the target_frame. 
             //See tf/CoordinateFrameConventions#Transform_Direction

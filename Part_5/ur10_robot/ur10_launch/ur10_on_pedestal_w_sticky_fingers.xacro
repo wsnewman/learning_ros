@@ -7,15 +7,10 @@
   <xacro:include filename="$(find ur10_launch)/ur10_robot.urdf.xacro">
     <xacro:arg name="gazebo" value="${gazebo}"/>
   </xacro:include>
-
-  <!--xacro:include filename="$(find baxter_description)/urdf/right_end_effector.urdf.xacro" /-->
-  
-  <!--retrofit with Kinect and pedestal-->
-  <!--xacro:include filename="$(find baxter_variations)/kinect_link.urdf.xacro" /-->
+  <!--pedestal model-->
   <xacro:include filename="$(find ur10_launch)/ur10_pedestal.xacro" />
 
   <!-- attach robot base link to the pedestal -->
-
     <link name="world"/>
   <joint name="ur10_base_joint" type="fixed">
     <parent link="pedestal_base_link" />
@@ -23,7 +18,7 @@
     <child link="base_link" />
     <origin rpy="0 0 0 " xyz="0 0 0.426"/>
   </joint>   
-  
+  <!--attach the pedestal to the world-->
   <joint name="glue_base_to_world" type="fixed">
     <parent link="world" />
     <child link="pedestal_base_link" />
@@ -31,16 +26,7 @@
     <origin rpy="0 0 0 " xyz="0 0 0"/>
   </joint>
   
-    <!--xacro:include filename="$(find ur10_launch)/sticky_disc.urdf.xacro" /-->
-  
-  <joint name="gripper_joint" type="fixed">
-    <parent link="tool0" />
-    <!--ur10 base link is child-->
-    <child link="vvg" />
-    <origin rpy="0 0 0" xyz="0 0 0.01"/>
-    <!---limit effort="0" velocity="0"/-->
-  </joint>   
-  
+  <!--define a link to emulate vacuum gripper-->
   <link name= "vvg">
 		<origin rpy="0 0 0 " xyz="0 0 0"/>
 		<visual>
@@ -61,12 +47,17 @@
 			<inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
   		</inertial>
 	</link>
-	
+  <!--attach virtual vacuum gripper, vvg, to tool flange-->
+  <joint name="gripper_joint" type="fixed">
+    <parent link="tool0" />
+    <child link="vvg" />
+    <origin rpy="0 0 0" xyz="0 0 0.01"/>
+  </joint>   
+ <!-- bring in the sticky-fingers plug-in to simulate a vacuum gripper-->
   	<gazebo>
 		<plugin name="virtual_vacuum_gripper_finger" filename="libsticky_fingers.so">
 			<capacity>10</capacity>
 			<link>ur10_on_pedestal::wrist_3_link</link>
-			<!--link>ur10_on_pedestal::tool0</link-->
 		</plugin>
 	</gazebo>
   

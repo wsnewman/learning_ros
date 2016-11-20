@@ -5,7 +5,7 @@
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
 #include <coordinator/ManipTaskAction.h>
-#include <object_manipulation_properties/object_manipulation_properties.h>
+#include <object_manipulation_properties/object_ID_codes.h>
 #include <object_finder/objectFinderAction.h>
 #include <object_grabber/object_grabberAction.h>
 #include <coordinator/OpenLoopNavSvc.h>
@@ -51,11 +51,11 @@ void doneCb(const actionlib::SimpleClientGoalState& state,
             ROS_WARN("returned FAILED_PICKUP");
             g_object_grabber_return_code= result->object_grabber_return_code;
             g_object_pose = result->object_pose;
-            g_des_flange_pose_stamped_wrt_torso = result->des_flange_pose_stamped_wrt_torso;
+            //g_des_flange_pose_stamped_wrt_torso = result->des_flange_pose_stamped_wrt_torso;
             break;
         case coordinator::ManipTaskResult::FAILED_DROPOFF:
             ROS_WARN("returned FAILED_DROPOFF");
-            g_des_flange_pose_stamped_wrt_torso = result->des_flange_pose_stamped_wrt_torso;          
+            //g_des_flange_pose_stamped_wrt_torso = result->des_flange_pose_stamped_wrt_torso;          
             break;
     }
 }
@@ -185,7 +185,7 @@ int main(int argc, char** argv) {
     ROS_INFO("sending a goal: find block");
     g_goal_done = false;
     goal.action_code = coordinator::ManipTaskGoal::GET_PICKUP_POSE;
-    goal.object_code= TOY_BLOCK_ID;
+    goal.object_code= ObjectIdCodes::TOY_BLOCK_ID;
     goal.perception_source = coordinator::ManipTaskGoal::PCL_VISION;
     action_client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
     while (!g_goal_done) {
@@ -209,8 +209,8 @@ int main(int argc, char** argv) {
     g_goal_done = false;
     goal.action_code = coordinator::ManipTaskGoal::GRAB_OBJECT;
     goal.pickup_frame = g_result.object_pose;
-    goal.object_code= TOY_BLOCK_ID;
-    goal.perception_source= coordinator::ManipTaskGoal::BLIND_MANIP;
+    goal.object_code= ObjectIdCodes::TOY_BLOCK_ID;
+    //goal.perception_source= coordinator::ManipTaskGoal::BLIND_MANIP;
     action_client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
     while (!g_goal_done) {
         ros::Duration(0.1).sleep();
@@ -299,7 +299,7 @@ int main(int argc, char** argv) {
     ROS_INFO("sending a goal: find block");
     g_goal_done = false;
     goal.action_code = coordinator::ManipTaskGoal::GET_PICKUP_POSE;
-    goal.object_code= TOY_BLOCK_ID;
+    goal.object_code= ObjectIdCodes::TOY_BLOCK_ID;
     goal.perception_source = coordinator::ManipTaskGoal::PCL_VISION;
     action_client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
     while (!g_goal_done) {
@@ -326,7 +326,7 @@ int main(int argc, char** argv) {
     goal.dropoff_frame = g_object_pose; //frame per PCL perception
     goal.dropoff_frame.pose.position.z+=0.035; //set height to one block thickness higher
                                                // so new block will stack on prior block
-    goal.object_code= TOY_BLOCK_ID;
+    goal.object_code= ObjectIdCodes::TOY_BLOCK_ID;
     action_client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
     while (!g_goal_done) {
         ros::Duration(0.1).sleep();

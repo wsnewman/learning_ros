@@ -51,6 +51,8 @@
 <build_depend>tf</build_depend>
 <build_depend>actionlib</build_depend>
 <build_depend>simple_action_client</build_depend>
+<build_depend>object_manipulation_properties</build_depend>
+
   <run_depend>roscpp</run_depend>
 <run_depend>pcl_utils</run_depend>
 <run_depend>xform_utils</run_depend>
@@ -62,6 +64,8 @@
 <run_depend>tf</run_depend>
 <run_depend>actionlib</run_depend>
 <run_depend>simple_action_client</run_depend>
+<run_depend>object_manipulation_properties</run_depend> 
+
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- You can specify that this package is a metapackage here: -->

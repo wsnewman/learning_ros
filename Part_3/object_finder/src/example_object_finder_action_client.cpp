@@ -6,6 +6,8 @@
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
 #include <object_finder/objectFinderAction.h>
+#include <object_manipulation_properties/object_ID_codes.h>
+
 #include <Eigen/Eigen>
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
@@ -63,7 +65,7 @@ int main(int argc, char** argv) {
     object_finder::objectFinderGoal object_finder_goal;
     //object_finder::objectFinderResult object_finder_result;
 
-    object_finder_goal.object_id = object_finder::objectFinderGoal::TABLE_SURFACE;
+    object_finder_goal.object_id = ObjectIdCodes::TABLE_SURFACE;
     object_finder_goal.known_surface_ht = false; //require find table height
     //object_finder_goal.object_id=object_finder::objectFinderGoal::COKE_CAN_UPRIGHT;
     //object_finder_goal.object_id=object_finder::objectFinderGoal::TOY_BLOCK;
@@ -93,7 +95,7 @@ int main(int argc, char** argv) {
     object_finder_goal.known_surface_ht = true;
     object_finder_goal.surface_ht = surface_height;
     ROS_INFO("using surface ht = %f",surface_height);        
-    object_finder_goal.object_id=object_finder::objectFinderGoal::TOY_BLOCK;
+    object_finder_goal.object_id=ObjectIdCodes::TOY_BLOCK_ID;
      ROS_INFO("sending goal to find TOY_BLOCK: ");
         object_finder_ac.sendGoal(object_finder_goal,&objectFinderDoneCb); 
         

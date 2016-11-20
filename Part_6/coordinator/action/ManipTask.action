@@ -1,7 +1,5 @@
 #goal: specify object code, perception type (incl blind), dropoff location, optional pickup location
 #task codes:
-int32 TOY_BLOCK = 2 #add more object-type codes here
-
 int32 PCL_VISION = 1 # could have more camera sources to refer to
 int32 BLIND_MANIP = 2 #expect pose specified in pickup_location field
 
@@ -15,26 +13,27 @@ int32 WAIT_FIND_TABLE_SURFACE = 102
 int32 GRAB_OBJECT = 3 #assumes use of current pickup pose,
                       #whether provided for "blind" manip, or found
                       #from use of PCL_VISION
-int32 WAIT_FOR_GRAB_OBJECT = 103                     
+int32 WAIT_FOR_GRAB_OBJECT = 103    
+                 
 int32 DROPOFF_OBJECT = 4 #must provide dropoff_frame in goal msg
 int32 WAIT_FOR_DROPOFF_OBJECT = 104
 
-int32 MANIP_OBJECT = 5 #macro: does perception, grab, and dropoff
+#int32 MANIP_OBJECT = 5 #macro: does perception, grab, and dropoff
                        #MUST provide dropoff frame, and means to
                        #get pickup_frame
                        
 int32 NO_CURRENT_TASK = 6
 int32 MOVE_TO_PRE_POSE = 7
 int32 WAIT_FOR_MOVE_TO_PREPOSE = 107
-#int32 RETRACT_ARM = 2
+
 int32 ABORT= 666
 
 #goal specification:
+int32 action_code #what action should be performed?
 int32 object_code #refer to a-priori known object types by object-ID codes
-int32 action_code #what should we do with the named object?
-int32 perception_source  #could name camera source, or specify blind manip (and provide pickup coords)
+geometry_msgs/PoseStamped pickup_frame #specify object coords for pickup 
 geometry_msgs/PoseStamped dropoff_frame #specify desired drop-off coords of object's frame
-geometry_msgs/PoseStamped pickup_frame #optionally, for blind-manip as perception source, specify pickup frame
+int32 perception_source  #e.g. name a camera source
 ---
 #return codes:
 int32 MANIP_SUCCESS = 0
@@ -49,7 +48,7 @@ int32 PENDING = 8
 
 int32 manip_return_code
 int32 object_grabber_return_code
-geometry_msgs/PoseStamped des_flange_pose_stamped_wrt_torso
+geometry_msgs/PoseStamped des_gripper_pose
 int32 object_finder_return_code
 geometry_msgs/PoseStamped object_pose
 
