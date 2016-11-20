@@ -1,0 +1,13 @@
+<launch>
+<node name="spawn_pulley" pkg="gazebo_ros" type="spawn_model" args="-file $(find ariac_models)/pulley_part/model.sdf -sdf -model pulley_part -y -1 -z 0.6" />
+<node name="spawn_pulley2" pkg="gazebo_ros" type="spawn_model" args="-file $(find ariac_models)/pulley_part/model.sdf -sdf -model pulley_part2 -x 0.15 -y -0.7 -z 0.6" />
+<node name="spawn_pulley3" pkg="gazebo_ros" type="spawn_model" args="-file $(find ariac_models)/pulley_part/model.sdf -sdf -model pulley_part3 -x -0.15 -y -0.7 -z 0.6" />
+
+<node name="spawn_gasket" pkg="gazebo_ros" type="spawn_model" args="-file $(find ariac_models)/gasket_part/model.sdf -sdf -model gasket_part -y 0.85 -z 0.6" />
+<node name="spawn_gasket2" pkg="gazebo_ros" type="spawn_model" args="-file $(find ariac_models)/gasket_part/model.sdf -sdf -model gasket_part2 -y 1.05 -z 0.6" />
+<node name="spawn_gasket3" pkg="gazebo_ros" type="spawn_model" args="-file $(find ariac_models)/gasket_part/model.sdf -sdf -model gasket_part3 -y 0.65 -z 0.6" />
+
+<node name="spawn_toy_block" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/toy_block/toy_block.sdf -sdf -model toy_block -x -0.85 -y 0.85 -z 0.6" />
+<node name="spawn_toy_block2" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/toy_block/toy_block.sdf -sdf -model toy_block2 -x -0.7 -y 0.85 -z 0.6" />
+<node name="spawn_toy_block3" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/toy_block/toy_block.sdf -sdf -model toy_block3 -x -1 -y 0.85 -z 0.6" />
+</launch>

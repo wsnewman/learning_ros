@@ -1,0 +1,9 @@
+#action message for part fetcher
+#specify a part ID, starting pose, and desired destination pose
+int32 object_id
+geometry_msgs/PoseStamped object_frame
+geometry_msgs/PoseStamped desired_frame
+---
+int32 rtn_code
+---
+int32 fdbk

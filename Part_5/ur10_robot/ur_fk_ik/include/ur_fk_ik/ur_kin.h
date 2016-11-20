@@ -6,6 +6,8 @@
 // rosrun tf tf_echo base_link tool0
 // rosrun rosrun ur_fk_ik ur10_fk_ik_test_main
 
+//HACK:  const double DH_q_max2 = 0; //deg2rad*180; //NOT PHYSICAL LIMIT; IMPOSE TO FORCE ELBOW ELEVATED
+
 #ifndef UR_KIN_H
 #define UR_KIN_H
 
@@ -80,7 +82,7 @@ const double DH_q_offset6 = M_PI; //0.0;
 const double deg2rad = M_PI/180.0;
 //actually, can rotate more than this--but simplify
 const double DH_q_max1 = deg2rad*180;
-const double DH_q_max2 = deg2rad*180;
+const double DH_q_max2 = 0; //deg2rad*180; //NOT PHYSICAL LIMIT; IMPOSE TO FORCE ELBOW ELEVATED
 const double DH_q_max3 = deg2rad*180;
 const double DH_q_max4 = deg2rad*180;
 const double DH_q_max5 = deg2rad*180;

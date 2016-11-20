@@ -80,6 +80,7 @@ target_link_libraries(example_ur10_cart_path_planner ur10_cartesian_planner ${ca
 #link action servers w/ respective planner libraries
 target_link_libraries(baxter_rt_arm_cart_move_as baxter_cartesian_planner ${catkin_LIBRARIES})
 target_link_libraries(ur10_cart_move_as ur10_cartesian_planner ${catkin_LIBRARIES})
+
 #target_link_libraries(arm7dof_cart_move_as arm7dof_cartesian_planner ${catkin_LIBRARIES})
 
 #target_link_libraries(baxter_cart_move_action_client baxter_arm_motion_commander ${catkin_LIBRARIES})

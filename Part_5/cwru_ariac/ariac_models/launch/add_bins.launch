@@ -1,0 +1,7 @@
+<launch>
+<node name="spawn_bin" pkg="gazebo_ros" type="spawn_model" args="-file $(find ariac_models)/workcell_bin/model.sdf -sdf -model bin -y -0.85 -z -0.18" />
+<node name="spawn_bin2" pkg="gazebo_ros" type="spawn_model" args="-file $(find ariac_models)/workcell_bin/model.sdf -sdf -model bin2 -y 0.85 -z -0.18" />
+<node name="spawn_bin3" pkg="gazebo_ros" type="spawn_model" args="-file $(find ariac_models)/workcell_bin/model.sdf -sdf -model bin3 -x -0.85 -y 0.85 -z -0.18" />
+<node name="spawn_bin4" pkg="gazebo_ros" type="spawn_model" args="-file $(find ariac_models)/workcell_bin/model.sdf -sdf -model bin4 -x -0.85 -y -0.85 -z -0.18" />
+<node name="spawn_sdf" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/cafe_table_copy/model-1_4.sdf -sdf -model cafe_table -x 0.85" />
+</launch>
