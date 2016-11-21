@@ -17,7 +17,7 @@ cart_move_action_client_("cartMoveActionServer", true) { // constructor
         ROS_INFO("retrying...");
     }
     ROS_INFO("connected to action server"); // if here, then we connected to the server; 
-    
+    got_done_callback_=false;
 }
 // This function will be called once when the goal completes
 // this is optional, but it is a convenient way to get access to the "result" message sent by the server
@@ -27,17 +27,49 @@ void ArmMotionCommander::doneCb_(const actionlib::SimpleClientGoalState& state,
     ROS_INFO(" doneCb: server responded with state [%s]", state.toString().c_str());
     ROS_INFO("got return value= %d", result->return_code);
     cart_result_=*result;
+    got_done_callback_=true;
+}
+
+bool ArmMotionCommander::cb_received_in_time(double max_wait_time) {
+   double wait_time=0.0;
+    double dt = 0.1;
+    double print_time=0.0;
+    got_done_callback_=false;
+    finished_before_timeout_=false;
+    while ((!got_done_callback_) &(wait_time<max_wait_time)) {
+        wait_time+= dt;
+        ros::Duration(dt).sleep();
+        print_time+=dt;
+        if (print_time>1.0) {
+            print_time-=1.0;
+            ROS_WARN("ArmMotionCommander still waiting on callback");
+        }
+    }
+    if (wait_time<max_wait_time) 
+    { 
+        ROS_INFO("got response in time");
+        finished_before_timeout_ = true;
+        return true;
+    }    
+    else {
+        ROS_WARN("did not get callback in time");
+        finished_before_timeout_ = false;
+        return false;        
+    }
+    
 }
 
 
 void ArmMotionCommander::send_test_goal(void) {
     ROS_INFO("sending a test goal");
     cart_goal_.command_code = cartesian_planner::cart_moveGoal::ARM_TEST_MODE;
+    got_done_callback_=false; //flag to check if got callback
     cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&ArmMotionCommander::doneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired
-
-    finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(2.0));
+    //double max_wait_time = 2.0;
+    
+    //finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(2.0));
         //bool finished_before_timeout = action_client.waitForResult(); // wait forever...
-    if (!finished_before_timeout_) {
+    if (!cb_received_in_time(2.0)) {
             ROS_WARN("giving up waiting on result");
         } else {
             ROS_INFO("finished before timeout");
@@ -49,9 +81,9 @@ int ArmMotionCommander::plan_move_to_waiting_pose(void) {
     ROS_INFO("requesting a joint-space motion plan");
     cart_goal_.command_code = cartesian_planner::cart_moveGoal::PLAN_PATH_CURRENT_TO_WAITING_POSE;
     cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&ArmMotionCommander::doneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired
-    finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(2.0));
+    //finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(2.0));
     ROS_INFO("return code: %d",cart_result_.return_code);
-    if (!finished_before_timeout_) {
+    if (!cb_received_in_time(2.0)) {
             ROS_WARN("giving up waiting on result");
             return (int) cartesian_planner::cart_moveResult::NOT_FINISHED_BEFORE_TIMEOUT;
         } 
@@ -80,9 +112,9 @@ int ArmMotionCommander::plan_jspace_path_current_to_qgoal(Eigen::VectorXd q_des_
     cart_goal_.q_goal.resize(njnts);
     for (int i=0;i<njnts;i++) cart_goal_.q_goal[i] = q_des_vec[i]; //specify the goal js pose
     cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&ArmMotionCommander::doneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired
-    finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(2.0));
+    //finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(2.0));
     ROS_INFO("return code: %d",cart_result_.return_code);
-    if (!finished_before_timeout_) {
+    if (!cb_received_in_time(2.0)) {
             ROS_WARN("giving up waiting on result");
             return (int) cartesian_planner::cart_moveResult::NOT_FINISHED_BEFORE_TIMEOUT;
         } 
@@ -113,9 +145,9 @@ int ArmMotionCommander::plan_path_current_to_goal_gripper_pose(geometry_msgs::Po
     //xformUtils_.printStampedPose(des_pose);
     cart_goal_.des_pose_gripper = des_pose;
     cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&ArmMotionCommander::doneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired
-    finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(2.0));
+    //finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(2.0));
     ROS_INFO("return code: %d",cart_result_.return_code);
-    if (!finished_before_timeout_) {
+    if (!cb_received_in_time(2.0)) {
             ROS_WARN("giving up waiting on result");
             return (int) cartesian_planner::cart_moveResult::NOT_FINISHED_BEFORE_TIMEOUT;
         } 
@@ -142,9 +174,9 @@ int ArmMotionCommander::plan_jspace_path_current_to_cart_gripper_pose(geometry_m
     cart_goal_.command_code = cartesian_planner::cart_moveGoal::PLAN_JSPACE_PATH_CURRENT_TO_CART_GRIPPER_POSE; 
     cart_goal_.des_pose_gripper = des_pose_gripper;
     cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&ArmMotionCommander::doneCb_, this, _1, _2));
-    finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(2.0));
+    //finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(2.0));
     ROS_INFO("return code: %d",cart_result_.return_code);
-    if (!finished_before_timeout_) {
+    if (!cb_received_in_time(2.0)) {
             ROS_WARN("giving up waiting on result");
             return (int) cartesian_planner::cart_moveResult::NOT_FINISHED_BEFORE_TIMEOUT;
         } 
@@ -174,9 +206,9 @@ int ArmMotionCommander::plan_path_current_to_goal_dp_xyz(Eigen::Vector3d dp_disp
     cart_goal_.arm_dp.resize(3);
     for (int i=0;i<3;i++) cart_goal_.arm_dp[i] = dp_displacement[i];
     cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&ArmMotionCommander::doneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired
-    finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(2.0));
+    //finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(2.0));
     ROS_INFO("return code: %d",cart_result_.return_code);
-    if (!finished_before_timeout_) {
+    if (!cb_received_in_time(2.0)) {
             ROS_WARN("giving up waiting on result");
             return (int) cartesian_planner::cart_moveResult::NOT_FINISHED_BEFORE_TIMEOUT;
         } 
@@ -203,8 +235,8 @@ int ArmMotionCommander::execute_planned_path(void) {
     ROS_INFO("requesting execution of planned path");
     cart_goal_.command_code = cartesian_planner::cart_moveGoal::EXECUTE_PLANNED_PATH;
     cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&ArmMotionCommander::doneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired
-    finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(computed_arrival_time_+2.0));
-    if (!finished_before_timeout_) {
+    //finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(computed_arrival_time_+2.0));
+    if (!cb_received_in_time(computed_arrival_time_+2.0)) {
         ROS_WARN("did not complete move in expected time");
         return (int) cartesian_planner::cart_moveResult::NOT_FINISHED_BEFORE_TIMEOUT;  
     }
@@ -222,8 +254,8 @@ int ArmMotionCommander::request_q_data(void) {
    ROS_INFO("requesting arm joint angles");
     cart_goal_.command_code = cartesian_planner::cart_moveGoal::GET_Q_DATA;
     cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&ArmMotionCommander::doneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired
-    finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(computed_arrival_time_+2.0));
-   if (!finished_before_timeout_) {
+    //finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(computed_arrival_time_+2.0));
+   if (!cb_received_in_time(computed_arrival_time_+2.0)) {
         ROS_WARN("did not respond within timeout");
         return (int) cartesian_planner::cart_moveResult::NOT_FINISHED_BEFORE_TIMEOUT;  
     }
@@ -259,8 +291,8 @@ int ArmMotionCommander::request_tool_pose(void) {
     ROS_INFO("requesting right-arm tool pose");    
     cart_goal_.command_code = cartesian_planner::cart_moveGoal::GET_TOOL_POSE;
     cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&ArmMotionCommander::doneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired
-    finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(2.0));
-   if (!finished_before_timeout_) {
+    //finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(2.0));
+   if (!cb_received_in_time(2.0)) {
         ROS_WARN("did not respond within timeout");
         return (int) cartesian_planner::cart_moveResult::NOT_FINISHED_BEFORE_TIMEOUT;  
     }

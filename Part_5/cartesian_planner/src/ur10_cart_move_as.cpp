@@ -352,7 +352,23 @@ Eigen::Affine3d ArmMotionInterface::xform_gripper_pose_to_affine_flange_wrt_base
     //convert stamped ‘tf::StampedTransform to geometry_msgs::PoseStamped
     flange_gmps = xformUtils.get_pose_from_stamped_tf(flange_stf);
     //change the reference frame from whatever to "base":
-    tfListener_->transformPose("base_link", flange_gmps, flange_wrt_base_gmps);    
+    bool tferr=true;
+    int ntries=0;   
+    ros::Time now = ros::Time::now();    
+    while (tferr) {
+        tferr=false;
+        try {
+            tfListener_->waitForTransform("base_link", flange_gmps.header.frame_id,
+                              now, ros::Duration(1.0)); //waits up to N sec for transform to be valid
+                tfListener_->transformPose("base_link", flange_gmps, flange_wrt_base_gmps); 
+            } catch(tf::TransformException &exception) {
+                ROS_WARN("%s; transform problem; retrying...", exception.what());
+                tferr=true;
+                ros::Duration(0.5).sleep(); // sleep for half a second
+                ros::spinOnce();                
+            }   
+    }
+    
     ROS_INFO("corresponding flange frame w/rt base frame: ");
     xformUtils.printStampedPose(flange_wrt_base_gmps);  
     //convert this to an affine.  parent and child frame id's are lost, so we'll have to remember what this means
@@ -526,7 +542,7 @@ action_client_("/arm_controller/follow_joint_trajectory", true)
                 ros::spinOnce();                
             }   
     }
-    ROS_INFO("tf is good for generic gripper frame w/rt tool flange");    
+    ROS_INFO("tf is good for system_ref_frame and base_link");    
     xformUtils.printStampedTf(base_link_wrt_system_ref_frame_stf_);
     
     //check that joint-space interpolator service is connected:

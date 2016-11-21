@@ -29,6 +29,7 @@ private:
     //callback fnc for cartesian action server to return result to this node:
     void doneCb_(const actionlib::SimpleClientGoalState& state,
     const cartesian_planner::cart_moveResultConstPtr& result);
+    bool got_done_callback_;
 public:
         ArmMotionCommander(); //define the body of the constructor outside of class definition
 
@@ -46,5 +47,6 @@ public:
     geometry_msgs::PoseStamped get_tool_pose_stamped(void) { return tool_pose_stamped_;};
     Eigen::VectorXd get_joint_angles(void); 
     int plan_jspace_path_current_to_qgoal(Eigen::VectorXd q_des_vec);  
+    bool cb_received_in_time(double max_wait_time);
 };
 #endif
