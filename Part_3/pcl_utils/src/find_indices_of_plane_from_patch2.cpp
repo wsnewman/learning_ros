@@ -91,6 +91,7 @@ void box_filter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr  inputCloud, Eigen::Vecto
     indices.clear();
     cout<<"box min: "<<pt_min.transpose()<<endl;
     cout<<"box max: "<<pt_max.transpose()<<endl;
+    ROS_INFO("box filtering %d points",npts);
     for (int i = 0; i < npts; ++i) {
         pt = inputCloud->points[i].getVector3fMap();
         //cout<<"pt: "<<pt.transpose()<<endl;

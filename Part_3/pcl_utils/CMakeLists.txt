@@ -44,7 +44,7 @@ cs_add_executable(compute_selected_points_centroid src/compute_selected_points_c
 #cs_add_executable(demo_pcl2 src/demo_pcl2.cpp)
 
 cs_add_executable(display_pcd_file src/display_pcd_file.cpp)
-#cs_add_executable(find_plane_pcd_file src/find_plane_pcd_file.cpp src/find_indices_of_plane_from_patch.cpp)
+cs_add_executable(find_plane_pcd_file src/find_plane_pcd_file.cpp src/find_indices_of_plane_from_patch.cpp)
 cs_add_executable(find_plane_pcd_file2 src/find_plane_pcd_file2.cpp src/find_indices_of_plane_from_patch2.cpp)
 cs_add_executable(box_filter src/box_filter_main.cpp src/find_indices_of_plane_from_patch2.cpp)
 #the following is required, if desire to link a node in this package with a library created in this same package
@@ -54,7 +54,7 @@ cs_add_executable(box_filter src/box_filter_main.cpp src/find_indices_of_plane_f
 #target_link_libraries(ransac_main pcl_utils)
 #target_link_libraries(pcd_snapshot pcl_utils)
 #target_link_libraries(example_process_pcd pcl_utils)
-#target_link_libraries(find_plane_pcd_file pcl_utils)
+target_link_libraries(find_plane_pcd_file pcl_utils)
 target_link_libraries(find_plane_pcd_file2 pcl_utils)
 target_link_libraries(box_filter pcl_utils)
 cs_install()

@@ -96,15 +96,18 @@ int main(int argc, char** argv) {
             pclUtils.reset_got_selected_points(); // reset for a future trigger
             pclUtils.get_copy_selected_points(selected_pts_cloud_ptr); //get a copy of the selected points
             cout << "got new patch with number of selected pts = " << selected_pts_cloud_ptr->points.size() << endl;
-            pclUtils.box_filter(crop_pt_min,crop_pt_max,indices);
+            //pclUtils.box_filter(crop_pt_min,crop_pt_max,indices);
             
+            //void find_indices_of_plane_from_patch(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud_ptr,
+              //pcl::PointCloud<pcl::PointXYZ>::Ptr patch_cloud_ptr, vector<int> &indices)
 
             //find pts coplanar w/ selected patch, using PCL methods in above-defined function
             //"indices" will get filled with indices of points that are approx co-planar with the selected patch
             // can extract indices from original cloud, or from voxel-filtered (down-sampled) cloud
-            //find_indices_of_plane_from_patch(pclKinect_clr_ptr, selected_pts_cloud_ptr, indices);
+            find_indices_of_plane_from_patch(pclKinect_clr_ptr, selected_pts_cloud_ptr, indices);
             //find_indices_of_plane_from_patch(downsampled_kinect_ptr, selected_pts_cloud_ptr, indices);
             //pcl::copyPointCloud(*downsampled_kinect_ptr, indices, *plane_pts_ptr); //extract these pts into new cloud
+            pcl::copyPointCloud(*pclKinect_clr_ptr, indices, *plane_pts_ptr);
             //the new cloud is a set of points from original cloud, coplanar with selected patch; display the result
             pcl::toROSMsg(*plane_pts_ptr, ros_planar_cloud); //convert to ros message for publication and display
         }
