@@ -28,9 +28,11 @@ find_package(Boost REQUIRED COMPONENTS system thread)
 
 # Libraries: uncomment the following and edit arguments to create a new library 
 cs_add_library(object_grabber_lib src/object_grabber.cpp) 
+cs_add_library(object_grabber_lib2 src/object_grabber2.cpp) 
 # Executables: uncomment the following and edit arguments to compile new nodes
 # may add more of these lines for more nodes from the same package
 cs_add_executable(object_grabber_action_server src/object_grabber_as.cpp)
+cs_add_executable(object_grabber_action_server2 src/object_grabber_as2.cpp)
 
 cs_add_executable(example_object_grabber_action_client src/example_object_grabber_action_client.cpp)
 cs_add_executable(block_grabber_action_client src/block_grabber_action_client.cpp)
@@ -40,6 +42,7 @@ cs_add_executable(set_sticky_fingers_gripper_param src/set_sticky_fingers_grippe
 # edit the arguments to reference the named node and named library within this package
 
 target_link_libraries(object_grabber_action_server object_grabber_lib)
+target_link_libraries(object_grabber_action_server2 object_grabber_lib2)
 cs_install()
 cs_export()
     

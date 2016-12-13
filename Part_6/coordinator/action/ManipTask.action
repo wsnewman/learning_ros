@@ -21,6 +21,9 @@ int32 WAIT_FOR_DROPOFF_OBJECT = 104
 #int32 MANIP_OBJECT = 5 #macro: does perception, grab, and dropoff
                        #MUST provide dropoff frame, and means to
                        #get pickup_frame
+
+int32 STRADDLE_OBJECT = 8 #test mode--simply straddle object, but don't grasp it
+int32 WAIT_FOR_STRADDLE_OBJECT = 108
                        
 int32 NO_CURRENT_TASK = 6
 int32 MOVE_TO_PRE_POSE = 7

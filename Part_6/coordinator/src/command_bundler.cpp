@@ -152,36 +152,9 @@ void TaskActionServer::executeCB(const actionlib::SimpleActionServer<coordinator
     goal_action_code_ = goal->action_code; //verbatim from received goal
     action_code_ = goal->action_code; //init: this value changes as state machine advances through steps
     ROS_INFO("requested action code is: %d", goal_action_code_);
-    //if action code is "MANIP_OBJECT", need to go through a sequence of action codes
-    //otherwise, action code is a simple action code, and can use it as-is
-    /*
-    if (goal_action_code_ == coordinator::ManipTaskGoal::MANIP_OBJECT) {
-        //if command is for manip, then we can expect an object code, perception source and dropoff pose
-        object_code_ = goal->object_code; //what type of object is this?
-
-        perception_source_ = goal->perception_source; //name sensor or provide coords
-        dropoff_pose_ = goal->dropoff_frame;
-        ROS_INFO("object code is: %d", object_code_);
-        ROS_INFO("perception_source is: %d", goal->perception_source);
-        //if (object_code_ == coordinator::ManipTaskGoal::TOY_BLOCK) {
-        if (object_code_ == ObjectIdCodes::TOY_BLOCK_ID) {
-            vision_object_code_ = object_code_; //same code;
-            ROS_INFO("using object-finder object code %d", vision_object_code_);
-            pickup_action_code_ = object_grabber::object_grabberGoal::GRAB_TOY_BLOCK;
-            dropoff_action_code_ = object_grabber::object_grabberGoal::PLACE_TOY_BLOCK;
-            //start the state machine with perceptual processing task:
-            action_code_ = coordinator::ManipTaskGoal::GET_PICKUP_POSE;
-        } else {
-            ROS_WARN("unknown object type in manipulation action");
-            as_.setAborted(result_);
-        }
-    } else if (goal_action_code_ == coordinator::ManipTaskGoal::DROPOFF_OBJECT) {
-        object_code_ = goal->object_code; //what type of object is this?
- */
+ 
     if (goal_action_code_ == coordinator::ManipTaskGoal::DROPOFF_OBJECT) {
         object_code_ = goal->object_code; //what type of object is this?   
-
-    
     } else if (goal_action_code_ == coordinator::ManipTaskGoal::GRAB_OBJECT) {
         object_code_ = goal->object_code; //what type of object is this?     
         ROS_INFO("object code is: %d", object_code_);
@@ -190,6 +163,11 @@ void TaskActionServer::executeCB(const actionlib::SimpleActionServer<coordinator
             ROS_INFO("blind manipulation; using provided pick-up pose");
             pickup_pose_ = goal->pickup_frame;
         }
+    }
+       else if (goal_action_code_ == coordinator::ManipTaskGoal::STRADDLE_OBJECT) {
+        object_code_ = goal->object_code; //what type of object is this?     
+        ROS_INFO("object code is: %d", object_code_);
+        pickup_pose_ = goal->pickup_frame;       
     } else if (goal_action_code_ == coordinator::ManipTaskGoal::GET_PICKUP_POSE) {
         ROS_INFO("object code is: %d", object_code_);
         ROS_INFO("perception_source is: %d", goal->perception_source);
@@ -370,6 +348,48 @@ void TaskActionServer::executeCB(const actionlib::SimpleActionServer<coordinator
                     result_.manip_return_code = coordinator::ManipTaskResult::FAILED_PICKUP;
                 }
                 break;
+
+            case coordinator::ManipTaskGoal::STRADDLE_OBJECT:
+                status_code_ = coordinator::ManipTaskFeedback::PICKUP_MOTION_BUSY;
+                ROS_INFO("executeCB: action_code, status_code = %d, %d", action_code_, status_code_);
+                //ros::Duration(2.0).sleep();
+                //if here, then presumably have a valid pose for object of interest; grab it! 
+                //send object-grabber action code to grab specified object
+                object_grabber_goal_.action_code = object_grabber::object_grabberGoal::STRADDLE_OBJECT;//pickup_action_code_; //specify the object to be grabbed 
+                object_grabber_goal_.object_frame = pickup_pose_; //and the object's current pose
+                object_grabber_goal_.object_id = object_code_; // = goal->object_code;
+                object_grabber_goal_.grasp_option = object_grabber::object_grabberGoal::DEFAULT_GRASP_STRATEGY; //from above
+                
+                ROS_INFO("sending goal to straddle object: ");
+                object_grabber_ac_.sendGoal(object_grabber_goal_,
+                        boost::bind(&TaskActionServer::objectGrabberDoneCb_, this, _1, _2));
+
+                action_code_ = coordinator::ManipTaskGoal::WAIT_FOR_STRADDLE_OBJECT;
+                status_code_ = coordinator::ManipTaskFeedback::PICKUP_MOTION_BUSY;
+                //will inspect this status to see if object grasp is eventually successful
+                object_grabber_return_code_ = object_grabber::object_grabberResult::OBJECT_GRABBER_BUSY;
+
+                break;
+
+            case coordinator::ManipTaskGoal::WAIT_FOR_STRADDLE_OBJECT:
+                if (object_grabber_return_code_ == object_grabber::object_grabberResult::OBJECT_ACQUIRED) { //success!
+                    ROS_INFO("straddling object");
+                        working_on_task_ = false; // test--set to goal achieved
+                        action_code_ = coordinator::ManipTaskGoal::NO_CURRENT_TASK;
+                        status_code_ = coordinator::ManipTaskFeedback::COMPLETED_MOVE;
+                        result_.manip_return_code = coordinator::ManipTaskResult::MANIP_SUCCESS;
+                        //object pose is in result message
+                        as_.setSucceeded(result_); // return the "result" message to client, along with "success" status
+                        return; //done w/ callback
+                } else if (object_grabber_return_code_ == object_grabber::object_grabberResult::OBJECT_GRABBER_BUSY) {
+                    // do nothing--just wait patiently
+                    //ROS_INFO("waiting for object grab");
+                } else {
+                    ROS_WARN("trouble with attempting to straddle object");
+                    action_code_ = coordinator::ManipTaskGoal::ABORT;
+                    result_.manip_return_code = coordinator::ManipTaskResult::FAILED_PICKUP;
+                }
+                break;                        
 
 
             case coordinator::ManipTaskGoal::DROPOFF_OBJECT:

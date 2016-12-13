@@ -23,6 +23,7 @@ int32 OBJECT_FINDER_CANCELLED=4
 #return the identified pose here:
 int32 found_object_code
 geometry_msgs/PoseStamped object_pose
+int32 object_id
 ---
 #feedback: optional; 
 #int32 OBJECT_FINDER_BUSY=3 

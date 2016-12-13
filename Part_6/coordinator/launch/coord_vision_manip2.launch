@@ -1,0 +1,25 @@
+ <launch>
+   <node pkg="baxter_tools" type="enable_robot.py" name="enable" args="-e" output="screen"/>
+  <node pkg="object_grabber" type="set_baxter_gripper_param" name="set_baxter_gripper_param"  output="screen"/>    
+  <include file="$(find cartesian_planner)/launch/baxter_static_transforms.launch"/>     
+  
+    
+  <node pkg="baxter_trajectory_streamer" type="rt_arm_as" name="rt_arm_as"  output="screen"/>
+  <node pkg="baxter_trajectory_streamer" type="left_arm_as" name="left_arm_as"  output="screen"/> 
+
+  <node pkg="cartesian_planner" type="baxter_rt_arm_cart_move_as" name="baxter_rt_arm_cart_move_as" output="screen"/>
+  <node pkg="object_grabber" type="object_grabber_action_server2" name="object_grabber_action_server2"  output="screen"/> 
+  <node pkg="object_manipulation_properties" type="object_manipulation_query_svc" name="object_manipulation_query_svc"  output="screen"/>    
+<node pkg="generic_gripper_services" type="rethink_rt_gripper_service" name="rethink_rt_gripper_service"  output="screen"/>   
+  
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find coordinator)/rviz/coordinator_rviz.rviz"/> 
+  <node pkg="baxter_playfile_nodes" type="baxter_playback" name="baxter_playback" args="$(find baxter_playfile_nodes)/pre_pose_right.jsp $(find baxter_playfile_nodes)/pre_pose_left.jsp" output="screen"/> 
+  <node pkg="baxter_playfile_nodes" type="baxter_playfile_service" name="baxter_playfile_service"  output="screen"/> 
+  <node pkg="baxter_head_pan" type="baxter_head_pan_zero" name="baxter_head_pan_zero"  output="screen"/> 
+  
+  <node pkg="object_finder" type="object_finder_as" name="object_finder_as"  output="screen"/>  
+  <node pkg="example_rviz_marker" type="triad_display" name="triad_display"/>   
+
+  <node pkg="coordinator" type="command_bundler" name="command_bundler"  output="screen"/>
+  <node pkg="example_gazebo_set_state" type="set_block_state" name="set_block_state"  output="screen"/>
+</launch>

@@ -17,10 +17,13 @@ start up an empty world:
 
 launch multiple nodes, including trajectory streamers, cartesian planner, rviz, baxter-playfile, triad_display (for object-frame visualization), object-grabber, object-finder coordinator, and block-state resetter:
 `roslaunch coordinator coord_vision_manip.launch`
+(to try object_grabber v2, run: roslaunch coordinator coord_vision_manip2.launch)
 
 Command the robot to: find the table height, find the block on the table, compute an approach and grasp strategy,
 execute the plan, and retract (holding the block) to the pre-pose position.
 `rosrun coordinator acquire_block_client`
+
+(to straddle the block, run: rosrun coordinator straddle_block_client)
 
 The block can be placed back down again with the node:
 `rosrun coordinator dropoff_block_client`

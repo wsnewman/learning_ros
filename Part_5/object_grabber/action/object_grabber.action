@@ -22,8 +22,11 @@ int32 PLAN_WITHDRAW_FINE_FROM_OBJECT = 8 #as above, but slower/more precise moti
 
 int32 PLAN_OBJECT_GRASP = 9  #combine multiple elements above to acquire an object
 
+int32 PLAN_CART_MOVE_CURRENT_TO_CART_GOAL = 10 #plan a move from current pose to a cartesian goal, to be specified in "geometry_msgs/PoseStamped object_frame"
+
 int32 GRAB_OBJECT = 101 #plan and attempt to execute object acquisition, including grasp and lift
 int32 DROPOFF_OBJECT = 102 #plan and attempt to execute object placement and arm withdrawal
+int32 STRADDLE_OBJECT = 103 #plan and attempt to execute part of GRAB_OBJECT: move to grasp pose, then halt
 
 int32 SET_SPEED_FACTOR = 10    #use arg speed_factor to change time scale of trajectory plan; larger than 1.0--> slower
 
