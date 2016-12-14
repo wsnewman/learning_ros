@@ -652,12 +652,21 @@ void ObjectGrabber::executeCB(const actionlib::SimpleActionServer<object_grabber
            
         //new case to command a Cartesian move to a specified Cartesian goal
         //get goal_pose_stamped_ as interpretation of goal->object_frame element
-        case object_grabber::object_grabberGoal::PLAN_CART_MOVE_CURRENT_TO_CART_GOAL:
+        case object_grabber::object_grabberGoal::CART_MOVE_CURRENT_TO_CART_GOAL:
             ROS_INFO("planning Cartesian move from current pose to goal pose");
             goal_pose_stamped_ = goal->object_frame;
             rtn_val=arm_motion_commander_.plan_path_current_to_goal_gripper_pose(goal_pose_stamped_);
-            grab_result_.return_code = rtn_val;
-            object_grabber_as_.setSucceeded(grab_result_);
+            if (rtn_val != cartesian_planner::cart_moveResult::SUCCESS) { //return error code
+               grab_result_.return_code = object_grabber::object_grabberResult::FAILED_CANNOT_REACH;
+               object_grabber_as_.setSucceeded(grab_result_);
+            }
+            else {
+             //if here, plan is valid, so send command to execute planned motion
+             ROS_INFO("executing plan: ");
+             rtn_val=arm_motion_commander_.execute_planned_path();
+             grab_result_.return_code = rtn_val;
+             object_grabber_as_.setSucceeded(grab_result_);   
+            }
             break;
             
         default:

@@ -24,10 +24,14 @@ int32 WAIT_FOR_DROPOFF_OBJECT = 104
 
 int32 STRADDLE_OBJECT = 8 #test mode--simply straddle object, but don't grasp it
 int32 WAIT_FOR_STRADDLE_OBJECT = 108
+
+int32 CART_MOVE_TO_GRIPPER_POSE = 9
+int32 WAIT_FOR_CART_MOVE = 109
                        
 int32 NO_CURRENT_TASK = 6
 int32 MOVE_TO_PRE_POSE = 7
 int32 WAIT_FOR_MOVE_TO_PREPOSE = 107
+int32 WAIT_FOR_MOVE = 107 #generic wait-for-move status
 
 int32 ABORT= 666
 
@@ -36,6 +40,7 @@ int32 action_code #what action should be performed?
 int32 object_code #refer to a-priori known object types by object-ID codes
 geometry_msgs/PoseStamped pickup_frame #specify object coords for pickup 
 geometry_msgs/PoseStamped dropoff_frame #specify desired drop-off coords of object's frame
+geometry_msgs/PoseStamped gripper_goal_frame #a goal frame to move gripper
 int32 perception_source  #e.g. name a camera source
 ---
 #return codes:
@@ -48,6 +53,7 @@ int32 FAILED_DROPOFF=5
 int32 DROPPED_OBJECT = 6
 int32 ABORTED = 7
 int32 PENDING = 8
+int32 FAILED_MOVE = 9
 
 int32 manip_return_code
 int32 object_grabber_return_code
@@ -69,6 +75,7 @@ int32 ABORTED = 7
 int32 COMPLETED_MOVE = 8
 int32 COMPLETED_DROPOFF = 9
 int32 PREPOSE_MOVE_BUSY = 10
+int32 MOVE_BUSY = 11
 
 
 int32 feedback_status

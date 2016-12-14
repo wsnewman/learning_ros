@@ -349,8 +349,27 @@ void TaskActionServer::executeCB(const actionlib::SimpleActionServer<coordinator
                 }
                 break;
 
-            case coordinator::ManipTaskGoal::STRADDLE_OBJECT:
-                status_code_ = coordinator::ManipTaskFeedback::PICKUP_MOTION_BUSY;
+            case coordinator::ManipTaskGoal::CART_MOVE_TO_GRIPPER_POSE:
+                status_code_ = coordinator::ManipTaskFeedback::MOVE_BUSY;
+                ROS_INFO("executeCB: action_code, status_code = %d, %d", action_code_, status_code_);
+                object_grabber_goal_.action_code = object_grabber::object_grabberGoal::CART_MOVE_CURRENT_TO_CART_GOAL;//code for cart move
+                object_grabber_goal_.object_frame = goal->gripper_goal_frame; //get the move destination
+                //object_grabber_goal_.object_id = object_code_; // = goal->object_code;
+                //object_grabber_goal_.grasp_option = object_grabber::object_grabberGoal::DEFAULT_GRASP_STRATEGY; //from above
+                
+                ROS_INFO("sending goal to move gripper along Cartesian path to specified destination: ");
+                object_grabber_ac_.sendGoal(object_grabber_goal_,
+                        boost::bind(&TaskActionServer::objectGrabberDoneCb_, this, _1, _2));
+
+                action_code_ = coordinator::ManipTaskGoal::WAIT_FOR_MOVE;
+                status_code_ = coordinator::ManipTaskFeedback::MOVE_BUSY;
+                //will inspect this status to see if object grasp is eventually successful
+                object_grabber_return_code_ = object_grabber::object_grabberResult::OBJECT_GRABBER_BUSY;
+
+                break;
+
+             case coordinator::ManipTaskGoal::STRADDLE_OBJECT:
+                status_code_ = coordinator::ManipTaskFeedback::MOVE_BUSY;
                 ROS_INFO("executeCB: action_code, status_code = %d, %d", action_code_, status_code_);
                 //ros::Duration(2.0).sleep();
                 //if here, then presumably have a valid pose for object of interest; grab it! 
@@ -364,34 +383,13 @@ void TaskActionServer::executeCB(const actionlib::SimpleActionServer<coordinator
                 object_grabber_ac_.sendGoal(object_grabber_goal_,
                         boost::bind(&TaskActionServer::objectGrabberDoneCb_, this, _1, _2));
 
-                action_code_ = coordinator::ManipTaskGoal::WAIT_FOR_STRADDLE_OBJECT;
-                status_code_ = coordinator::ManipTaskFeedback::PICKUP_MOTION_BUSY;
+                action_code_ = coordinator::ManipTaskGoal::WAIT_FOR_MOVE;
+                status_code_ = coordinator::ManipTaskFeedback::MOVE_BUSY;
                 //will inspect this status to see if object grasp is eventually successful
                 object_grabber_return_code_ = object_grabber::object_grabberResult::OBJECT_GRABBER_BUSY;
 
                 break;
-
-            case coordinator::ManipTaskGoal::WAIT_FOR_STRADDLE_OBJECT:
-                if (object_grabber_return_code_ == object_grabber::object_grabberResult::OBJECT_ACQUIRED) { //success!
-                    ROS_INFO("straddling object");
-                        working_on_task_ = false; // test--set to goal achieved
-                        action_code_ = coordinator::ManipTaskGoal::NO_CURRENT_TASK;
-                        status_code_ = coordinator::ManipTaskFeedback::COMPLETED_MOVE;
-                        result_.manip_return_code = coordinator::ManipTaskResult::MANIP_SUCCESS;
-                        //object pose is in result message
-                        as_.setSucceeded(result_); // return the "result" message to client, along with "success" status
-                        return; //done w/ callback
-                } else if (object_grabber_return_code_ == object_grabber::object_grabberResult::OBJECT_GRABBER_BUSY) {
-                    // do nothing--just wait patiently
-                    //ROS_INFO("waiting for object grab");
-                } else {
-                    ROS_WARN("trouble with attempting to straddle object");
-                    action_code_ = coordinator::ManipTaskGoal::ABORT;
-                    result_.manip_return_code = coordinator::ManipTaskResult::FAILED_PICKUP;
-                }
-                break;                        
-
-
+                
             case coordinator::ManipTaskGoal::DROPOFF_OBJECT:
                 status_code_ = coordinator::ManipTaskFeedback::DROPOFF_MOTION_BUSY; //coordinator::ManipTaskResult::MANIP_SUCCESS; //code 0
                 ROS_INFO("executeCB: action_code, status_code = %d, %d", action_code_, status_code_);
@@ -441,19 +439,28 @@ void TaskActionServer::executeCB(const actionlib::SimpleActionServer<coordinator
                 object_grabber_ac_.sendGoal(object_grabber_goal_,
                         boost::bind(&TaskActionServer::objectGrabberDoneCb_, this, _1, _2));
 
-                action_code_ = coordinator::ManipTaskGoal::WAIT_FOR_MOVE_TO_PREPOSE;
+                action_code_ = coordinator::ManipTaskGoal::WAIT_FOR_MOVE;
                 //will inspect this status to see if object grasp is eventually successful
                 object_grabber_return_code_ = object_grabber::object_grabberResult::OBJECT_GRABBER_BUSY;
                 break;
-            case coordinator::ManipTaskGoal::WAIT_FOR_MOVE_TO_PREPOSE:
+            case coordinator::ManipTaskGoal::WAIT_FOR_MOVE:
                 if (object_grabber_return_code_ == object_grabber::object_grabberResult::SUCCESS) { //success!
-                    ROS_INFO("completed move to pre-pose");
+                    ROS_INFO("completed move");
                     working_on_task_ = false; // test--set to goal achieved
                     action_code_ = coordinator::ManipTaskGoal::NO_CURRENT_TASK;
                     status_code_ = coordinator::ManipTaskFeedback::COMPLETED_MOVE;
                     result_.manip_return_code = coordinator::ManipTaskResult::MANIP_SUCCESS;
                     as_.setSucceeded(result_); // return the "result" message to client, along with "success" status
                     return; //done w/ callback
+                }
+                else if(object_grabber_return_code_ == object_grabber::object_grabberResult::FAILED_CANNOT_REACH) {
+                    ROS_WARN("unreachable");
+                     working_on_task_ = false; // test--set to goal achieved
+                    action_code_ = coordinator::ManipTaskGoal::NO_CURRENT_TASK;
+                    status_code_ = coordinator::ManipTaskFeedback::COMPLETED_MOVE;
+                    result_.manip_return_code = coordinator::ManipTaskResult::FAILED_MOVE;
+                    as_.setSucceeded(result_); // return the "result" message to client, along with "success" status
+                    return; //done w/ callback            
                 }
                 else {
                     ROS_INFO("object_grabber_return_code_ = %d",object_grabber_return_code_);
