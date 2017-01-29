@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<package>
+	<name>test_plugin</name>
+	<version>1.0.0</version>
+	<description>Example plugin for drive control.</description>
+  
+	<!-- One maintainer tag required, multiple allowed, one person per tag -->
+	<maintainer email="tes77@case.edu">Tom</maintainer>
+
+	<!-- One license tag required, multiple allowed, one license per tag -->
+	<!-- Commonly used license strings: -->
+	<!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
+	<license>None</license>
+
+	<!-- Author tags are optional, mutiple are allowed, one per tag -->
+	<!-- Authors do not have to be maintianers, but could be -->
+	<author email="tes77@case.edu">Tom Shkurti</author>
+
+	<!-- The *_depend tags are used to specify dependencies -->
+	<!-- Dependencies can be catkin packages or system dependencies -->
+	<buildtool_depend>catkin</buildtool_depend>
+	<build_depend>roscpp</build_depend>
+	<build_depend>nav_core</build_depend>
+   
+	<run_depend>roscpp</run_depend>
+	<run_depend>nav_core</run_depend>
+	
+	<!-- The export tag contains other, unspecified, tags -->
+	<export>
+		<!-- This tells ROS "hey, there's a plugin in this package. Find out more about it in the following file:". I would ASSUME the ${prefix} part tells it to look in this package- why the file name would not just be local is a mystery for better mind than I.-->
+		<nav_core plugin="${prefix}/test_planner_plugin.xml" />
+	</export>
+</package>

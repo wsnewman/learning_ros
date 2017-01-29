@@ -1,0 +1,7 @@
+<!-- This little file (referenced from the export tage in package.xml) tells ROS where to find the plugin's executable code, what the class inside it is called, and some descriptive information.-->
+<!--The "library" tag points to the library file catkin generates (it automatically looks in the /devel folder and appends the .so file extension).-->
+<library path="lib/libtest_planner">
+	<class name="test_plugin/TestPlanner" type="test_planner::TestPlanner" base_class_type="nav_core::BaseLocalPlanner">
+		<description>Example local planner plugin- causes the robot to move forward at random velocities, and spews odometric data to the console.</description>
+	</class>
+</library>
