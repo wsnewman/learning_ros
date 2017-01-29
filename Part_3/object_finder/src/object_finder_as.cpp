@@ -82,7 +82,9 @@ bool ObjectFinder::find_toy_block(float surface_height, geometry_msgs::PoseStamp
     //hard-coded search bounds based on a block of width 0.035
     found_object = pclUtils_.find_plane_fit(0.4, 1, -0.5, 0.5, surface_height + 0.025, surface_height + 0.045, 0.001,
             plane_normal, plane_dist, major_axis, centroid);
-    //should have put a return value on find_plane_fit;
+    // need more here, if want to distinguish different types of blocks;
+    // write a new pclUtils fnc for this. Then set:
+    //result_.object_id = CODE_OF_BLOCK_FOUND;
     //
     if (plane_normal(2) < 0) plane_normal(2) *= -1.0; //in world frame, normal must point UP
     Eigen::Matrix3f R;
@@ -157,7 +159,8 @@ void ObjectFinder::executeCB(const actionlib::SimpleActionServer<object_finder::
         surface_height_ = table_ht; //remember this value for potential future use
         found_surface_height_ = true;
     }
-
+    result_.object_id = goal->object_id; //by default, set the "found" object_id to the "requested" object_id
+    //note--finder might change this ID, if warranted
 
     switch (object_id) {
         case ObjectIdCodes::COKE_CAN_UPRIGHT:

@@ -5,7 +5,8 @@
 #include<ros/ros.h>
 //#include<simple_baxter_gripper_interface/simple_baxter_gripper_interface.h>
 #include<generic_gripper_services/genericGripperInterface.h>
-#include<sticky_fingers/StickyControl.h>
+//#include<sticky_fingers/StickyControl.h>
+#include <std_srvs/SetBool.h>
 //BaxterGripper *baxterGripper_ptr;
 const double MAX_WAIT_TIME = 3.0; //put a limit on how long will wait for gripper open/close
 const double DT=0.01;
@@ -17,7 +18,8 @@ bool callback(generic_gripper_services::genericGripperInterfaceRequest& request,
         int command_code = request.cmd_code;
         //int ntries = 0;
         double wait_time=0;
-        sticky_fingers::StickyControl sticky_srv;
+        //sticky_fingers::StickyControl sticky_srv;
+        std_srvs::SetBool sticky_srv;
 
         switch(command_code) {
            case generic_gripper_services::genericGripperInterfaceRequest::TEST_PING:
@@ -28,10 +30,11 @@ bool callback(generic_gripper_services::genericGripperInterfaceRequest& request,
              
            case generic_gripper_services::genericGripperInterfaceRequest::RELEASE:  
             ROS_INFO("turning off vacuum--part release");
-            sticky_srv.request.sticky_status = false;
-            g_client_ptr->call(sticky_srv);
-            if (sticky_srv.response.new_status!=false) {
-                ROS_WARN("did not get expected reply from sticky service...false");
+            sticky_srv.request.data = false;
+            if (!g_client_ptr->call(sticky_srv))
+            //if (sticky_srv.response.new_status!=false) 
+            {
+                ROS_WARN("unsuccessful sticky-fingers service call");
             }
             ros::spinOnce();
             //ros::Duration(0.5).sleep();
@@ -45,10 +48,11 @@ bool callback(generic_gripper_services::genericGripperInterfaceRequest& request,
            
            case generic_gripper_services::genericGripperInterfaceRequest::GRASP: 
                ROS_INFO("enabling vacuum to grasp part");
-               sticky_srv.request.sticky_status = true;
-               g_client_ptr->call(sticky_srv);
-               if (sticky_srv.response.new_status!=true) {
-                ROS_WARN("did not get expected reply from sticky service...true");
+               sticky_srv.request.data = true;
+               if (!g_client_ptr->call(sticky_srv))
+               //if (sticky_srv.response.new_status!=true) 
+               {
+                ROS_WARN("unsuccessful service call to sticky fingers");
             }
              //  ros::Duration(1.0).sleep();
                 response.success = true; 
@@ -72,7 +76,9 @@ int main(int argc, char **argv) {
     //BaxterGripper baxterGripper(&n);
     //baxterGripper_ptr = &baxterGripper; // make this class accessible to callback   
     ros::ServiceServer service = n.advertiseService("generic_gripper_svc", callback);
-    ros::ServiceClient client = n.serviceClient<sticky_fingers::StickyControl>("/sticky_finger/wrist_3_link");
+    //ros::ServiceClient client = n.serviceClient<sticky_fingers::StickyControl>("/sticky_finger/wrist_3_link");
+    ros::ServiceClient client = n.serviceClient<std_srvs::SetBool>("/sticky_finger/wrist_3_link");
+
     g_client_ptr = &client; // make this global, so callback can use it
   
     

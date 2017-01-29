@@ -44,10 +44,12 @@
 <build_depend>baxter_core_msgs</build_depend>
 <build_depend>simple_baxter_gripper_interface</build_depend>
 <build_depend>sticky_fingers</build_depend>
+<build_depend>std_srvs</build_depend>
   <run_depend>roscpp</run_depend>
 <run_depend>baxter_core_msgs</run_depend>
 <run_depend>simple_baxter_gripper_interface</run_depend>
 <run_depend>sticky_fingers</run_depend>
+<run_depend>std_srvs</run_depend>
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- You can specify that this package is a metapackage here: -->
