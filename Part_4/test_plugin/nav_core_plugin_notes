@@ -11,6 +11,14 @@ new path received; (sequence of poses, expressed in map frame)
  found cmd_vel is updated at 20Hz;  why this freq?  (from params);
  
  new variant compiles and runs, but behavior is wrong (notably, omega)
+  (made some fixes)
+  
+ subscribed to odom;
+ doing tf base w/rt odom and odom w/rt map
+ want to get pose of base w/rt map, based on current odom and most recent xforms
+ 
+ 
+ 
  
  
  
