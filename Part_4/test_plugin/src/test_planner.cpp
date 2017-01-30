@@ -48,6 +48,8 @@ void test_planner::TestPlanner::odomCallback(const nav_msgs::Odometry& odom_rcvd
     odom_x_ = odom_rcvd.pose.pose.position.x;
     odom_y_ = odom_rcvd.pose.pose.position.y;
     odom_quat_ = odom_rcvd.pose.pose.orientation;
+    odom_phi_ = xformUtils.convertPlanarQuat2Phi(odom_quat_); // cheap conversion from quaternion to heading for planar motion
+
     got_odom_=true;
     //odom publishes orientation as a quaternion.  Convert this to a simple heading
     //ROS_INFO("odom x,y = %f, %f",odom_x_,odom_y_);
@@ -64,9 +66,10 @@ bool test_planner::TestPlanner::setPlan(const std::vector< geometry_msgs::PoseSt
     //We're just ignoring it entirely, but an actual planner would probably take this opportunity
     //to store it somewhere and maybe update components that reference it.
     ROS_INFO("GOT A PLAN OF SIZE %lu", plan.size());
-    ROS_INFO("poses of plan: ");
+
     int nposes = plan.size();
     /*
+    ROS_INFO("poses of plan: ");
     geometry_msgs::PoseStamped ipose1, ipose2;
     for (int i = 1; i < nposes; i++) {
         ipose1 = plan[i - 1];
@@ -77,6 +80,7 @@ bool test_planner::TestPlanner::setPlan(const std::vector< geometry_msgs::PoseSt
     //If we wait long enough, the global planner will ask us to follow the same plan again. This would reset the five-
     //second timer if I just had it refresh every time this function was called, so I check to see if the new plan is
     //"the same" as the old one first.
+    // FIX THIS
     if (plan.size() != old_size) {
         old_size = plan.size();
         tg = ros::Time::now() + ros::Duration(5.0);
@@ -124,8 +128,49 @@ bool test_planner::TestPlanner::setPlan(const std::vector< geometry_msgs::PoseSt
         }
     }
     ROS_INFO("map to odom tf is good");
+    // get robot x,y,phi from odom and stfOdomWrtMap_
+    // convert odom_pose_ into a stf, then do multiply, then pull out terms and convert phi
     
+    compute_stf_base_wrt_map();
     return true;
+}
+
+//get tf between odom and map
+//use odom info
+//compute odom_wrt_map
+//populate terms x_base_wrt_map_,y_base_wrt_map_,phi_base_wrt_map_
+void test_planner::TestPlanner::compute_stf_base_wrt_map() {
+    if (!got_odom_) return; // give up if don't have any odom values
+    //update to latest stfOdomWrtMap
+    tf_->lookupTransform("map", "odom", ros::Time(0), stfOdomWrtMap_);
+    //make an stf from odom:
+    //get the position from odom, converted to a tf type
+    tf::Vector3 pos;
+    pos.setX(odom_pose_.position.x);
+    pos.setY(odom_pose_.position.y);
+    pos.setZ(odom_pose_.position.z);
+    stfBaseLinkWrtOdom_.stamp_ = ros::Time::now();
+    stfBaseLinkWrtOdom_.setOrigin(pos);
+    // also need to get the orientation of odom_pose and use setRotation
+    tf::Quaternion q;
+    q.setX(odom_quat_.x);
+    q.setY(odom_quat_.y);
+    q.setZ(odom_quat_.z);
+    q.setW(odom_quat_.w);
+    stfBaseLinkWrtOdom_.setRotation(q);
+    stfBaseLinkWrtOdom_.frame_id_ = "odom";
+    stfBaseLinkWrtOdom_.child_frame_id_ = "base_link";   
+
+    xformUtils.multiply_stamped_tfs(stfOdomWrtMap_,stfBaseLinkWrtOdom_,stfEstBaseWrtMap_);  
+    odom_poseStamped_wrt_map_ = xformUtils.get_pose_from_stamped_tf(stfEstBaseWrtMap_);
+    ROS_INFO("computed robot base pose w/rt map: ");
+    xformUtils.printStampedPose(odom_poseStamped_wrt_map_);
+    x_base_wrt_map_= odom_poseStamped_wrt_map_.pose.position.x;
+    y_base_wrt_map_= odom_poseStamped_wrt_map_.pose.position.y;
+    geometry_msgs::Quaternion quat;
+    quat = odom_poseStamped_wrt_map_.pose.orientation;
+    phi_base_wrt_map_ =xformUtils.convertPlanarQuat2Phi(quat);
+    ROS_INFO("mobot x,y,phi w/rt map: %f, %f, %f",x_base_wrt_map_,y_base_wrt_map_,phi_base_wrt_map_);
 }
 
 void test_planner::TestPlanner::printPose(geometry_msgs::PoseStamped pose1, geometry_msgs::PoseStamped pose2) {

@@ -5,6 +5,8 @@
 #include <nav_msgs/Path.h>
 #include <nav_msgs/Odometry.h>
 #include <tf/transform_listener.h>
+#include <xform_utils/xform_utils.h>
+using namespace std;
 
 namespace test_planner {
 	class TestPlanner : public nav_core::BaseLocalPlanner {
@@ -19,6 +21,8 @@ namespace test_planner {
 		bool computeVelocityCommands(geometry_msgs::Twist &cmd_vel);
 		void printPose(geometry_msgs::PoseStamped pose1,geometry_msgs::PoseStamped pose2);
                 void odomCallback(const nav_msgs::Odometry& odom_rcvd);
+                XformUtils xformUtils; //instantiate an object of XformUtils
+                void compute_stf_base_wrt_map();
 	private:
 		ros::Time tg;
 		unsigned int old_size;
@@ -30,13 +34,16 @@ namespace test_planner {
                 int ipose_,nposes_;
                 tf::StampedTransform stfBaseLinkWrtOdom_; //base link w/rt odom frame; get this from tf; 
                 tf::StampedTransform stfOdomWrtMap_;
+                tf::StampedTransform stfEstBaseWrtMap_;
                 tf::TransformListener * tf_;
                 nav_msgs::Odometry current_odom_;
                 geometry_msgs::Pose odom_pose_;
                 double odom_x_,odom_y_;
                 double odom_phi_;
+                double x_base_wrt_map_,y_base_wrt_map_,phi_base_wrt_map_;
                 geometry_msgs::Quaternion odom_quat_; 
                 bool got_odom_;
+                geometry_msgs::PoseStamped odom_poseStamped_wrt_map_;
 	};	
 };
 #endif

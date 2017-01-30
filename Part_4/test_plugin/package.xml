@@ -21,10 +21,11 @@
 	<buildtool_depend>catkin</buildtool_depend>
 	<build_depend>roscpp</build_depend>
 	<build_depend>nav_core</build_depend>
+        <build_depend>xform_utils</build_depend>
    
 	<run_depend>roscpp</run_depend>
 	<run_depend>nav_core</run_depend>
-	
+	<run_depend>xform_utils</run_depend>
 	<!-- The export tag contains other, unspecified, tags -->
 	<export>
 		<!-- This tells ROS "hey, there's a plugin in this package. Find out more about it in the following file:". I would ASSUME the ${prefix} part tells it to look in this package- why the file name would not just be local is a mystery for better mind than I.-->
