@@ -10,6 +10,7 @@ catkin_simple()
 #Library
 #Just make the one library, the plugin manager will handle the rest.
 add_library(test_planner src/test_planner.cpp)
+target_link_libraries(test_planner xform_utils  ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
 cs_install()
 cs_export()

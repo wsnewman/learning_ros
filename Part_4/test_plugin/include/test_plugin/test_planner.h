@@ -6,6 +6,7 @@
 #include <nav_msgs/Odometry.h>
 #include <tf/transform_listener.h>
 #include <xform_utils/xform_utils.h>
+#include <geometry_msgs/Quaternion.h>
 using namespace std;
 
 namespace test_planner {
@@ -34,7 +35,7 @@ namespace test_planner {
                 int ipose_,nposes_;
                 tf::StampedTransform stfBaseLinkWrtOdom_; //base link w/rt odom frame; get this from tf; 
                 tf::StampedTransform stfOdomWrtMap_;
-                tf::StampedTransform stfEstBaseWrtMap_;
+                tf::StampedTransform stfEstBaseWrtMap_; 
                 tf::TransformListener * tf_;
                 nav_msgs::Odometry current_odom_;
                 geometry_msgs::Pose odom_pose_;

@@ -48,7 +48,8 @@ void test_planner::TestPlanner::odomCallback(const nav_msgs::Odometry& odom_rcvd
     odom_x_ = odom_rcvd.pose.pose.position.x;
     odom_y_ = odom_rcvd.pose.pose.position.y;
     odom_quat_ = odom_rcvd.pose.pose.orientation;
-    odom_phi_ = xformUtils.convertPlanarQuat2Phi(odom_quat_); // cheap conversion from quaternion to heading for planar motion
+    // had problems w/ this fnc:
+    //odom_phi_ = xformUtils.convertPlanarQuat2Phi(odom_quat_); // cheap conversion from quaternion to heading for planar motion
 
     got_odom_=true;
     //odom publishes orientation as a quaternion.  Convert this to a simple heading
@@ -171,6 +172,7 @@ void test_planner::TestPlanner::compute_stf_base_wrt_map() {
     quat = odom_poseStamped_wrt_map_.pose.orientation;
     phi_base_wrt_map_ =xformUtils.convertPlanarQuat2Phi(quat);
     ROS_INFO("mobot x,y,phi w/rt map: %f, %f, %f",x_base_wrt_map_,y_base_wrt_map_,phi_base_wrt_map_);
+    //test: this agrees with: rosrun tf tf_echo map base_link 
 }
 
 void test_planner::TestPlanner::printPose(geometry_msgs::PoseStamped pose1, geometry_msgs::PoseStamped pose2) {
