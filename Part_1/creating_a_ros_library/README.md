@@ -17,7 +17,7 @@ See also the package using_a_ros_library for an example of linking to the librar
 
 ## Running tests/demos
 As in the example ros class, behavior of the new test node can be examined using the commands:
-`rostopic echo exampleMinimalPubTopic`
-`rostopic pub -r 4 exampleMinimalSubTopic std_msgs/Float32 2.0`
-`rosservice call exampleMinimalService 1`
+`rostopic echo example_class_output_topic`
+`rostopic pub -r 4 example_class_input_topic std_msgs/Float32 2.0`
+`rosservice call example_minimal_service`
     
