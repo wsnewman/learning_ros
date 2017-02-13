@@ -12,9 +12,9 @@ Can try this function manually with terminal commands, e.g.:
 
 Then peek/poke the various I/O options from a command line (in 3 separate terminals) with:
 
-`rostopic echo exampleMinimalPubTopic`
-`rostopic pub -r 4 exampleMinimalSubTopic std_msgs/Float32 2.0`
-`rosservice call exampleMinimalService 1`
+`rostopic echo example_class_output_topic`
+`rostopic pub -r 4 example_class_input_topic std_msgs/Float32 2.0`
+`rosservice call example_minimal_service`
 
 
     
