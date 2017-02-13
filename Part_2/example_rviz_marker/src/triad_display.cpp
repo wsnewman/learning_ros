@@ -129,7 +129,7 @@ void init_markers() {
 
 void poseCB(const geometry_msgs::PoseStamped &pose_msg) {
     ROS_DEBUG("got pose message");
-
+    //ROS_INFO("got pose message");
     g_stamped_pose.header = pose_msg.header;
     g_stamped_pose.pose = pose_msg.pose;
 

@@ -1,0 +1,10 @@
+<launch>
+<!-- need camera link for Kinect driver  -->
+<!-- need camera link for Kinect driver -->
+<!-- make this tf external for tuning -->
+<remap from="/camera/depth_registered/points" to="/kinect/depth/points" />
+<include file="$(find freenect_launch)/launch/freenect.launch" />
+
+<!--include file="$(find cwru_baxter_launch)/kinect_transform.launch" /-->
+
+</launch>

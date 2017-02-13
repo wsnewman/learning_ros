@@ -46,7 +46,7 @@ Eigen::Affine3d XformUtils::transformPoseToEigenAffine3d(geometry_msgs::PoseStam
     Eigen::Affine3d affine;
     geometry_msgs::Pose pose = stPose.pose;
     Eigen::Vector3d Oe;
-    ROS_WARN("xformUtils: input pose:");
+    //ROS_WARN("xformUtils: input pose:");
     printPose(pose);
     Oe(0) = pose.position.x;
     Oe(1) = pose.position.y;
@@ -71,7 +71,7 @@ Eigen::Affine3d XformUtils::transformPoseToEigenAffine3d(geometry_msgs::Pose pos
     Eigen::Affine3d affine;
 
     Eigen::Vector3d Oe;
-    ROS_WARN("xformUtils: input pose:");
+    //ROS_WARN("xformUtils: input pose:");
     printPose(pose);
     Oe(0) = pose.position.x;
     Oe(1) = pose.position.y;
@@ -187,7 +187,7 @@ tf::StampedTransform XformUtils::convert_poseStamped_to_stampedTransform(geometr
  geometry_msgs::Point position = pose.position;
  geometry_msgs::Quaternion orientation = pose.orientation;
  transform.setOrigin( tf::Vector3(position.x, position.y, position.z) );
- cout<<"reference frame: "<<stPose.header.frame_id<<endl;
+ //cout<<"reference frame: "<<stPose.header.frame_id<<endl;
  printStampedPose(stPose);
  transform.setRotation( tf::Quaternion( orientation.x, orientation.y, orientation.z, orientation.w) );
  tf::StampedTransform stTransform(transform, stPose.header.stamp, stPose.header.frame_id,child_frame_id);
