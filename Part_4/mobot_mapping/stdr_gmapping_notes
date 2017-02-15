@@ -1,0 +1,62 @@
+
+section 10.1:map making
+
+can try this with simple 2D robot:
+
+
+start stdr:
+  roslaunch stdr_launchers server_with_map_and_gui_plus_robot.launch 
+
+examine the named frames; run:
+  rosrun tf view_frames 
+  then open the generated pdf
+
+To run slam_gmapping, we will need a frame called "base_link".  We can define this frame
+and make it coincident with robot0 by running a static transform publisher:
+
+Usage: static_transform_publisher x y z qx qy qz qw frame_id child_frame_id  period(milliseconds) 
+rosrun tf static_transform_publisher 0 0 0 0 0 0 1 robot0 base_link 100
+
+after starting this node, re-run rosrun tf view_frames and note that base_link now exists.
+(note: need base_link as a child, not a parent)
+ 
+start rviz:
+rosrun rviz rviz
+  add display item for laserscan, topic = /robot0/laser_0
+    use robot0 frame or base_link frame
+    note: frame_id of laser data is robot0_laser_0, but this is connected in the tf tree
+
+start the mapping node, slam_gmapping.  Need to remap the name of the LIDAR source to /robot0/laser_0.
+ALSO, since STDR already includes a map (but we want to make our own), we'll rename the output of
+slam_gmapping "map2":
+
+rosrun gmapping slam_gmapping scan:=/robot0/laser_0 /map:=/map2 
+
+  in rviz, add display item "map"
+    choose topic: map2  
+
+start an interface to command the robot; MAY be reactive controller;
+note: stdr motion-command topicis: /robot0/cmd_vel
+therefore, start teleop with remapping out output topic from (default) /cmd_vel to /robot0/cmd_vel:
+ rosrun teleop_twist_keyboard teleop_twist_keyboard.py /cmd_vel:=/robot0/cmd_vel
+
+  use teleop to drive around; observe map building in rviz
+
+Save the map to disk.  Navigate to the desired directory, remap in map topic to refer to our map2:
+  rosrun map_server map_saver -f stdrMap2 map:=map2
+
+This will create two output files:
+The pgm file is the same as a png file.
+view stdrMap2.pgm and stdrMap2.yaml
+
+can restart stdr, then load saved map with:
+rosrun map_server map_server stdrMap2.yaml
+
+SHOULD be able to run amcl with:
+rosrun amcl amcl scan:=/robot0/laser_0 map:=/map2
+but get error:
+  [ WARN] [1487182875.845001512]: No laser scan received (and thus no pose updates have been published) for 1487182875.844956 seconds.  Verify that data is being published on the /robot0/laser_0 topic.
+(laser topic seems to be active, per rostopic echo)
+
+
+
