@@ -50,7 +50,7 @@ The pgm file is the same as a png file.
 view stdrMap2.pgm and stdrMap2.yaml
 
 can restart stdr, then load saved map with:
-rosrun map_server map_server stdrMap2.yaml
+rosrun map_server map_server stdrMap2.yaml map:=/map2
 
 SHOULD be able to run amcl with:
 rosrun amcl amcl scan:=/robot0/laser_0 map:=/map2
