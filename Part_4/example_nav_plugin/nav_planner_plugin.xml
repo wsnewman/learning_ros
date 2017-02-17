@@ -1,0 +1,13 @@
+<!-- This little file (referenced from the export tage in package.xml) tells ROS where to find the plugin's executable code, what the class inside it is called, and some descriptive information.-->
+<!--The "library" tag points to the library file catkin generates (it automatically looks in the /devel folder and appends the .so file extension).-->
+<!--libminimal_nav_plugin is "lib" prepended to name of library;
+   in CMakeLists.txt, name of library was set to minimal_nav_plugin via
+   add_library(minimal_nav_plugin src/minimal_nav_plugin.cpp)  -->
+<library path="lib/libminimal_nav_plugin">
+    <!--example_nav_plugin is the package name, and MinimalPlanner is the class name  -->
+    <!--the base class is nav_core::BaseLocalPlanner; generically, build on this to write a new
+       local planner  -->
+	<class name="example_nav_plugin/MinimalPlanner" type="MinimalPlanner" base_class_type="nav_core::BaseLocalPlanner">
+		<description>Example local planner plugin- causes the robot to move in a CCW circle.</description>
+	</class>
+</library>

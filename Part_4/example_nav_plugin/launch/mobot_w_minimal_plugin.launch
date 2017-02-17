@@ -1,0 +1,39 @@
+<!-- Replaces the file in learning_ros's mobot_nav_config package. Added Line 35, 
+  to invoke the new, minimal local planner plugin. Without a line there, it invokes base by default.-->
+<launch>
+  <!-- Run the map server and load the starting-pen map -->
+  <node name="map_server" pkg="map_server" type="map_server" 
+     args="$(find maps)/starting_pen/starting_pen_map.yaml"/>
+ 
+   <!-- use amcl for localization-->
+   <!--node pkg="amcl" type="amcl" name="amcl" output="screen"--> 
+  <!-- alt: try differential-drive amcl config params -->
+  <include file="$(find amcl)/examples/amcl_diff.launch"/>  
+  
+  <!--alt: instead of loading a map and localizing on it, could run slam dynamically -->
+  <!--node name="slam_gmapping" pkg="gmapping" type="slam_gmapping"/--> 
+     
+
+<!-- launch rviz using a specific config file -->
+ <node pkg="rviz" type="rviz" name="rviz" args="-d $(find mobot_nav_config)/nav_rviz.rviz"/>
+
+<!--triad display marker helper node; rosrun example_rviz_marker triad_display -->
+<!--node name="triad_display" pkg="example_rviz_marker" type= "triad_display"-->
+<!--remap from="triad_display_pose" to="/MinimalPlanner/triad_display_pose"/-->
+<!--/node-->
+
+<!--move_base w/ navstack config files--> 
+ <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+   <rosparam file="$(find mobot_nav_config)/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find mobot_nav_config)/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find mobot_nav_config)/base_local_planner_params.yaml" command="load" />
+
+    <rosparam file="$(find mobot_nav_config)/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find mobot_nav_config)/global_costmap_params.yaml" command="load" />
+    
+    <!-- Give the spawner a parameter, which tells it to reference example_nav_plugin/MinimalPlanner
+    (package_name/class_name of example plugin). If no argument like this is given, the system defaults to base_local_planner.-->
+    <param name="base_local_planner" value="example_nav_plugin/MinimalPlanner"/>
+  </node>
+ 
+</launch>
