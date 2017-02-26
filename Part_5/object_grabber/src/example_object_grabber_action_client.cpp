@@ -30,12 +30,15 @@ using namespace std;
 XformUtils xformUtils; //type conversion utilities
 
 int g_object_grabber_return_code;
+actionlib::SimpleActionClient<object_grabber::object_grabberAction> *g_object_grabber_ac_ptr;
+bool g_got_callback = false;
 
 void objectGrabberDoneCb(const actionlib::SimpleClientGoalState& state,
         const object_grabber::object_grabberResultConstPtr& result) {
     ROS_INFO(" objectGrabberDoneCb: server responded with state [%s]", state.toString().c_str());
     g_object_grabber_return_code = result->return_code;
     ROS_INFO("got result output = %d; ", g_object_grabber_return_code);
+    g_got_callback=true; //flag that action server has called back
 }
 
 
@@ -62,26 +65,51 @@ void set_example_object_frames(geometry_msgs::PoseStamped &object_poseStamped,
     object_dropoff_poseStamped.pose.orientation.w = 0;
 }
 
+void move_to_waiting_pose() {
+        ROS_INFO("sending command to move to waiting pose");
+        g_got_callback=false; //reset callback-done flag
+        object_grabber::object_grabberGoal object_grabber_goal;
+        object_grabber_goal.action_code = object_grabber::object_grabberGoal::MOVE_TO_WAITING_POSE;
+        g_object_grabber_ac_ptr->sendGoal(object_grabber_goal, &objectGrabberDoneCb);
+}
+
+void grab_object(geometry_msgs::PoseStamped object_pickup_poseStamped) {
+    ROS_INFO("sending a grab-object command");
+    g_got_callback=false; //reset callback-done flag
+    object_grabber::object_grabberGoal object_grabber_goal;
+    object_grabber_goal.action_code = object_grabber::object_grabberGoal::GRAB_OBJECT; //specify the action to be performed 
+    object_grabber_goal.object_id = ObjectIdCodes::TOY_BLOCK_ID; // specify the object to manipulate                
+    object_grabber_goal.object_frame = object_pickup_poseStamped; //and the object's current pose
+    object_grabber_goal.grasp_option = object_grabber::object_grabberGoal::DEFAULT_GRASP_STRATEGY; //from above
+    object_grabber_goal.speed_factor = 1.0;
+    ROS_INFO("sending goal to grab object: ");
+    g_object_grabber_ac_ptr->sendGoal(object_grabber_goal, &objectGrabberDoneCb);
+}
+
+void   dropoff_object(geometry_msgs::PoseStamped object_dropoff_poseStamped) {
+    ROS_INFO("sending a dropoff-object command");
+    object_grabber::object_grabberGoal object_grabber_goal;
+    object_grabber_goal.action_code = object_grabber::object_grabberGoal::DROPOFF_OBJECT; //specify the action to be performed 
+    object_grabber_goal.object_id = ObjectIdCodes::TOY_BLOCK_ID; // specify the object to manipulate                
+    object_grabber_goal.object_frame = object_dropoff_poseStamped; //and the object's current pose
+    object_grabber_goal.grasp_option = object_grabber::object_grabberGoal::DEFAULT_GRASP_STRATEGY; //from above
+    object_grabber_goal.speed_factor = 1.0;
+    ROS_INFO("sending goal to dropoff object: ");
+    g_object_grabber_ac_ptr->sendGoal(object_grabber_goal, &objectGrabberDoneCb);
+} 
+
 int main(int argc, char** argv) {
     ros::init(argc, argv, "example_object_grabber_action_client");
     ros::NodeHandle nh;
-    double dt_wait = 0.5; //check status this often
-    double wait_time;
-    const double MAX_WAIT_TIME = 30.0; // 30-second watchdog
-    ros::Duration sleeper(dt_wait);
-
-    int object_id = ObjectIdCodes::TOY_BLOCK_ID; //choose object of interest
-
-
-    object_grabber::object_grabberGoal object_grabber_goal;
     geometry_msgs::PoseStamped object_pickup_poseStamped;
     geometry_msgs::PoseStamped object_dropoff_poseStamped;
+    
     //specify object pick-up and drop-off frames using simple test fnc
     //more generally, pick-up comes from perception and drop-off comes from task
     set_example_object_frames(object_pickup_poseStamped, object_dropoff_poseStamped);
-
+    //instantiate an action client of object_grabber_action_service:
     actionlib::SimpleActionClient<object_grabber::object_grabberAction> object_grabber_ac("object_grabber_action_service", true);
-
+    g_object_grabber_ac_ptr = &object_grabber_ac; // make available to fncs
     ROS_INFO("waiting for server: ");
     bool server_exists = false;
     while ((!server_exists)&&(ros::ok())) {
@@ -92,59 +120,23 @@ int main(int argc, char** argv) {
     }
     ROS_INFO("connected to object_grabber action server"); // if here, then we connected to the server; 
 
-
-    bool finished_before_timeout;
-    ROS_INFO("sending test code: ");
-    object_grabber_goal.action_code = object_grabber::object_grabberGoal::TEST_CODE;
-    object_grabber_ac.sendGoal(object_grabber_goal, &objectGrabberDoneCb);
-    finished_before_timeout = object_grabber_ac.waitForResult(ros::Duration(30.0));
-    if (!finished_before_timeout) {
-        ROS_WARN("giving up waiting on result ");
-        return 1;
-    }
-
     //move to waiting pose
-    ROS_INFO("sending command to move to waiting pose");
-    object_grabber_goal.action_code = object_grabber::object_grabberGoal::MOVE_TO_WAITING_POSE;
-    object_grabber_ac.sendGoal(object_grabber_goal, &objectGrabberDoneCb);
-    finished_before_timeout = object_grabber_ac.waitForResult(ros::Duration(30.0));
-    if (!finished_before_timeout) {
-        ROS_WARN("giving up waiting on result ");
-        return 1;
+    move_to_waiting_pose();
+    while(!g_got_callback) {
+        ROS_INFO("waiting on move...");
+        ros::Duration(0.5).sleep(); //could do something useful
     }
 
+    grab_object(object_pickup_poseStamped);
+    while(!g_got_callback) {
+        ROS_INFO("waiting on grab...");
+        ros::Duration(0.5).sleep(); //could do something useful
+    }    
 
-
-    ROS_INFO("sending a grab-object command");
-    object_grabber_goal.action_code = object_grabber::object_grabberGoal::GRAB_OBJECT; //specify the action to be performed 
-    object_grabber_goal.object_id = ObjectIdCodes::TOY_BLOCK_ID; // specify the object to manipulate                
-    object_grabber_goal.object_frame = object_pickup_poseStamped; //and the object's current pose
-    object_grabber_goal.grasp_option = object_grabber::object_grabberGoal::DEFAULT_GRASP_STRATEGY; //from above
-    object_grabber_goal.speed_factor = 1.0;
-    ROS_INFO("sending goal to grab object: ");
-    object_grabber_ac.sendGoal(object_grabber_goal, &objectGrabberDoneCb);
-    ROS_INFO("waiting on result");
-    finished_before_timeout = object_grabber_ac.waitForResult(ros::Duration(30.0));
-
-    if (!finished_before_timeout) {
-        ROS_WARN("giving up waiting on result ");
-        return 1;
-    }
-
-    ROS_INFO("sending a dropoff-object command");
-    object_grabber_goal.action_code = object_grabber::object_grabberGoal::DROPOFF_OBJECT; //specify the action to be performed 
-    object_grabber_goal.object_id = ObjectIdCodes::TOY_BLOCK_ID; // specify the object to manipulate                
-    object_grabber_goal.object_frame = object_dropoff_poseStamped; //and the object's current pose
-    object_grabber_goal.grasp_option = object_grabber::object_grabberGoal::DEFAULT_GRASP_STRATEGY; //from above
-    object_grabber_goal.speed_factor = 1.0;
-    ROS_INFO("sending goal to dropoff object: ");
-    object_grabber_ac.sendGoal(object_grabber_goal, &objectGrabberDoneCb);
-    ROS_INFO("waiting on result");
-    finished_before_timeout = object_grabber_ac.waitForResult(ros::Duration(30.0));
-
-    if (!finished_before_timeout) {
-        ROS_WARN("giving up waiting on result ");
-        return 1;
-    }
+    dropoff_object(object_dropoff_poseStamped);
+    while(!g_got_callback) {
+        ROS_INFO("waiting on dropoff...");
+        ros::Duration(0.5).sleep(); //could do something useful
+    }   
     return 0;
 }
