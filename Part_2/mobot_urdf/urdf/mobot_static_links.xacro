@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<robot 
+     xmlns:xacro="http://www.ros.org/wiki/xacro" name="static_links">
+    <link name="base_link">
+        <visual>
+            <geometry>
+                <box size="${bodylen} ${bodywidth} ${bodyheight}"/>
+            </geometry>
+            <origin xyz="${bodyOX} ${bodyOY} ${bodyOZ}" rpy="0 0 0"/>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="${bodylen} ${bodywidth} ${bodyheight}"/>
+            </geometry>
+            <origin xyz="${bodyOX} ${bodyOY} ${bodyOZ}" rpy="0 0 0"/>
+        </collision>
+        <inertial>
+            <!--assign almost all the mass to the main body box; set m= 100kg; treat I as approx m*r^2 -->
+            <mass value="100" />
+            <inertia ixx="10" ixy="0" ixz="0"
+              iyy="10" iyz="0"
+              izz="10" />
+        </inertial>
+    </link>
+
+    <link name="batterybox">
+        <visual>
+            <geometry>
+                <box size="${batterylen} ${batterywidth} ${batteryheight}"/>
+            </geometry>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="${batterylen} ${batterywidth} ${batteryheight}"/>
+            </geometry>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </collision>
+        <xacro:default_inertial mass="1"/>
+    </link>
+    <joint name="batterytobase" type="fixed">
+        <parent link="base_link"/>
+        <child link="batterybox"/>
+        <origin xyz="${batOX} ${batOY} ${batOZ}" rpy="0 0 0"/>
+    </joint>
+
+        
+
+</robot>

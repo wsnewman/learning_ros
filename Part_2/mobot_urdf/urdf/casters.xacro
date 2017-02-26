@@ -1,0 +1,113 @@
+<?xml version="1.0"?>
+<robot 
+     xmlns:xacro="http://www.ros.org/wiki/xacro" name="casters">
+ 
+    <xacro:macro name="caster" params="prefix reflect">
+        <link name="castdrop_${prefix}">
+            <visual>
+                <geometry>
+                    <box size="${boschwidth} ${boschwidth} ${casterdrop}"/>
+                </geometry>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+            </visual>
+            <collision>
+                <geometry>
+                    <box size="${boschwidth} ${boschwidth} ${casterdrop}"/>
+                </geometry>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+            </collision>
+            <xacro:default_inertial mass="0.2"/>
+        </link>
+        <joint name="cast2base_${prefix}" type="fixed">
+            <parent link="base_link"/>
+            <child link="castdrop_${prefix}"/>
+            <origin xyz="${-bodylen/2+bodyOX+boschwidth/2} ${reflect*bodywidth/2-reflect*boschwidth/2} ${-casterdrop/2-bodyheight/2+bodyOZ}" />
+        </joint>
+        <link name="brackettop_${prefix}">
+            <visual>
+                <geometry>
+                    <box size="${bracketwidth} ${bracketthick} .005"/>
+                </geometry>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+            </visual>
+            <collision>
+                <geometry>
+                    <box size="${bracketwidth} ${bracketthick} .005"/>
+                </geometry>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+            </collision>
+            <xacro:default_inertial mass="0.2"/>
+        </link>
+        <joint name="cast2bracket_${prefix}" type="continuous">
+            <axis xyz="0 0 1"/>
+            <parent link="castdrop_${prefix}"/>
+            <child link="brackettop_${prefix}"/>
+            <origin xyz="0 0 ${-casterdrop/2}" rpy="0 0 ${M_PI/2}"/>
+            <joint_properties damping="0.0" friction="0.0" />
+        </joint>
+        <link name="bracketside1_${prefix}">
+            <visual>
+                <geometry>
+                    <box size="${bracketthick} ${bracketheight} .005"/>
+                </geometry>
+                <origin xyz="0 0 0" rpy="${M_PI/2} ${-bracketangle} ${M_PI/2}"/>
+            </visual>
+            <collision>
+                <geometry>
+                    <box size="${bracketthick} ${bracketheight} .005"/>
+                </geometry>
+                <origin xyz="0 0 0" rpy="${M_PI/2} ${-bracketangle} ${M_PI/2}"/>
+            </collision>
+            <xacro:default_inertial mass="0.2"/>
+        </link>
+        <joint name="brack2top1_${prefix}" type="fixed">
+            <parent link="brackettop_${prefix}"/>
+            <child link="bracketside1_${prefix}"/>
+            <origin xyz="${bracketwidth/2} .04 -${bracketheight/2-.02}" rpy="0 0 0" />
+        </joint>
+        <link name="bracketside2_${prefix}">
+            <visual>
+                <geometry>
+                    <box size="${bracketthick} ${bracketheight} .005"/>
+                </geometry>
+                <origin xyz="0 0 0" rpy="${M_PI/2} ${-bracketangle} ${M_PI/2}"/>
+            </visual>
+            <collision>
+                <geometry>
+                    <box size="${bracketthick} ${bracketheight} .005"/>
+                </geometry>
+                <origin xyz="0 0 0" rpy="${M_PI/2} ${-bracketangle} ${M_PI/2}"/>
+            </collision>
+            <xacro:default_inertial mass="0.2"/>
+        </link>
+        <joint name="brack2top2_${prefix}" type="fixed">
+            <parent link="brackettop_${prefix}"/>
+            <child link="bracketside2_${prefix}"/>
+            <origin xyz="${-bracketwidth/2} .04 -${bracketheight/2-.02}" rpy="0 0 0" />
+        </joint>
+        <link name="${prefix}_casterwheel">
+            <visual>
+                <geometry>
+                    <cylinder radius="${casterdiam/2}" length="${casterwidth}"/>
+                </geometry>
+            </visual>
+            <collision>
+                <geometry>
+                    <cylinder radius="${casterdiam/2}" length="${casterwidth}"/>
+                </geometry>
+            </collision>
+            <!-- accept default inertial properties for caster wheels-->
+            <xacro:default_inertial mass="0.5"/>
+        </link>
+        <joint name="${prefix}_caster_joint" type="continuous">
+            <axis xyz="0 0 1"/>
+            <parent link="bracketside1_${prefix}"/>
+            <child link="${prefix}_casterwheel"/>
+            <origin xyz="${-casterwidth/2-.02} .053 -.053" rpy="0 ${M_PI/2} 0"/>
+            <limit effort="100" velocity="15" />
+            <joint_properties damping="0.0" friction="0.0" />
+        </joint>
+    </xacro:macro>
+    <xacro:caster prefix="left" reflect="1"/>
+    <xacro:caster prefix="right" reflect="-1"/>    
+</robot>

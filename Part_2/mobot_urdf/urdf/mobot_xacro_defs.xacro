@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<robot 
+     xmlns:xacro="http://www.ros.org/wiki/xacro" >
+     <!-- define the base-link origin to lie at floor level, between the drive wheels-->
+     <!--main body is a simple box; origin is a center of box-->
+    <xacro:property name="bodylen" value="0.5461" />
+    <xacro:property name="bodywidth" value="0.4572" />
+    <xacro:property name="bodyheight" value="0.2" />
+    <xacro:property name="bodyclearance" value="0.4" />  <!--clearance from bottom of box to ground-->  
+    <!-- derived values-->
+    <xacro:property name="half_bodylen" value="${bodylen/2.0}" /> 
+    <xacro:property name="half_bodyheight" value="${bodyheight/2.0}" /> 
+    <!-- placement of main body relative to base link frame -->
+    <xacro:property name="bodyOX" value="${-half_bodylen}" />  
+    <xacro:property name="bodyOY" value="0" />   
+    <xacro:property name="bodyOZ" value="0.45" />     
+            
+    <!-- define the drive-wheel dimensions-->
+    <xacro:property name="tirediam" value="0.3302" />
+    <xacro:property name="tirerad" value="${tirediam/2.0}" />    
+    <xacro:property name="tirewidth" value="0.06985" />
+    <!-- "track" is the distance between the drive wheels -->
+    <xacro:property name="track" value=".56515" />
+    
+    <!-- battery box dimensions -->
+    <xacro:property name="batterylen" value="0.381" />
+    <xacro:property name="batterywidth" value="0.3556" />
+    <xacro:property name="batteryheight" value="0.254" />
+    <!-- placement of battery box relative to base frame -->
+    <xacro:property name="batOX" value="-0.05" />  
+    <xacro:property name="batOY" value="0" />   
+    <xacro:property name="batOZ" value="0.22" />   
+
+
+    <xacro:property name="M_PI" value="3.1415926535897931" />
+    <xacro:property name="boschwidth" value="0.0381" />
+    <xacro:property name="casterdrop" value="0.125" />
+    <xacro:property name="bracketwidth" value="0.1175" />
+    <xacro:property name="bracketheight" value="0.16" />
+    <xacro:property name="bracketthick" value="0.0508" />
+    <xacro:property name="bracketangle" value="0.7854" />
+    <xacro:property name="casterwidth" value="0.0826" />
+    <xacro:property name="casterdiam" value="0.2286" />
+    
+    <!--here is a default inertia matrix with small, but legal values; use this when don't need accuracy for I -->
+    <!--model will assign inertia matrix dominated by main body box -->
+    <xacro:macro name="default_inertial" params="mass">
+        <inertial>
+            <mass value="${mass}" />
+            <inertia ixx="0.01" ixy="0.0" ixz="0.0"
+         iyy="0.01" iyz="0.0"
+         izz="0.01" />
+        </inertial>
+    </xacro:macro>
+</robot>
