@@ -23,17 +23,7 @@ bool displaySvcCB(example_rviz_marker::SimpleFloatSrvMsgRequest& request,
     return true;
 }
 
-int main(int argc, char **argv) {
-    ros::init(argc, argv, "example_rviz_marker");
-    ros::NodeHandle nh;
-    ros::Publisher vis_pub = nh.advertise<visualization_msgs::Marker>("example_marker_topic", 0);
-    visualization_msgs::Marker marker; // instantiate a marker object
-    geometry_msgs::Point point; // points will be used to specify where the markers go
-    
-    //set up a service to compute marker locations on request
-    ros::ServiceServer service = nh.advertiseService("rviz_marker_svc", displaySvcCB);
-
-
+void init_marker_vals(visualization_msgs::Marker &marker) {
     marker.header.frame_id = "/world"; // reference frame for marker coords
     marker.header.stamp = ros::Time();
     marker.ns = "my_namespace";
@@ -63,7 +53,20 @@ int main(int argc, char **argv) {
     marker.color.a = 1.0;
     marker.color.r = 1.0;
     marker.color.g = 0.0;
-    marker.color.b = 0.0;
+    marker.color.b = 0.0;     
+}
+
+int main(int argc, char **argv) {
+    ros::init(argc, argv, "example_rviz_marker");
+    ros::NodeHandle nh;
+    ros::Publisher vis_pub = nh.advertise<visualization_msgs::Marker>("example_marker_topic", 0);
+    visualization_msgs::Marker marker; // instantiate a marker object
+    geometry_msgs::Point point; // points will be used to specify where the markers go
+    
+    //set up a service to compute marker locations on request
+    ros::ServiceServer service = nh.advertiseService("rviz_marker_svc", displaySvcCB);
+
+    init_marker_vals(marker);
     
     double z_des;
 
