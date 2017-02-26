@@ -38,7 +38,11 @@ public:
     }
 
     //image comes in as a ROS message, but gets converted to an OpenCV type
-    void imageCb(const sensor_msgs::ImageConstPtr& msg) {
+    void imageCb(const sensor_msgs::ImageConstPtr& msg); 
+    
+}; //end of class definition
+
+void ImageConverter::imageCb(const sensor_msgs::ImageConstPtr& msg){
         cv_bridge::CvImagePtr cv_ptr; //OpenCV data type
         try {
             cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
@@ -110,9 +114,7 @@ public:
         // can view this stream in ROS with: 
         //rosrun image_view image_view image:=/image_converter/output_video
         image_pub_.publish(cv_ptr->toImageMsg());
-
     }
-}; //end of class definition
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "red_pixel_finder");

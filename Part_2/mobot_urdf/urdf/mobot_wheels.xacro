@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<robot 
+     xmlns:xacro="http://www.ros.org/wiki/xacro" name="wheels">
+
+    <xacro:macro name="wheel" params="prefix reflect">
+        <link name="${prefix}_wheel">
+            <visual>
+                <geometry>
+                    <cylinder radius="${tirerad}" length="${tirewidth}"/>
+                </geometry>
+            </visual>
+            <collision>
+                <geometry>
+                    <cylinder radius="${tirerad}" length="${tirewidth}"/>
+                </geometry>
+            </collision>
+            <inertial>
+            <!--assign inertial properties to drive wheels -->
+            <mass value="1" />
+            <inertia ixx="0.1" ixy="0" ixz="0"
+              iyy="0.1" iyz="0"
+              izz="0.1" />
+        </inertial>
+        </link>
+        <joint name="${prefix}_wheel_joint" type="continuous">
+            <axis xyz="0 0 1"/>
+            <parent link="base_link"/>
+            <child link="${prefix}_wheel"/>
+            <origin xyz="0 ${reflect*track/2} ${tirerad}" rpy="0 ${M_PI/2} ${M_PI/2}"/>
+            <limit effort="100" velocity="15" />
+            <joint_properties damping="0.0" friction="0.0" />
+        </joint>
+    </xacro:macro>
+    <xacro:wheel prefix="left" reflect="1"/>
+    <xacro:wheel prefix="right" reflect="-1"/>
+</robot>
