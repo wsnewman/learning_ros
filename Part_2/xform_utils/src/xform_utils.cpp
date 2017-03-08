@@ -299,4 +299,11 @@ void XformUtils::printStampedPose(geometry_msgs::PoseStamped stPose) {
 
 void XformUtils::printAffine(Eigen::Affine3d affine) {
     ROS_INFO_STREAM("origin: "<<affine.translation().transpose()<<endl);
+    Eigen::Matrix3d R;
+    R = affine.linear();
+    //Eigen::Vector3d x_vec,y_vec,z_vec;
+    //x_vec = R.col(0);
+    //y_vec = R.col(1);
+    //z_vec = R.col(2);
+    ROS_INFO_STREAM("\n"<<R);
 }
