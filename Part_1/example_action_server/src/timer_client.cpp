@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
         ROS_INFO("connected to action server");  // if here, then we connected to the server;
         
         int countdown_goal = 1; //user will specify a timer value
-        while(countdown_goal>=0) {
+        while(countdown_goal>=0 && ros::ok()) {
            cout<<"enter a desired timer value, in seconds (0 to abort, <0 to quit): ";
            cin>>countdown_goal;
            if (countdown_goal==0) { //see if user wants to cancel current goal
