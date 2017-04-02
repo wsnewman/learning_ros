@@ -113,7 +113,7 @@ int main(int argc, char** argv) {
     ROS_INFO("going into spin");
     // from here, all the work is done in the action server, with the interesting stuff done within "executeCB()"
     // you will see 5 new topics under example_action: cancel, feedback, goal, result, status
-    while (!g_count_failure) {
+    while (!g_count_failure && ros::ok()) {
         ros::spinOnce(); //normally, can simply do: ros::spin();  
         // for debug, induce a halt if we ever get our client/server communications out of sync
     }
