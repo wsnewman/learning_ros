@@ -16,10 +16,8 @@
 
 <!--triad display marker helper node; rosrun example_rviz_marker triad_display -->
 <node name="triad_display" pkg="example_rviz_marker" type= "triad_display"/>
-
 <node name="mobot_drifty_odom" pkg="mobot_drifty_odom" type= "mobot_drifty_odom"/>
 <node name="mobot_pub_des_state" pkg="mobot_pub_des_state" type= "mobot_pub_des_state"/>
-<node name="odom_tf" pkg="odom_tf" type= "odom_tf"/>
 <node name="lin_steering_wrt_amcl" pkg="lin_steering" type= "lin_steering_wrt_amcl"/>
  
 </launch>
