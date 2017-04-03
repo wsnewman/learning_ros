@@ -2,7 +2,7 @@
 //wsn, March 2016
 //implementation of member functions of OdomTf class
 
-#include "odom_tf.h"
+#include <odom_tf/odom_tf.h>
 using namespace std;
 
 //constructor: don't need nodehandle here, but could be handy if want to add a subscriber
@@ -10,9 +10,13 @@ using namespace std;
 OdomTf::OdomTf(ros::NodeHandle* nodehandle) : nh_(*nodehandle) { // constructor
     ROS_INFO("in class constructor of DemoTfListener");
     tfListener_ = new tf::TransformListener; //create a transform listener
-
+    odom_tf_ready_ = false;
+    odom_ready_ = false;
+    amcl_ready_ = false;
     // wait to start receiving valid tf transforms between odom and link2:
     bool tferr = true;
+    pose_publisher_= nh_.advertise<geometry_msgs::PoseStamped>("triad_display_pose", 1, true);
+    
     ROS_INFO("waiting for tf between base_link and odom...");
     while (tferr) {
         tferr = false;
@@ -67,8 +71,10 @@ OdomTf::OdomTf(ros::NodeHandle* nodehandle) : nh_(*nodehandle) { // constructor
     stfDriftyOdomWrtMap_.frame_id_ = "map"; // declare the respective frames
     stfDriftyOdomWrtMap_.child_frame_id_ = "drifty_odom"; 
 
-    initializeSubscribers(); // package up the messy work of creating subscribers; do this overhead in constructor
-    //initializePublishers();
+    odom_subscriber_ = nh_.subscribe("/drifty_odom", 1, &OdomTf::odomCallback, this); //subscribe to odom messages
+
+    //wait for drifty odom publication:
+    ROS_WARN("waiting for drifty_odom publication");
     odom_count_=0;
     odom_phi_ = 1000.0; // put in impossible value for heading; test this value to make sure we have received a viable odom message
     ROS_INFO("waiting for valid odom message...");
@@ -77,8 +83,19 @@ OdomTf::OdomTf(ros::NodeHandle* nodehandle) : nh_(*nodehandle) { // constructor
         std::cout << ".";
         ros::spinOnce();
     }
-    ROS_INFO("constructor: got an odom message; ready to roll");
+    ROS_INFO("stfBaseLinkWrtDriftyOdom_");
+    xform_utils.printStampedTf(stfBaseLinkWrtDriftyOdom_);
+    amcl_subscriber_ = nh_.subscribe("/amcl_pose", 1, &OdomTf::amclCallback, this); //subscribe to odom messages
+    ROS_WARN("waiting for amcl publication...");
+    while (!amcl_ready_) {
+        ros::Duration(0.1).sleep();
+        ros::spinOnce();
+    }        
+    ROS_INFO("got amcl callback; stfAmclBaseLinkWrtMap_:");
+    xform_utils.printStampedTf(stfAmclBaseLinkWrtMap_);
 
+    ROS_INFO("constructor: got an odom message; ready to roll");
+    odom_tf_ready_=true;
 }
 
 void OdomTf::initializeSubscribers() {
@@ -89,6 +106,7 @@ void OdomTf::initializeSubscribers() {
     // add more subscribers here, as needed
 }
 
+//callback fnc based on drifty_odom
 void OdomTf::odomCallback(const nav_msgs::Odometry& odom_rcvd) {
     odom_count_++;
     // copy some of the components of the received message into member vars
@@ -162,6 +180,8 @@ void OdomTf::odomCallback(const nav_msgs::Odometry& odom_rcvd) {
     // xform_utils.printStampedTf(stfEstBaseWrtMap_);   
     //publish this transform, making it available to rviz, known as "est_base"
     br_.sendTransform(stfEstBaseWrtMap_);
+    estBasePoseWrtMap_ = xform_utils.get_pose_from_stamped_tf(stfEstBaseWrtMap_);
+    pose_publisher_.publish(estBasePoseWrtMap_); // send this to triad marker display node
       
 }
 
@@ -201,7 +221,9 @@ void OdomTf::amclCallback(const geometry_msgs::PoseWithCovarianceStamped& amcl_r
     //cout<<endl<<"stfDriftyOdomWrtBase_"<<endl;
     //xform_utils.printStampedTf(stfDriftyOdomWrtBase_);    
     
-    xform_utils.multiply_stamped_tfs(stfAmclBaseLinkWrtMap_,stfDriftyOdomWrtBase_,stfDriftyOdomWrtMap_);
+    if (!xform_utils.multiply_stamped_tfs(stfAmclBaseLinkWrtMap_,stfDriftyOdomWrtBase_,stfDriftyOdomWrtMap_)) {
+        ROS_WARN("stfAmclBaseLinkWrtMap_,stfDriftyOdomWrtBase_ multiply invalid" );
+    }
     
    //publish the estimated odom frame w/rt the map.  This is useful for visualization, e.g. to see
     //how rapidly the odometry estimate is drifting
@@ -223,5 +245,5 @@ void OdomTf::amclCallback(const geometry_msgs::PoseWithCovarianceStamped& amcl_r
     // conflict with "base_link" already used in rviz (which is unrealistically smooth and accurate)
     stfAmclBaseLinkWrtMap_.child_frame_id_ = "amcl_base_link";
     br_.sendTransform(stfAmclBaseLinkWrtMap_);
-    
+    amcl_ready_=true;
 }

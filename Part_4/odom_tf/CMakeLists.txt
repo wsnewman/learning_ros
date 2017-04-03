@@ -25,15 +25,15 @@ catkin_simple()
 # SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 # Libraries: uncomment the following and edit arguments to create a new library
-# cs_add_library(my_lib src/my_lib.cpp)   
+cs_add_library(odom_tf src/OdomTf.cpp)   
 
 # Executables: uncomment the following and edit arguments to compile new nodes
 # may add more of these lines for more nodes from the same package
-cs_add_executable(odom_tf src/odom_tf.cpp  src/odom_tf_fncs.cpp)
+cs_add_executable(odom_tf_demo src/odom_tf_main.cpp)
 
 #the following is required, if desire to link a node in this package with a library created in this same package
 # edit the arguments to reference the named node and named library within this package
-# target_link_library(example my_lib)
+target_link_libraries(odom_tf_demo odom_tf)
 
 cs_install()
 cs_export()

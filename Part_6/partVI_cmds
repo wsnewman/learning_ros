@@ -1,6 +1,6 @@
 coordination commands:
 Start up gazebo, add starting pen, tables and blocks, spawn baxter-on-mobot:  
- (optirun) `roslaunch baxter_on_mobot baxter_on_mobot.launch` 
+ (optirun) `roslaunch baxter_variations baxter_on_mobot.launch` 
 
 
 Launch multiple nodes, including 6 action servers, 2 services,  and rviz (including trajectory streamers, 

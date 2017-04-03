@@ -27,41 +27,39 @@
 #include <tf/transform_broadcaster.h>
 #include <xform_utils/xform_utils.h>
  
-const double UPDATE_RATE=50.0; // for a 50Hz update rate
+//const double ODOM_TF_UPDATE_RATE=50.0; // for a 50Hz update rate
 // define a class, including a constructor, member variables and member functions
 class OdomTf
 {
 public:
     OdomTf(ros::NodeHandle* nodehandle); //"main" will need to instantiate a ROS nodehandle, then pass it to the constructor
     XformUtils xform_utils;
-    //double convertPlanarQuat2Phi(geometry_msgs::Quaternion quaternion);   
     tf::StampedTransform put_pose_in_transform(geometry_msgs::Pose pose);
-    //tf::StampedTransform stamped_transform_inverse(tf::StampedTransform stf);
-    //geometry_msgs::PoseStamped get_pose_from_transform(tf::StampedTransform tf);
-    //geometry_msgs::PoseStamped get_pose_stamped_from_odom(nav_msgs::Odometry odom);
-    
-
+    tf::StampedTransform get_tfBaseLinkWrtDriftyOdom() { return stfBaseLinkWrtDriftyOdom_; } 
+   
     tf::StampedTransform stfBaseLinkWrtOdom_; //base link w/rt odom frame; get this from tf; 
     tf::StampedTransform stfOdomWrtMap_; //odom frame w/rt map frame; get this from tf, published by amcl
     tf::StampedTransform stfBaseLink_wrt_Map_; //base link w/rt map frame; compute this
-                                               // and publish it on tf
+                                              // and publish it on tf
     tf::StampedTransform stfAmclBaseLinkWrtMap_;  
     tf::StampedTransform stfEstBaseWrtMap_;
     
-    geometry_msgs::PoseStamped base_link_wrt_odom_; //can extract this from 
-    geometry_msgs::PoseStamped base_link_wrt_map_; //this is what we care about; need to compute it
-                                                   // then publish it
+    geometry_msgs::PoseStamped base_link_wrt_odom_; 
+    geometry_msgs::PoseStamped base_link_wrt_map_; 
+                                                   
 
     tf::StampedTransform tfLink2ToOdom_;  
     tf::StampedTransform stfBaseLinkWrtDriftyOdom_;
     tf::StampedTransform stfDriftyOdomWrtBase_;
     tf::StampedTransform stfDriftyOdomWrtMap_;
     
-    tf::StampedTransform get_tfBaseLinkWrtDriftyOdom() { return stfBaseLinkWrtDriftyOdom_; } 
-
     //illustrates a tf_listener in a class; this is somewhat more complex than creating a tf_listener in main()
     tf::TransformListener* tfListener_;   
     tf::TransformBroadcaster br_;
+    bool odom_tf_ready_;
+    bool odom_tf_is_ready() { return odom_tf_ready_; }
+    bool odom_ready_;
+    bool amcl_ready_;
 private:
     ros::NodeHandle nh_; // we will need this, to pass between "main" and constructor
     // some objects to support subscriber, service, and publisher
@@ -70,7 +68,8 @@ private:
     void initializeSubscribers();
     void odomCallback(const nav_msgs::Odometry& odom_rcvd);
     void amclCallback(const geometry_msgs::PoseWithCovarianceStamped& amcl_rcvd);
-
+    ros::Publisher pose_publisher_; // = nh.advertise<geometry_msgs::PoseStamped>("triad_display_pose", 1, true);
+    geometry_msgs::PoseStamped estBasePoseWrtMap_;
 
     //state values from odometry; these will get filled in by odom callback      
     nav_msgs::Odometry current_odom_; // fill in these objects from callbacks

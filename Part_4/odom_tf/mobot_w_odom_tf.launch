@@ -1,0 +1,25 @@
+<!--  launch to illustrate how to do steering with combined odom and amcl-->
+<!--  use this with: (optirun) roslaunch mobot_urdf mobot_in_pen.launch-->
+<!-- and example client path command: rosrun mobot_pub_des_state starting_pen_pub_des_state_path_client -->
+<launch>
+  <!-- Run the map server and load the starting-pen map -->
+  <node name="map_server" pkg="map_server" type="map_server" 
+     args="$(find maps)/starting_pen/starting_pen_map.yaml"/>
+ 
+   <!-- use amcl for localization-->
+   <!--node pkg="amcl" type="amcl" name="amcl" output="screen"--> 
+  <!-- alt: try differential-drive amcl config params -->
+  <include file="$(find amcl)/examples/amcl_diff.launch"/>  
+     
+<!-- launch rviz using a specific config file -->
+ <node pkg="rviz" type="rviz" name="rviz" args="-d $(find odom_tf)/odom_tf.rviz"/>
+
+<!--triad display marker helper node; rosrun example_rviz_marker triad_display -->
+<node name="triad_display" pkg="example_rviz_marker" type= "triad_display"/>
+
+<node name="mobot_drifty_odom" pkg="mobot_drifty_odom" type= "mobot_drifty_odom"/>
+<node name="mobot_pub_des_state" pkg="mobot_pub_des_state" type= "mobot_pub_des_state"/>
+<node name="odom_tf" pkg="odom_tf" type= "odom_tf"/>
+<node name="lin_steering_wrt_amcl" pkg="lin_steering" type= "lin_steering_wrt_amcl"/>
+ 
+</launch>

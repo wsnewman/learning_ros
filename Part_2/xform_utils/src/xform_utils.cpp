@@ -1,24 +1,6 @@
 //wsn started 8/16: a library of useful transforms; add more here
 #include <xform_utils/xform_utils.h>
 using namespace std;
-/*
-#include <Eigen/Eigen> //for the Eigen library
-#include <Eigen/Dense>
-#include <Eigen/Geometry>
-#include <Eigen/Eigenvalues>
-#include <geometry_msgs/TransformStamped.h>
-
-class XformUtils {
-   Eigen::Affine3f transformTFToAffine3f(const tf::Transform &t);
-   double convertPlanarQuat2Phi(geometry_msgs::Quaternion quaternion);
-   tf::Transform get_tf_from_stamped_tf(tf::StampedTransform sTf);
-   geometry_msgs::PoseStamped get_pose_from_stamped_tf(tf::StampedTransform sTf);
-   bool multiply_stamped_tfs(tf::StampedTransform A_stf,
-        tf::StampedTransform B_stf, tf::StampedTransform &C_stf);
-   tf::StampedTransform stamped_transform_inverse(tf::StampedTransform sTf);
-   
-};
-*/
 
 geometry_msgs::Pose XformUtils::transformEigenAffine3dToPose(Eigen::Affine3d e) {
     Eigen::Vector3d Oe;
@@ -199,24 +181,7 @@ void XformUtils::test_stf(geometry_msgs::PoseStamped stPose) {
     printStampedPose(stPose);
 }
 
-void XformUtils::printTf(tf::Transform tf) {
-    tf::Vector3 tfVec;
-    tf::Matrix3x3 tfR;
-    tf::Quaternion quat;
-    tfVec = tf.getOrigin();
-    ROS_INFO_STREAM("vector from reference frame to child frame: " << tfVec.getX() << "," << tfVec.getY() << "," << tfVec.getZ() << endl);
-    tfR = tf.getBasis();
-    ROS_INFO_STREAM("orientation of child frame w/rt reference frame: " << endl);
-    tfVec = tfR.getRow(0);
-    ROS_INFO_STREAM(tfVec.getX() << "," << tfVec.getY() << "," << tfVec.getZ() << endl);
-    tfVec = tfR.getRow(1);
-    ROS_INFO_STREAM(tfVec.getX() << "," << tfVec.getY() << "," << tfVec.getZ() << endl);
-    tfVec = tfR.getRow(2);
-    ROS_INFO_STREAM(tfVec.getX() << "," << tfVec.getY() << "," << tfVec.getZ() << endl);
-    quat = tf.getRotation();
-    ROS_INFO_STREAM("quaternion: " << quat.x() << ", " << quat.y() << ", "
-            << quat.z() << ", " << quat.w() << endl);
-}
+
 
 //compute C_stf = A_stf*B_stf; 
 bool XformUtils::multiply_stamped_tfs(tf::StampedTransform A_stf,
@@ -274,12 +239,35 @@ tf::StampedTransform XformUtils::stamped_transform_inverse(tf::StampedTransform 
     return stf_inv;
 }
 
+
+
+
+
 void XformUtils::printStampedTf(tf::StampedTransform sTf) {
     tf::Transform tf;
     ROS_INFO_STREAM("frame_id: " << sTf.frame_id_ << endl);
     ROS_INFO_STREAM("child_frame_id: " << sTf.child_frame_id_ << endl);
     tf = get_tf_from_stamped_tf(sTf); //extract the tf from the stamped tf  
     printTf(tf); //and print its components      
+}
+
+void XformUtils::printTf(tf::Transform tf) {
+    tf::Vector3 tfVec;
+    tf::Matrix3x3 tfR;
+    tf::Quaternion quat;
+    tfVec = tf.getOrigin();
+    ROS_INFO_STREAM("vector from reference frame to child frame: " << tfVec.getX() << "," << tfVec.getY() << "," << tfVec.getZ() << endl);
+    tfR = tf.getBasis();
+    ROS_INFO_STREAM("orientation of child frame w/rt reference frame: " << endl);
+    tfVec = tfR.getRow(0);
+    ROS_INFO_STREAM(tfVec.getX() << "," << tfVec.getY() << "," << tfVec.getZ() << endl);
+    tfVec = tfR.getRow(1);
+    ROS_INFO_STREAM(tfVec.getX() << "," << tfVec.getY() << "," << tfVec.getZ() << endl);
+    tfVec = tfR.getRow(2);
+    ROS_INFO_STREAM(tfVec.getX() << "," << tfVec.getY() << "," << tfVec.getZ() << endl);
+    quat = tf.getRotation();
+    ROS_INFO_STREAM("quaternion: " << quat.x() << ", " << quat.y() << ", "
+            << quat.z() << ", " << quat.w() << endl);
 }
 
 //fnc to print out a pose:

@@ -6,9 +6,13 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
+        - /Pose1
         - /Marker1
         - /TF1
         - /TF1/Frames1
+        - /TF1/Tree1/map1
+        - /TF1/Tree1/map1/odom1
+        - /TF1/Tree1/map1/odom1/base_link1
       Splitter Ratio: 0.5
     Tree Height: 454
   - Class: rviz/Selection
@@ -180,7 +184,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: ""
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 4096
@@ -197,7 +201,7 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
+      Value: false
     - Alpha: 0.7
       Class: rviz/Map
       Color Scheme: map
@@ -368,22 +372,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 3.05898
+      Distance: 31.0498
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -9.53854
-        Y: -0.829306
-        Z: 1.14516
+        X: 1.02503
+        Y: 4.17987
+        Z: 0.773473
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 1.5648
+      Pitch: 1.5698
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.77718
+      Yaw: 4.67718
     Saved: ~
 Window Geometry:
   Displays:
@@ -401,5 +405,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1652
-  X: 254
-  Y: 147
+  X: 324
+  Y: 107

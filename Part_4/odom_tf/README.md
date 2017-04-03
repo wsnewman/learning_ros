@@ -21,7 +21,7 @@ unsuitable for steering feedback.
 `rosrun amcl amcl`
 The odom_tf node illustrates how to combine AMCL information with imperfect odom information
 to achieve smooth pose estimates, rapidly updated, with no cumulative drift.  
-`rosrun odom_tf odom_tf`
+`rosrun odom_tf odom_tf_demo`
 
 ## Running tests/demos
 In rviz, give the robot an approximate starting pose.
@@ -33,4 +33,7 @@ Display axes for "base_link", "amcl_base_link", "est_base" and "drifty_odom".
 These will illustrate how amcl computes robot-pose updates infrequently, how the drifty_odom frame
 moves around in the map, and how combining these to get "est_base" results in smooth robot-pose
 estimates with no cumulative drift.
+
+## Steering with merged AMCL/odometry
+See the "lin_steering" package for illustration of using the OdomTf library for steering.
   

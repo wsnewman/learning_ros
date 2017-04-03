@@ -10,10 +10,10 @@ find_package(catkin_simple REQUIRED)
 #find_package(PCL 1.7 REQUIRED)
 
 #uncomment the following 4 lines to use the Eigen library
-#find_package(cmake_modules REQUIRED)
-#find_package(Eigen3 REQUIRED)
-#include_directories(${EIGEN3_INCLUDE_DIR})
-#add_definitions(${EIGEN_DEFINITIONS})
+find_package(cmake_modules REQUIRED)
+find_package(Eigen3 REQUIRED)
+include_directories(${EIGEN3_INCLUDE_DIR})
+add_definitions(${EIGEN_DEFINITIONS})
 
 catkin_simple()
 
@@ -30,6 +30,7 @@ catkin_simple()
 # Executables: uncomment the following and edit arguments to compile new nodes
 # may add more of these lines for more nodes from the same package
 cs_add_executable(lin_steering_wrt_odom src/lin_steering_wrt_odom.cpp)
+cs_add_executable(lin_steering_wrt_amcl src/lin_steering_wrt_amcl.cpp)
 
 #the following is required, if desire to link a node in this package with a library created in this same package
 # edit the arguments to reference the named node and named library within this package

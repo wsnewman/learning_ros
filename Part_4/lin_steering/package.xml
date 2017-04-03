@@ -43,9 +43,13 @@
   <build_depend>roscpp</build_depend>
 <build_depend>nav_msgs</build_depend>
 <build_depend>geometry_msgs</build_depend>
+<build_depend>xform_utils</build_depend>
+<build_depend>odom_tf</build_depend>
   <run_depend>roscpp</run_depend>
 <run_depend>nav_msgs</run_depend>
 <run_depend>geometry_msgs</run_depend>
+<run_depend>xform_utils</run_depend>
+<run_depend>odom_tf</run_depend>
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- You can specify that this package is a metapackage here: -->

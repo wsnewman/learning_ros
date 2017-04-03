@@ -93,8 +93,10 @@ void joint_state_CB(const sensor_msgs::JointState& joint_states) {
         //        ds * cos(g_odom_psi), ds * sin(g_odom_psi));
         g_drifty_odom.pose.pose.orientation = convertPlanarPsi2Quaternion(g_odom_psi);
 
-        g_drifty_odom.twist.twist.linear.x = ds / g_dt;
-        g_drifty_odom.twist.twist.angular.z = dpsi / g_dt;
+        if (g_dt>0.0005) {
+          g_drifty_odom.twist.twist.linear.x = ds / g_dt;
+          g_drifty_odom.twist.twist.angular.z = dpsi / g_dt;
+        } 
         g_drifty_odom.header.stamp = g_cur_time;
         g_drifty_odom_pub.publish(g_drifty_odom);
     }
