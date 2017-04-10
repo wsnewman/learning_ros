@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<robot  name="glennan_2nd_floor">
+
+<!-- Used for fixing robot to Gazebo 'base_link' -->
+  <link name="world"/>
+
+  <joint name="glue_robot_to_world" type="fixed">
+    <parent link="world"/>
+    <child link="link"/>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </joint>
+
+ <!-- Base Link -->
+  <link name="link">
+    <visual>
+      <origin xyz="0 0 -0.1" rpy="0 0 0"/>
+      <geometry>
+        <!--box size="0.2 0.2 1"/-->
+        <mesh filename="package://exmpl_models/glennan_2nd_flr/glennan_2nd_flr.stl"/>
+      </geometry>
+    </visual>
+    <inertial>
+      <origin xyz="0 0 0.5" rpy="0 0 0"/>
+      <mass value="1000"/>
+      <inertia
+        ixx="1000.0" ixy="0.0" ixz="0.0"
+        iyy="1000.0" iyz="0.0"
+        izz="1000.0"/>
+    </inertial>
+  </link>    
+</robot>
+
