@@ -13,14 +13,14 @@ int main(int argc, char **argv) {
     ROS_WARN("could not find parameter value /joint1_gains/p on parameter server");
     }
     if (nh.getParam("/joint1_gains/d", D_gain)) {
-    ROS_INFO("proportional gain set to %f",D_gain);
+    ROS_INFO("derivative gain set to %f",D_gain);
     }
     else
     {
     ROS_WARN("could not find parameter value /joint1_gains/d on parameter server");
     }
     if (nh.getParam("/joint1_gains/i", I_gain)) {
-    ROS_INFO("proportional gain set to %f",I_gain);
+    ROS_INFO("integral gain set to %f",I_gain);
     }
     else
     {

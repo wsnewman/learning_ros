@@ -22,6 +22,8 @@ unsuitable for steering feedback.
 The odom_tf node illustrates how to combine AMCL information with imperfect odom information
 to achieve smooth pose estimates, rapidly updated, with no cumulative drift.  
 `rosrun odom_tf odom_tf_demo`
+Start a desired-state publisher:
+`rosrun mobot_pub_des_state mobot_pub_des_state`
 
 ## Running tests/demos
 In rviz, give the robot an approximate starting pose.
