@@ -32,11 +32,13 @@ cs_add_library(baxter_fk_ik src/baxter_fk_ik.cpp)
 # Executables: uncomment the following and edit arguments to compile new nodes
 # may add more of these lines for more nodes from the same package
 cs_add_executable(baxter_reachability_from_above src/baxter_reachability_from_above.cpp)
+cs_add_executable(test_baxter_jacobian_main src/test_baxter_jacobian_main.cpp)
 
 #the following is required, if desire to link a node in this package with a library created in this same package
 # edit the arguments to reference the named node and named library within this package
 # target_link_libraries(example my_lib)
 target_link_libraries(baxter_reachability_from_above baxter_fk_ik ${catkin_LIBRARIES})
+target_link_libraries(test_baxter_jacobian_main baxter_fk_ik ${catkin_LIBRARIES})
 
 cs_install()
 cs_export()

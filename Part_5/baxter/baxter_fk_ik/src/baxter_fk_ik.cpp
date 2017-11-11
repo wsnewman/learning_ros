@@ -119,6 +119,11 @@ Baxter_fwd_solver::Baxter_fwd_solver() { //(const hand_s& hs, const atlas_frame&
     A_tool_wrt_flange_.linear() = R_hand;
     A_tool_wrt_flange_.translation() = O_hand;
     A_tool_wrt_flange_inv_ = A_tool_wrt_flange_.inverse();
+    
+        //convert affine3d to a 4x4 for transform from tool flange to gripper frame:
+    A4x4_tool_wrt_flange_ = Eigen::Matrix4d::Identity();
+    A4x4_tool_wrt_flange_.block<3,3>(0,0) = A_tool_wrt_flange_.linear(); //get rotation 3x3 R matrix
+    A4x4_tool_wrt_flange_.block<3,1>(0,3) = A_tool_wrt_flange_.translation();
 }
 
 
@@ -277,7 +282,7 @@ Eigen::Matrix3d Baxter_fwd_solver::get_wrist_Jacobian_3x3(double q_s1, double q_
     Eigen::Matrix3d Jw1_ang;
     Eigen::Matrix3d Origins;
     //Eigen::Matrix3d Rvecs;
-    Eigen::Vector3d zvec,rvec,wvec,Oi;
+    Eigen::Vector3d zvec,rvec,wvec,Oi,w_tool_wrt_torso;
     //populate 5 A matrices and their products; need 5 just to get to wrist point, but can assume q_forearm=0, q_wrist_bend=0
     // note--starting from S1 frame, skipping frame 0
     for (int i=0;i<5;i++) {
@@ -319,6 +324,110 @@ Eigen::Matrix3d Baxter_fwd_solver::get_wrist_Jacobian_3x3(double q_s1, double q_
     //cout<<Jw1_ang<<endl;
     return Jw1_trans;
 }
+
+
+  //JACOBIAN: right arm only; added 11/17
+  // return a 6x7 matrix of d(tool_frame)/d(q) as expressed in torso frame
+  Eigen::MatrixXd Baxter_fwd_solver::compute_Jacobian(const Vectorq7x1& q_vec) {
+   Eigen::MatrixXd Jacobian,J_ang,J_trans;
+   Jacobian.resize(6,7); //resize for 6 rows, 7 columns
+   J_ang.resize(3,7);
+   J_trans.resize(3,7);
+   Eigen::Matrix4d A_mats[7], A_mat_products[7]; //local copy
+   Eigen::Matrix4d A_flange_wrt_torso,A_tool_wrt_torso,A_tool_wrt_J1;   
+   //redo fwd kin: compute the A matrices and the A-matrix products:
+    
+    Eigen::Matrix4d A = Eigen::Matrix4d::Identity();
+    Eigen::Matrix4d A_i_iminusi;
+    Eigen::Matrix3d R;
+    Eigen::Vector3d p;
+
+    Eigen::MatrixXd Origins;
+    Origins.resize(3,7); //origins of frames out to gripper frame
+    Eigen::Vector3d zvec,rvec,wvec,Oi,w_tool_wrt_torso;
+    Eigen::Matrix3d R_torso_to_rarm_mount,R_rarm_mount_to_r_lower_forearm;
+        
+    // compute fwd_kin of tool flange w/rt joint-1 frame:
+    for (int i = 0; i < 7; i++) {
+        A_i_iminusi = compute_A_of_DH(i, q_vec[i]); //A_of_DH does conversion from Baxter angles to DH angles
+        A_mats[i] = A_i_iminusi;
+        //std::cout << "A_mats[" << i << "]:" << std::endl;
+        //std::cout << A_mats_[i] << std::endl;
+    }
+    A_mat_products[0] = A_mats[0];
+    for (int i = 1; i < 7; i++) {
+        A_mat_products[i] = A_mat_products[i - 1] * A_mats[i];
+    }
+    //the above products are frames w/rt first DH frame, i.e. w/ z0 along J1
+    //A_flange_wrt_torso = A_torso_to_rarm_mount_*A_mat_products_[6]; 
+    //the last of the matrix products is the flange frame
+    //cout<<"Jac: A_mat_products[6]: "<<endl;
+    //cout<<A_mat_products[6]<<endl;
+    A_tool_wrt_J1 = A_mat_products[6]*A4x4_tool_wrt_flange_; //consider tool transform to get gripper frame
+    //get vector from J1 origin to gripper-frame origin
+    wvec = A_tool_wrt_J1.block<3, 1>(0, 3); //extract tool origin
+    //cout<<"wvec w/rt frame1: "<<wvec.transpose()<<endl; 
+    //test fwd_kin:
+    A_tool_wrt_torso = A_torso_to_rarm_mount_*A_rarm_mount_to_r_lower_forearm_*A_tool_wrt_J1;
+    //cout<<"fwd kin of tool w/rt torso, per Jacobian: "<<endl;
+    //cout<<A_tool_wrt_torso<<endl;
+    w_tool_wrt_torso= A_tool_wrt_torso.block<3,1>(0,3);
+        
+    
+    //compare: the following is correct:
+    // A4x4a = A_torso_to_rarm_mount*(baxter_fwd_solver.fwd_kin_solve (q_vec_right_arm_))*A4x4_tool_wrt_flange;
+    
+
+    R_torso_to_rarm_mount = A_torso_to_rarm_mount_.block<3,3>(0,0);
+    R_rarm_mount_to_r_lower_forearm = A_rarm_mount_to_r_lower_forearm_.block<3,3>(0,0);
+    //cout<<"R_torso_to_rarm_mount:"<<endl;
+    //cout<<R_torso_to_rarm_mount<<endl;
+    //cout<<"R_rarm_mount_to_r_lower_forearm:"<<endl;
+    //cout<<R_rarm_mount_to_r_lower_forearm<<endl;
+
+    //compute the angular Jacobian, using z-vecs from each frame; first frame is just [0;0;1]
+    // these Jacobians are w/rt the first DH frame; will need to transform to torso frame
+    zvec<<0,0,1; //=A_torso_to_rarm_mount_.block<3, 1>(0, 2);
+    J_ang.block<3, 1>(0, 0) = zvec; // 
+    Oi<<0,0,0; //origin of first frame; 
+    Origins.block<3, 1>(0, 0) = Oi;
+    for (int i=1;i<7;i++) {
+        zvec = A_mat_products[i-1].block<3, 1>(0, 2); //%strip off z axis of each previous frame; note subscript slip  
+        J_ang.block<3, 1>(0, i) = zvec; // and populate J_ang with them;
+        Oi = A_mat_products[i-1].block<3, 1>(0, 3); //origin of i'th frame
+        Origins.block<3, 1>(0, i) = Oi;
+    }    
+    
+
+    
+    //now, use the zvecs to help compute J_trans
+    for (int i=0;i<7;i++) {
+        zvec = J_ang.block<3, 1>(0, i); //%recall z-vec of current axis     
+        Oi =Origins.block<3, 1>(0, i); //origin of i'th frame
+        rvec = wvec - Oi; //%vector from origin of i'th frame to tool frame origin
+        J_trans.block<3, 1>(0, i) = zvec.cross(rvec);  
+        //cout<<"frame "<<i<<": zvec = "<<zvec.transpose()<<"; Oi = "<<Oi.transpose()<<endl;
+    }     
+    
+   
+    
+     //account for static offset from Baxter's right-arm mount frame
+    //A_mat_products_[0] = A_rarm_mount_to_r_lower_forearm_*A_mat_products_[0];   
+    //transform to torso coords, and populate 6x7 Jacobian
+    Jacobian.block<3,7>(0,0) = R_torso_to_rarm_mount*R_rarm_mount_to_r_lower_forearm*J_trans;
+    Jacobian.block<3,7>(3,0) = R_torso_to_rarm_mount*R_rarm_mount_to_r_lower_forearm*J_ang;
+    //cout<<"J_ang (in J1 frame):"<<endl;
+    //cout<<J_ang<<endl;
+    //cout<<"J_trans (in J1 frame)"<<endl;
+    //cout<<J_trans<<endl;
+    //cout<<"Jacobian (in torso frame):"<<endl;
+    //cout<<Jacobian<<endl;
+    
+    //cout<<"fwd kin from Jacobian: tool origin w/rt torso = "<<w_tool_wrt_torso.transpose()<<endl;
+    
+    return Jacobian;
+}
+
 
 // confirmed this function is silly...
 // can easily transform Affine frames or A4x4 frames w:  Affine_torso_to_rarm_mount_.inverse()*pose_wrt_torso;

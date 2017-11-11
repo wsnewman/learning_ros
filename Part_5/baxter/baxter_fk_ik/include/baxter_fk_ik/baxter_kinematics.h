@@ -58,9 +58,9 @@ DH=[
 // and elbow offsets are BELOW humerus axes
 
 //TOOL TRANSFORM params, right hand
-const double Lx_hand = -0.03;
-const double Lz_hand = 0.120;
-const double theta_yaw_hand= -0.24;
+const double Lx_hand = 0; //0 for baxter gripper, vs -0.03 for Yale hand
+const double Lz_hand = 0.158; //0.158 for baxter gripper, vs 0.120 for Yale hand;
+const double theta_yaw_hand= 0;// 0 for Baxter gripper vs -0.24 for Yale hand
 
 /* need to make this consistent with transform publisher in: cwru_baxter_launch/yale_gripper_xform.launch
  * check w/:
@@ -202,9 +202,16 @@ public:
     Eigen::Matrix3d get_wrist_Jacobian_3x3(double q_s1, double q_humerus, double q_elbow, double q_forearm); //3x3 J for wrist point coords
     Eigen::Vector3d get_wrist_coords_wrt_frame1(const Vectorq7x1& q_vec); //fwd kin from frame 1 to wrist pt
     
+    Eigen::MatrixXd compute_Jacobian(const Vectorq7x1& q_vec);
+    
     //this fnc casts an affine matrix w/rt torso frame into an affine matrix w/rt right-arm mount frame, so can use fncs above
     Eigen::Affine3d transform_affine_from_torso_frame_to_arm_mount_frame(Eigen::Affine3d pose_wrt_torso);    
     Eigen::Affine3d get_affine_tool_wrt_flange() { return A_tool_wrt_flange_;}
+    Eigen::Matrix4d get_A4x4_tool_wrt_flange() { return A4x4_tool_wrt_flange_;}
+    Eigen::Matrix4d get_A_torso_to_rarm_mount() { return  A_torso_to_rarm_mount_;}  
+    Eigen::Matrix4d get_A4x4_rarm_mount_to_r_lower_forearm() { return  A_rarm_mount_to_r_lower_forearm_;}     
+      
+
     void set_affine_tool_wrt_flange(Eigen::Affine3d A_tool_wrt_flange) { 
         A_tool_wrt_flange_=A_tool_wrt_flange;
         A_tool_wrt_flange_inv_ = A_tool_wrt_flange_.inverse();
@@ -225,7 +232,8 @@ public:
     Eigen::Affine3d Affine_torso_to_rarm_mount_;
 
     Eigen::Affine3d A_tool_wrt_flange_;
-    Eigen::Affine3d A_tool_wrt_flange_inv_;    
+    Eigen::Affine3d A_tool_wrt_flange_inv_;   
+    Eigen::Matrix4d A4x4_tool_wrt_flange_; 
     Eigen::MatrixXd Jacobian_; //not used
 
     // CREATE CORRESPONDING FUNCTIONS FOR LEFT ARM...
