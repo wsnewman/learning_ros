@@ -15,13 +15,13 @@ If desired, pre-position arms (before starting joint_trajectory_action_server) w
 Alternatively, demonstrate use of the Jacobian to execute approximate Cartesian motions with:
 `rosrun baxter_jnt_traj_ctlr_client baxter_jnt_traj_ctlr_client_Jacobian_move`
 
-Can observe result by running:
+Can observe result as follows.  Before running the Jacobian move, check gripper pose with: 
 `rosrun tf tf_echo torso right_gripper`
-Then performing move, then run tf_echo again and compare the results. E.g., start from pre-pose position:
+Then, after performing move,  run tf_echo again and compare the results. E.g., start from pre-pose position:
 `rosrun baxter_jnt_traj_ctlr_client baxter_jnt_traj_ctlr_client_pre_pose`
 
 Then move in x direction by 200mm (see lines 46 and 48 of baxter_jnt_traj_ctl_client_Jacobian_move.cpp)
-Observe motion in x dir, with little translation y,z and little reorientation.
+Observe 200mm motion in x dir, with only small translation y,z and little reorientation.
 
            
 
