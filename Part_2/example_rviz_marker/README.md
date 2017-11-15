@@ -21,4 +21,9 @@ add marker item, topic /triad_display
 `rosrun example_rviz_marker triad_display`
 Start publishing test poses with the test node:
 `rosrun example_rviz_marker triad_display_test_node`
+
+Similarly, illustration of painting line segments on the ground plane can be run with:
+`rosrun example_rviz_marker lines_display`
+`rosrun example_rviz_marker linesegs_display_test_node`
+
     
