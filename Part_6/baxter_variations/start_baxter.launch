@@ -1,0 +1,9 @@
+<launch>
+	
+	<param name="robot_description" command="$(find xacro)/xacro.py --inorder '$(find baxter_variations)/baxter.xacro' gazebo:=false" />
+	
+	<!-- static transforms  -->
+	
+	<node name="from_torso_to_camera_link_static_tf" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0.638 0.009 0.770 base camera_link 1" /> 
+       
+</launch>

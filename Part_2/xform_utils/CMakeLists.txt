@@ -32,11 +32,12 @@ cs_add_library(xform_utils src/xform_utils.cpp)
 # Executables: uncomment the following and edit arguments to compile new nodes
 # may add more of these lines for more nodes from the same package
 cs_add_executable(example_xform_utils src/example_xform_utils.cpp)
+cs_add_executable(example_frame_inversion src/example_frame_inversion.cpp)
 
 #the following is required, if desire to link a node in this package with a library created in this same package
 # edit the arguments to reference the named node and named library within this package
 target_link_libraries(example_xform_utils xform_utils)
-
+target_link_libraries(example_frame_inversion xform_utils)
 cs_install()
 cs_export()
     

@@ -49,6 +49,7 @@
 <build_depend>baxter_core_msgs</build_depend>
 <build_depend>control_msgs</build_depend>
 <build_depend>baxter_trajectory_streamer</build_depend>
+<build_depend>baxter_fk_ik</build_depend>
   <run_depend>roscpp</run_depend>
 <run_depend>std_mgs</run_depend>
 <run_depend>trajectory_msgs</run_depend>
@@ -58,6 +59,7 @@
 <run_depend>baxter_core_msgs</run_depend>
 <run_depend>control_msgs</run_depend>
 <build_depend>baxter_trajectory_streamer</build_depend>
+<build_depend>baxter_fk_ik</build_depend>
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- You can specify that this package is a metapackage here: -->

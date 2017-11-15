@@ -1,0 +1,3 @@
+<launch>
+<node pkg="tf" type="static_transform_publisher" name="kinect_calib" args="0.2 0 1 0 1.2 0 base camera_link 50"/> 
+</launch>

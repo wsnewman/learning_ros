@@ -33,6 +33,7 @@ catkin_simple()
 # may add more of these lines for more nodes from the same package
 cs_add_executable(baxter_jnt_traj_ctlr_client_pre_pose src/baxter_jnt_traj_ctlr_client_pre_pose.cpp)
 cs_add_executable(baxter_jnt_traj_ctlr_client_home src/baxter_jnt_traj_ctlr_client_home.cpp)
+cs_add_executable(baxter_jnt_traj_ctlr_client_Jacobian_move src/baxter_jnt_traj_ctlr_client_Jacobian_move.cpp)
 #the following is required, if desire to link a node in this package with a library created in this same package
 # edit the arguments to reference the named node and named library within this package
 # target_link_libraries(example my_lib)
