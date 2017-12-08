@@ -10,7 +10,7 @@ To view, add a Marker item in rviz and set the topic to /triad_display
 ## Example usage
 Run this node together with roscore and rviz.  
 `rosrun rviz rviz`
-`rosrunxample_rviz_marker example_rviz_marker` 
+`rosrun example_rviz_marker example_rviz_marker` 
 in the rviz displays, add a marker item, and set it to subscribe to example_marker_topic.
 A horizontal plane of red markers will be displayed at height zero.  Interactively, change the height, e.g.:
 `rosservice call rviz_marker_svc 1.0`
