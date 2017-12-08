@@ -654,6 +654,7 @@ void ArmMotionInterface::execute_planned_move(void) {
      * */
     //ROS_INFO("finished move execution");
     traj_publisher_.publish(des_trajectory_);
+    ros::Duration(computed_arrival_time_).sleep();  // no feedback from subscriber, so simply wait for move time
     cart_result_.return_code = cartesian_planner::cart_moveResult::SUCCESS;
     cart_move_as_.setSucceeded(cart_result_);
     //}
@@ -746,20 +747,26 @@ bool ArmMotionInterface::plan_path_current_to_goal_gripper_pose() {
     goal_gripper_pose_ = cart_goal_.des_pose_gripper;
     xformUtils.printStampedPose(goal_gripper_pose_);
     goal_flange_affine_ = xform_gripper_pose_to_affine_flange_wrt_base(goal_gripper_pose_);
+    ros::spinOnce();
 
     ROS_INFO("flange goal");
     display_affine(goal_flange_affine_);
     Eigen::VectorXd q_start;
     q_start = g_q_vec_arm_Xd; 
+    std::cout<<"q_start: "<<q_start.transpose()<<std::endl;
     path_is_valid_ = cartTrajPlanner_.cartesian_path_planner(q_start, goal_flange_affine_, optimal_path_);
-
+    //std::cout<<"enter 1: "<<std::endl;
+    //int ans;
+    //std::cin>>ans;
     if (path_is_valid_) {
+        ROS_INFO("path is valid");
         stuff_trajectory(optimal_path_, des_trajectory_); //convert from vector of poses to trajectory message   
         computed_arrival_time_ = des_trajectory_.points.back().time_from_start.toSec();
         cart_result_.return_code = cartesian_planner::cart_moveResult::SUCCESS;
         cart_result_.computed_arrival_time = computed_arrival_time_;
         cart_move_as_.setSucceeded(cart_result_);
     } else {
+        ROS_WARN("path not valid");
         cart_result_.return_code = cartesian_planner::cart_moveResult::PATH_NOT_VALID;
         cart_result_.computed_arrival_time = -1.0; //impossible arrival time        
         cart_move_as_.setSucceeded(cart_result_); //the communication was a success, but not the computation 

@@ -58,12 +58,13 @@ void Irb120RobotInterface::jointTrajectoryCB(const trajectory_msgs::JointTraject
     //let's copy the message contents:
 
     njoints_ = traj.joint_names.size();
-    npts_traj_ = traj.points.size();
-    ROS_INFO("received trajectory message with %d points", npts_traj_);
+    npts_traj_=0;// try to avoid race condition
+    int npts_traj = traj.points.size();
+    ROS_INFO("received trajectory message with %d points", npts_traj);
 
     new_trajectory_.points.clear();
     new_trajectory_.joint_names.clear();
-    for (int i = 0; i < npts_traj_; i++) {
+    for (int i = 0; i < npts_traj; i++) {
         new_trajectory_.points.push_back(traj.points[i]);
         //print_point(traj.points[i]);
     }
@@ -73,7 +74,7 @@ void Irb120RobotInterface::jointTrajectoryCB(const trajectory_msgs::JointTraject
 
     //new_trajectory_ = msg;
     ith_point_ = 0; // reset the point index--this tells us we have a new trajectory
-    npts_traj_ = traj.points.size();
+    npts_traj_ = npts_traj; //last step to avoid race condition
 }
 
 void Irb120RobotInterface::jointStateCB(const sensor_msgs::JointState & msg) {
@@ -103,7 +104,7 @@ void Irb120RobotInterface::sendTrajPointCmd() {
         joint5_command_publisher_.publish(pos_cmd_);
         pos_cmd_.data = current_trajectory_point_.positions[5];
         joint6_command_publisher_.publish(pos_cmd_);        
-        //print_point(current_trajectory_point_);
+        print_point(current_trajectory_point_);
 
     } else {
         npts_traj_ = 0;
