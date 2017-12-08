@@ -778,6 +778,9 @@ bool ArmMotionInterface::plan_jspace_path_current_to_cart_gripper_pose() {
 
     ROS_INFO("flange goal");
     display_affine(goal_flange_affine_);
+    //std::cout<<"enter 1: "<<std::endl;
+    //int ans;
+    //std::cin>>ans;
     Eigen::VectorXd q_start;
     q_start = g_q_vec_arm_Xd; //get_jspace_start_(); // choose last cmd, or current joint angles
     //    bool jspace_path_planner_to_affine_goal(Eigen::VectorXd q_start, Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path);

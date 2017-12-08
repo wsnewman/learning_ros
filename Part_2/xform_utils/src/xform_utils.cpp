@@ -24,6 +24,17 @@ geometry_msgs::Pose XformUtils::transformEigenAffine3dToPose(Eigen::Affine3d e) 
 
     return pose;
 }
+
+geometry_msgs::PoseStamped XformUtils::transformEigenAffine3dToPoseStamped(Eigen::Affine3d e) {
+    geometry_msgs::Pose pose;
+    geometry_msgs::PoseStamped poseStamped;
+    pose = transformEigenAffine3dToPose(e);
+
+    poseStamped.pose = pose;
+    poseStamped.header.stamp = ros::Time::now();
+    return poseStamped;
+}
+
 Eigen::Affine3d XformUtils::transformPoseToEigenAffine3d(geometry_msgs::PoseStamped stPose) {
     Eigen::Affine3d affine;
     geometry_msgs::Pose pose = stPose.pose;
