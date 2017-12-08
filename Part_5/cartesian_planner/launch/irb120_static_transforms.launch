@@ -1,0 +1,5 @@
+<launch>
+<node pkg="tf" type="static_transform_publisher" name="system_ref_frame" args="0 0 0 0 0 0 1 world system_ref_frame 100" />
+<node pkg="tf" type="static_transform_publisher" name="base_link_ref_frame" args="0 0 0 0 0 0 1 link1 base_link 100" />
+<node pkg="tf" type="static_transform_publisher" name="generic_gripper_frame" args="0 0 0.0195 0 0 0 1 link7 generic_gripper_frame 100" />
+</launch>

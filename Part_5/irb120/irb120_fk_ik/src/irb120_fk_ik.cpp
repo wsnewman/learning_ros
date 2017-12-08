@@ -159,6 +159,16 @@ Irb120_IK_solver::Irb120_IK_solver() {
     phi_elbow=acos((A2*A2+L_forearm*L_forearm-L3*L3)/(2.0*A2*L_forearm));
 }
 
+int Irb120_IK_solver::ik_solve(Eigen::Affine3d const& desired_hand_pose,  std::vector<Eigen::VectorXd> &q_ik_solns) {
+    int nsolns =ik_solve(desired_hand_pose);
+    //q_ik_solns = q_solns_fit;
+    q_ik_solns.clear();
+    for (int i=0;i<nsolns;i++) {
+      q_ik_solns.push_back(q_solns_fit[i]);
+    }
+  return nsolns;
+}
+
 int Irb120_IK_solver::ik_solve(Eigen::Affine3d const& desired_hand_pose) {
     q6dof_solns.clear();
     bool reachable = compute_q123_solns(desired_hand_pose, q6dof_solns);

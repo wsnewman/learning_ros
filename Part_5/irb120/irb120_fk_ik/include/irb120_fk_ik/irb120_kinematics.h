@@ -80,6 +80,7 @@ const double DH_alpha_params[6] = {DH_alpha1, DH_alpha2, DH_alpha3, DH_alpha4, D
 const double DH_q_offsets[6] = {DH_q_offset1, DH_q_offset2, DH_q_offset3, DH_q_offset4, DH_q_offset5, DH_q_offset6};
 const double q_lower_limits[6] = {DH_q_min1, DH_q_min2, DH_q_min3, DH_q_min4, DH_q_min5, DH_q_min6};
 const double q_upper_limits[6] = {DH_q_max1, DH_q_max2, DH_q_max3, DH_q_max4, DH_q_max5, DH_q_max6};
+const double g_qdot_max_vec[] = {4.3, 4.3, 4.3, 5.5, 5.5, 5.5}; //values per URDF 
 
 class Irb120_fwd_solver {
 public:
@@ -99,7 +100,8 @@ public:
     Irb120_IK_solver(); //constructor; 
 
     // return the number of valid solutions; actual vector of solutions will require an accessor function
-    int ik_solve(Eigen::Affine3d const& desired_hand_pose); // given vector of q angles, compute fwd kin
+    int ik_solve(Eigen::Affine3d const& desired_hand_pose); // given desired pose, compute IK
+    int ik_solve(Eigen::Affine3d const& desired_hand_pose,  std::vector<Eigen::VectorXd> &q_ik_solns);
     void get_solns(std::vector<Vectorq6x1> &q_solns);
     bool fit_joints_to_range(Vectorq6x1 &qvec);
     //Eigen::MatrixXd get_Jacobian(const Vectorq6x1& q_vec);
