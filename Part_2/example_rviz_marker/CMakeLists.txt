@@ -12,8 +12,11 @@ add_definitions(${EIGEN_DEFINITIONS})
 
 # Executables
 cs_add_executable(example_rviz_marker src/example_rviz_marker.cpp)
+cs_add_executable(example_rviz_line_markers src/example_rviz_line_markers.cpp)
 cs_add_executable(triad_display src/triad_display.cpp)
+cs_add_executable(lines_display src/lines_display.cpp)
 cs_add_executable(triad_display_test_node src/triad_display_test_node.cpp)
+cs_add_executable(linesegs_display_test_node src/linesegs_display_test_node.cpp)
 cs_install()
 cs_export()
 
