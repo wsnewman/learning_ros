@@ -77,6 +77,29 @@ void ArmMotionCommander::send_test_goal(void) {
         }        
 }
 
+void ArmMotionCommander::time_rescale_planned_trajectory(double time_scale_factor) {
+   ROS_INFO("rescaling speed");
+   cart_goal_.command_code = cartesian_planner::cart_moveGoal::TIME_RESCALE_PLANNED_TRAJECTORY;
+        //case cartesian_planner::cart_moveGoal::TIME_RESCALE_PLANNED_TRAJECTORY:
+        //    time_scale_stretch_factor_ = goal->time_scale_stretch_factor;
+   cart_goal_.time_scale_stretch_factor = time_scale_factor;
+     got_done_callback_=false; //flag to check if got callback
+    cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&ArmMotionCommander::doneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired
+    //double max_wait_time = 2.0;
+    
+    //finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(2.0));
+        //bool finished_before_timeout = action_client.waitForResult(); // wait forever...
+    if (!cb_received_in_time(2.0)) {
+            ROS_WARN("giving up waiting on result");
+        } else {
+            ROS_INFO("finished before timeout");
+            ROS_INFO("return code: %d",cart_result_.return_code);
+        }         
+            
+}
+            
+            
+
 int ArmMotionCommander::plan_move_to_waiting_pose(void) {
     ROS_INFO("requesting a joint-space motion plan");
     cart_goal_.command_code = cartesian_planner::cart_moveGoal::PLAN_PATH_CURRENT_TO_WAITING_POSE;
@@ -288,7 +311,7 @@ Eigen::VectorXd ArmMotionCommander::get_joint_angles(void) {
 int ArmMotionCommander::request_tool_pose(void) {
     // debug: compare this to output of:
     //rosrun tf tf_echo torso yale_gripper_frame
-    ROS_INFO("requesting right-arm tool pose");    
+    ROS_INFO("requesting tool pose");    
     cart_goal_.command_code = cartesian_planner::cart_moveGoal::GET_TOOL_POSE;
     cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&ArmMotionCommander::doneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired
     //finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(2.0));
@@ -302,7 +325,7 @@ int ArmMotionCommander::request_tool_pose(void) {
     }    
     
         tool_pose_stamped_ = cart_result_.current_pose_gripper;
-        ROS_INFO("move returned success; right arm tool pose: ");
+        ROS_INFO("move returned success; tool pose: ");
         ROS_INFO("origin w/rt torso = %f, %f, %f ",tool_pose_stamped_.pose.position.x,
                 tool_pose_stamped_.pose.position.y,tool_pose_stamped_.pose.position.z);
         ROS_INFO("quaternion x,y,z,w: %f, %f, %f, %f",tool_pose_stamped_.pose.orientation.x,

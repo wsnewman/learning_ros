@@ -48,10 +48,12 @@ void set_jnt_names() {
 }
 double transition_time(Eigen::VectorXd dqvec) {
     double t_max = SPEED_SCALE_FACTOR*fabs(dqvec[0]) / g_qdot_max_vec[0];
-    //cout<<"qdot max: "<<qdot_max_vec_.transpose()<<endl;
+    ROS_INFO("t0 = %f; dqvec[0] = %f; g_qdot_max_vec[0] = %f",t_max,dqvec[0],g_qdot_max_vec[0]);
+    //cout<<"qdot max: "<<g_qdot_max_vec.transpose()<<endl; //xxx
     double ti;
     for (int i = 1; i < VECTOR_DIM; i++) {
         ti = SPEED_SCALE_FACTOR*fabs(dqvec[i]) / g_qdot_max_vec[i];
+        ROS_INFO("ti = %f; dqvec[i] = %f; g_qdot_max_vec[i] = %f",ti,dqvec[i],g_qdot_max_vec[i]);
         if (ti > t_max) t_max = ti;
     }
     return t_max;
@@ -82,10 +84,10 @@ void stuff_trajectory(std::vector<Eigen::VectorXd> qvecs, trajectory_msgs::Joint
     double net_time = t_start;
     q_start = qvecs[0];
     q_end = qvecs[0];
-    //cout<<"stuff_traj: start pt = "<<q_start.transpose()<<endl; 
+    cout<<"stuff_traj: start pt = "<<q_start.transpose()<<endl; 
     ROS_INFO("stuffing trajectory");
     //trajectory_point1.positions = qvecs[0];
-
+    trajectory_point1.positions.clear();
     trajectory_point1.time_from_start = ros::Duration(net_time);
     for (int i = 0; i < VECTOR_DIM; i++) { //pre-sizes positions vector, so can access w/ indices later
         trajectory_point1.positions.push_back(q_start[i]);
@@ -98,11 +100,11 @@ void stuff_trajectory(std::vector<Eigen::VectorXd> qvecs, trajectory_msgs::Joint
         q_start = q_end;
         q_end = qvecs[iq];
         dqvec = q_end - q_start;
-        //cout<<"dqvec: "<<dqvec.transpose()<<endl;
+        cout<<"dqvec: "<<dqvec.transpose()<<endl;
         del_time = transition_time(dqvec);
         if (del_time < dt_traj)
             del_time = dt_traj;
-        //cout<<"stuff_traj: next pt = "<<q_end.transpose()<<endl; 
+        cout<<"stuff_traj: next pt = "<<q_end.transpose()<<endl; 
         net_time += del_time;
         ROS_INFO("iq = %d; del_time = %f; net time = %f",iq,del_time,net_time);        
         for (int i = 0; i < VECTOR_DIM; i++) { //copy over the joint-command values
@@ -752,6 +754,7 @@ bool ArmMotionInterface::plan_path_current_to_goal_gripper_pose() {
     ROS_INFO("flange goal");
     display_affine(goal_flange_affine_);
     Eigen::VectorXd q_start;
+    ros::spinOnce();
     q_start = g_q_vec_arm_Xd; 
     std::cout<<"q_start: "<<q_start.transpose()<<std::endl;
     path_is_valid_ = cartTrajPlanner_.cartesian_path_planner(q_start, goal_flange_affine_, optimal_path_);
