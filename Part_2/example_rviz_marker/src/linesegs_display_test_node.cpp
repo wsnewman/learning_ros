@@ -5,6 +5,8 @@
 // view result in rviz by adding a marker on topic "lines_display".  
 // Set the rviz frame to "world"
 
+//SHOULD transform nodes.  ASSUMES reference frame is "world"
+
 #include<ros/ros.h>
 #include <geometry_msgs/Polygon.h>
 #include<math.h>

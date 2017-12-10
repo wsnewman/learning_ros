@@ -51,7 +51,7 @@ void init_marker_vals(visualization_msgs::Marker &marker) {
 
 
 void linesegCB(const geometry_msgs::Polygon& vertices) {
-    ROS_DEBUG("got vertices");
+    //ROS_DEBUG("got vertices");
     geometry_msgs::Point32 vertex1,vertex2;
     vertex1 = vertices.points[0];
     vertex2 = vertices.points[1];

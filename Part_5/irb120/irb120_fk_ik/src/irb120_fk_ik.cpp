@@ -71,7 +71,7 @@ Eigen::Matrix4d compute_A_of_DH(int i, double q_abb) {
     return A;
 }
 
-Irb120_fwd_solver::Irb120_fwd_solver() { //(const hand_s& hs, const atlas_frame& base_frame, double rot_ang) {
+Irb120_fwd_solver::Irb120_fwd_solver() { 
 
     ROS_INFO("fwd_solver constructor");
 }

@@ -217,6 +217,7 @@ bool CartTrajPlanner::cartesian_path_planner(Eigen::VectorXd q_start,Eigen::Affi
             p_des += dp_vec;
             a_tool_des.translation() = p_des;
             cout<<"trying: "<<p_des.transpose()<<endl;
+            //note: ik_solver assumes a_tool_des references the DH flange frame w/ z-axis pointing out from flange
             nsolns = ik_solver_.ik_solve(a_tool_des, q_solns);
             std::cout<<"nsolns = "<<nsolns<<endl;
             //DEBUG:

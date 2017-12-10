@@ -24,6 +24,15 @@
     <child link="link1"/>
   </joint>
 
+  <!-- also, define a flange frame consistent w/ DH and IK library; z-axis pointing out from flange -->  
+    <link name="flange_frame"/>
+
+  <joint name="flange_frame_jnt" type="fixed">
+    <parent link="link7"/>
+    <child link="flange_frame"/>
+    <origin xyz="0 0 0" rpy="0 1.5708 0"/>
+  </joint>
+
   <!-- Base Link -->
   <link name="link1">
     <!--collision>
@@ -286,7 +295,11 @@
   <transmission name="tran1">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="joint1">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>EffortJointInterface</hardwareInterface>flange_stf
+[ INFO] [1512929221.358296873, 54.845000000]: frame_id: system_ref_frame
+
+[ INFO] [1512929221.358314256, 54.845000000]: child_frame_id: link7
+
     </joint>
     <actuator name="motor1">
       <hardwareInterface>EffortJointInterface</hardwareInterface>

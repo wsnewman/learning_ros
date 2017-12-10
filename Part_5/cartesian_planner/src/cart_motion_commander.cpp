@@ -77,6 +77,29 @@ void ArmMotionCommander::send_test_goal(void) {
         }        
 }
 
+void ArmMotionCommander::set_arrival_time_planned_trajectory(double arrival_time) {
+  ROS_INFO("scheduling arrival times in trajectory");
+  computed_arrival_time_ = arrival_time;
+   cart_goal_.command_code = cartesian_planner::cart_moveGoal::SET_ARRIVAL_TIME_PLANNED_TRAJECTORY;
+        //case cartesian_planner::cart_moveGoal::TIME_RESCALE_PLANNED_TRAJECTORY:
+        //    time_scale_stretch_factor_ = goal->time_scale_stretch_factor;
+   cart_goal_.time_scale_stretch_factor = arrival_time;
+     got_done_callback_=false; //flag to check if got callback
+    cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&ArmMotionCommander::doneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired
+    //double max_wait_time = 2.0;
+    
+    //finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(2.0));
+        //bool finished_before_timeout = action_client.waitForResult(); // wait forever...
+    if (!cb_received_in_time(2.0)) {
+            ROS_WARN("giving up waiting on result");
+        } else {
+            ROS_INFO("finished before timeout");
+            ROS_INFO("return code: %d",cart_result_.return_code);
+        }         
+            
+}
+  
+
 void ArmMotionCommander::time_rescale_planned_trajectory(double time_scale_factor) {
    ROS_INFO("rescaling speed");
    cart_goal_.command_code = cartesian_planner::cart_moveGoal::TIME_RESCALE_PLANNED_TRAJECTORY;

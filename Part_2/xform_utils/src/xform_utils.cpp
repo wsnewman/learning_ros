@@ -35,12 +35,20 @@ geometry_msgs::PoseStamped XformUtils::transformEigenAffine3dToPoseStamped(Eigen
     return poseStamped;
 }
 
+//alternative: also include the reference frame ID
+geometry_msgs::PoseStamped XformUtils::transformEigenAffine3dToPoseStamped(Eigen::Affine3d e,std::string frame_id) {
+  geometry_msgs::PoseStamped poseStamped;
+  poseStamped = transformEigenAffine3dToPoseStamped(e);
+  poseStamped.header.frame_id = frame_id;
+  return poseStamped;
+} 
+
 Eigen::Affine3d XformUtils::transformPoseToEigenAffine3d(geometry_msgs::PoseStamped stPose) {
     Eigen::Affine3d affine;
     geometry_msgs::Pose pose = stPose.pose;
     Eigen::Vector3d Oe;
     //ROS_WARN("xformUtils: input pose:");
-    printPose(pose);
+    //printPose(pose);
     Oe(0) = pose.position.x;
     Oe(1) = pose.position.y;
     Oe(2) = pose.position.z;
@@ -56,7 +64,7 @@ Eigen::Affine3d XformUtils::transformPoseToEigenAffine3d(geometry_msgs::PoseStam
 
     affine.linear() = Re;
     affine.translation() = Oe;
-    printAffine(affine);
+    //printAffine(affine);
     return affine;
 }
 
@@ -65,7 +73,7 @@ Eigen::Affine3d XformUtils::transformPoseToEigenAffine3d(geometry_msgs::Pose pos
 
     Eigen::Vector3d Oe;
     //ROS_WARN("xformUtils: input pose:");
-    printPose(pose);
+    //printPose(pose);
     Oe(0) = pose.position.x;
     Oe(1) = pose.position.y;
     Oe(2) = pose.position.z;
@@ -81,7 +89,7 @@ Eigen::Affine3d XformUtils::transformPoseToEigenAffine3d(geometry_msgs::Pose pos
 
     affine.linear() = Re;
     affine.translation() = Oe;
-    printAffine(affine);
+    //printAffine(affine);
     return affine;
 }
 
@@ -181,7 +189,7 @@ tf::StampedTransform XformUtils::convert_poseStamped_to_stampedTransform(geometr
  geometry_msgs::Quaternion orientation = pose.orientation;
  transform.setOrigin( tf::Vector3(position.x, position.y, position.z) );
  //cout<<"reference frame: "<<stPose.header.frame_id<<endl;
- printStampedPose(stPose);
+ //printStampedPose(stPose);
  transform.setRotation( tf::Quaternion( orientation.x, orientation.y, orientation.z, orientation.w) );
  tf::StampedTransform stTransform(transform, stPose.header.stamp, stPose.header.frame_id,child_frame_id);
  return stTransform;

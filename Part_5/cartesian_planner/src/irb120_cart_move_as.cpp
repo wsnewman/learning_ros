@@ -1,6 +1,8 @@
 // irb120_cart_move_as: 
 // wsn,  Dec, 2017
 // action server to accept commands and perform planning and motion requests
+// this code is specific to the irb120, 
+// it includes a definition and implementaton for ArmMotionInterface, used in the action server
 
 
 
@@ -20,6 +22,7 @@
 #include<std_msgs/Float32.h>
 #include<std_msgs/Float64.h>
 #include<std_msgs/UInt8.h>
+#include<std_msgs/Bool.h>
 #include<geometry_msgs/PoseStamped.h>
 #include<std_msgs/Bool.h>
 #include<sensor_msgs/JointState.h>
@@ -38,6 +41,9 @@ const double ARM_ERR_TOL = 0.1; // tolerance btwn last joint commands and curren
 const double dt_traj = 0.02; // time step for trajectory interpolation
 
 bool g_js_doneCb_flag = true;
+bool g_spray_on = false;
+ros::Publisher g_paint_pose_publisher; // = nh.advertise<geometry_msgs::PoseStamped>("paint_pose", 1, true);
+
 void set_jnt_names() {
     g_jnt_names.push_back("joint1");
     g_jnt_names.push_back("joint2");
@@ -48,12 +54,12 @@ void set_jnt_names() {
 }
 double transition_time(Eigen::VectorXd dqvec) {
     double t_max = SPEED_SCALE_FACTOR*fabs(dqvec[0]) / g_qdot_max_vec[0];
-    ROS_INFO("t0 = %f; dqvec[0] = %f; g_qdot_max_vec[0] = %f",t_max,dqvec[0],g_qdot_max_vec[0]);
+    //ROS_INFO("t0 = %f; dqvec[0] = %f; g_qdot_max_vec[0] = %f",t_max,dqvec[0],g_qdot_max_vec[0]);
     //cout<<"qdot max: "<<g_qdot_max_vec.transpose()<<endl; //xxx
     double ti;
     for (int i = 1; i < VECTOR_DIM; i++) {
         ti = SPEED_SCALE_FACTOR*fabs(dqvec[i]) / g_qdot_max_vec[i];
-        ROS_INFO("ti = %f; dqvec[i] = %f; g_qdot_max_vec[i] = %f",ti,dqvec[i],g_qdot_max_vec[i]);
+        //ROS_INFO("ti = %f; dqvec[i] = %f; g_qdot_max_vec[i] = %f",ti,dqvec[i],g_qdot_max_vec[i]);
         if (ti > t_max) t_max = ti;
     }
     return t_max;
@@ -168,8 +174,11 @@ void jointStatesCb(const sensor_msgs::JointState& js_msg) {
         }
 }
 
-
-
+void sprayOnOffCb(const std_msgs::Bool   &onoff_msg) {
+   g_spray_on = onoff_msg.data;
+   if (g_spray_on) ROS_INFO("rcvd cmd spray state ON");
+   else ROS_INFO("rcvd cmd spray state OFF");
+}
 
 class ArmMotionInterface {
 private:
@@ -210,10 +219,13 @@ private:
     tf::StampedTransform generic_toolflange_frame_wrt_gripper_frame_stf_;
     tf::StampedTransform generic_gripper_frame_wrt_tool_flange_stf_;
     tf::StampedTransform base_link_wrt_system_ref_frame_stf_; 
+    tf::StampedTransform  base_link_wrt_world_stf_;
+    tf::StampedTransform  generic_gripper_frame_wrt_world_stf_;
+    tf::StampedTransform  generic_gripper_frame_wrt_base_stf_; //current_gripper_frame_wrt_base_stf_
     //current tool poses w/rt base_frame:
     geometry_msgs::Pose current_gripper_pose_, current_flange_pose_; //cmd for tool pose
     geometry_msgs::PoseStamped current_gripper_stamped_pose_,current_flange_stamped_pose_; //cmd for rtool pose
-
+    geometry_msgs::PoseStamped current_gripper_stamped_pose_wrt_world_;
     Eigen::Affine3d goal_gripper_affine_;
     Eigen::Affine3d goal_flange_affine_;
 
@@ -310,6 +322,7 @@ public:
     void compute_tool_stamped_pose(void); //helper for GET_TOOL_POSE
     void compute_flange_stamped_pose(void); //helper for GET_FLANGE_POSE
     //void compute_left_tool_stamped_pose(void); 
+    void compute_tool_stamped_pose_wrt_world(void);
 
     bool plan_path_current_to_goal_gripper_pose(); //uses goal.des_pose_gripper to plan a cartesian path
     //bool plan_path_current_to_goal_flange_pose(); //interprets goal.des_pose_flange  as a des FLANGE pose to plan a cartesian path
@@ -327,8 +340,11 @@ public:
     bool plan_jspace_path_qstart_to_qend(Eigen::VectorXd q_start_Xd, Eigen::VectorXd q_goal_Xd);
     //bool jspace_path_planner_current_to_affine_goal(Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path);
     void rescale_planned_trajectory_time(double time_stretch_factor);
+    void set_arrival_time_planned_trajectory(double arrival_time);
     bool refine_cartesian_path_soln();
     Eigen::Affine3d xform_gripper_pose_to_affine_flange_wrt_base(geometry_msgs::PoseStamped des_pose_gripper);
+
+    geometry_msgs::PoseStamped get_current_gripper_stamped_pose_wrt_world() { return current_gripper_stamped_pose_wrt_world_; };
 
 };
 Eigen::Affine3d ArmMotionInterface::xform_gripper_pose_to_affine_flange_wrt_base(geometry_msgs::PoseStamped des_pose_gripper) {
@@ -336,15 +352,15 @@ Eigen::Affine3d ArmMotionInterface::xform_gripper_pose_to_affine_flange_wrt_base
     tf::StampedTransform flange_stf, flange_wrt_base_stf;
     geometry_msgs::PoseStamped flange_gmps, flange_wrt_base_gmps;
     //convert des gripper pose to a stamped transform, so we can do more transforms
-    ROS_WARN("xform_gripper_pose_to_affine_flange_wrt_base: input pose-stamped: ");
+    //ROS_WARN("xform_gripper_pose_to_affine_flange_wrt_base: input pose-stamped: ");
     xformUtils.printStampedPose(des_pose_gripper);
     tf::StampedTransform gripper_stf = xformUtils.convert_poseStamped_to_stampedTransform(des_pose_gripper, "generic_gripper_frame"); 
     //convert to transform of corresponding tool flange w/rt whatever reference frame_id
-    ROS_INFO("gripper_stf: ");
+    //ROS_INFO("gripper_stf: ");
     xformUtils.printStampedTf(gripper_stf);
    
     bool mult_ok = xformUtils.multiply_stamped_tfs(gripper_stf,generic_toolflange_frame_wrt_gripper_frame_stf_,flange_stf);
-    ROS_INFO("flange_stf");
+    //ROS_INFO("flange_stf");
     xformUtils.printStampedTf(flange_stf); 
     if (!mult_ok) { ROS_WARN("stf multiply not legal! "); } //should not happen
     //ROS_INFO("corresponding flange frame: ");
@@ -369,11 +385,11 @@ Eigen::Affine3d ArmMotionInterface::xform_gripper_pose_to_affine_flange_wrt_base
             }   
     }
     
-    ROS_INFO("corresponding flange frame w/rt base frame: ");
+    //ROS_INFO("corresponding flange frame w/rt base frame: ");
     xformUtils.printStampedPose(flange_wrt_base_gmps);  
     //convert this to an affine.  parent and child frame id's are lost, so we'll have to remember what this means
     affine_flange_wrt_base = xformUtils.transformPoseToEigenAffine3d(flange_wrt_base_gmps);
-    ROS_WARN("xform_gripper_pose_to_affine_flange_wrt_base returning affine: ");
+    //ROS_WARN("xform_gripper_pose_to_affine_flange_wrt_base returning affine: ");
     display_affine(affine_flange_wrt_base);
     xformUtils.printAffine(affine_flange_wrt_base);
     return affine_flange_wrt_base;
@@ -424,8 +440,14 @@ void ArmMotionInterface::executeCB(const actionlib::SimpleActionServer<cartesian
         case cartesian_planner::cart_moveGoal::TIME_RESCALE_PLANNED_TRAJECTORY:
             time_scale_stretch_factor_ = goal->time_scale_stretch_factor;
             rescale_planned_trajectory_time(time_scale_stretch_factor_);
-            break;            
-
+            break;  
+                      
+        case cartesian_planner::cart_moveGoal::SET_ARRIVAL_TIME_PLANNED_TRAJECTORY:
+            time_scale_stretch_factor_ = goal->time_scale_stretch_factor;
+            //set_arrival_time_planned_trajectory(double arrival_time)
+            set_arrival_time_planned_trajectory(time_scale_stretch_factor_);
+            break;  
+            
         //consults a pre-computed trajectory and invokes execution;
         case cartesian_planner::cart_moveGoal::EXECUTE_PLANNED_PATH: //assumes there is a valid planned path in optimal_path_
             ROS_INFO("responding to request EXECUTE_PLANNED_PATH");
@@ -490,7 +512,7 @@ cart_move_as_(*nodehandle, "cartMoveActionServer", boost::bind(&ArmMotionInterfa
     g_q_vec_arm_Xd.resize(VECTOR_DIM);
     //initialize variables here, as needed
     q_pre_pose_Xd_.resize(VECTOR_DIM);
-    q_pre_pose_Xd_ << 1.57, -1.57, -1.57, -1.57, 1.57, 0;
+    q_pre_pose_Xd_ << 0, 0, 0, 0, 0, 0;
     //q_pre_pose_Xd_ = q_pre_pose_; // copy--in VectorXd format
     q_vec_start_rqst_.resize(NJNTS); // = q_pre_pose_; // 0,0,0,0,0,0,0; // make this a N-d vector
     q_vec_end_rqst_.resize(NJNTS); // = q_pre_pose_; //<< 0,0,0,0,0,0,0;
@@ -515,7 +537,8 @@ cart_move_as_(*nodehandle, "cartMoveActionServer", boost::bind(&ArmMotionInterfa
     while (tferr) {
         tferr=false;
         try {
-                tfListener_->lookupTransform("generic_gripper_frame","link7",  ros::Time(0), generic_toolflange_frame_wrt_gripper_frame_stf_);
+                //edit 12/10/17: compute transform to flange_frame instead of link7
+                tfListener_->lookupTransform("generic_gripper_frame","flange_frame",  ros::Time(0), generic_toolflange_frame_wrt_gripper_frame_stf_);
             } catch(tf::TransformException &exception) {
                 ROS_WARN("%s; retrying...", exception.what());
                 tferr=true;
@@ -544,6 +567,22 @@ cart_move_as_(*nodehandle, "cartMoveActionServer", boost::bind(&ArmMotionInterfa
     }
     ROS_INFO("tf is good for system_ref_frame and base_link");    
     xformUtils.printStampedTf(base_link_wrt_system_ref_frame_stf_);
+    
+    ROS_INFO("waiting for tf between base_link and world...");
+    tferr=true;
+    while (tferr) {
+        tferr=false;
+        try {
+                tfListener_->lookupTransform("world", "base_link", ros::Time(0), base_link_wrt_world_stf_);
+            } catch(tf::TransformException &exception) {
+                ROS_WARN("%s; retrying...", exception.what());
+                tferr=true;
+                ros::Duration(0.5).sleep(); // sleep for half a second
+                ros::spinOnce();                
+            }   
+    }
+    ROS_INFO("tf is good for world and base_link");    
+    xformUtils.printStampedTf(base_link_wrt_world_stf_);    
     
     //check that joint-space interpolator service is connected:
     // attempt to connect to the trajectory action server:
@@ -608,6 +647,33 @@ void ArmMotionInterface::compute_tool_stamped_pose(void) {
     current_gripper_stamped_pose_.header.stamp = ros::Time::now(); 
     current_gripper_stamped_pose_.header.frame_id = "base_link";
 }
+
+void ArmMotionInterface::compute_tool_stamped_pose_wrt_world(void) {
+    //get_joint_angles(); //will update q_vec
+    q_vec_= g_q_vec_arm_Xd;
+    affine_tool_wrt_base_ =
+            fwd_solver_.fwd_kin_solve(q_vec_); //rtns pose w/rt base frame     
+    current_gripper_pose_ = xformUtils.transformEigenAffine3dToPose(affine_tool_wrt_base_);
+    current_gripper_stamped_pose_.pose = current_gripper_pose_;
+    current_gripper_stamped_pose_.header.stamp = ros::Time::now(); 
+    current_gripper_stamped_pose_.header.frame_id = "base_link";
+    //convert stamped pose to tf:
+
+    //tf::StampedTransform gripper_stf = xformUtils.convert_poseStamped_to_stampedTransform(des_pose_gripper, "generic_gripper_frame"); 
+    generic_gripper_frame_wrt_base_stf_ = 
+         xformUtils.convert_poseStamped_to_stampedTransform(current_gripper_stamped_pose_, "generic_gripper_frame");
+    bool mult_ok = xformUtils.multiply_stamped_tfs(base_link_wrt_world_stf_,generic_gripper_frame_wrt_base_stf_,generic_gripper_frame_wrt_world_stf_);
+    //ROS_INFO("current_gripper_stamped_pose_wrt_world_");
+    //xformUtils.printStampedTf(current_gripper_stamped_pose_wrt_world_); 
+    if (!mult_ok) { ROS_WARN("stf multiply not legal! "); 
+      return;
+      } //should not happen
+    //convert stf to stamped_pose:
+    //geometry_msgs::PoseStamped XformUtils::get_pose_from_stamped_tf(tf::StampedTransform tf)
+    current_gripper_stamped_pose_wrt_world_ = xformUtils.get_pose_from_stamped_tf(generic_gripper_frame_wrt_world_stf_);
+}
+
+
 
 void ArmMotionInterface::compute_flange_stamped_pose(void) {
     //get_joint_angles(); //will update q_vec_Xd_ 
@@ -697,6 +763,31 @@ void ArmMotionInterface::rescale_planned_trajectory_time(double time_stretch_fac
     cart_move_as_.setSucceeded(cart_result_);
 }
 
+//new fnc to set desired arrival time:
+void ArmMotionInterface::set_arrival_time_planned_trajectory(double arrival_time) {
+    if (!path_is_valid_) {
+        cart_result_.return_code = cartesian_planner::cart_moveResult::PATH_NOT_VALID;
+        ROS_WARN("do not have a valid path!");
+        cart_move_as_.setAborted(cart_result_); // tell the client we have given up on this goal; send the result message as well
+    }
+
+    //given a trajectory, assign arrival times as linear interpolation
+    int npts = des_trajectory_.points.size();
+    double arrival_time_sec, new_arrival_time_sec, dt_step,t_step;
+    dt_step = arrival_time/(npts-1);
+    t_step=0;
+    for (int i = 0; i < npts; i++) {
+        ros::Duration arrival_duration(t_step); //convert time to a ros::Duration type
+        des_trajectory_.points[i].time_from_start = arrival_duration;
+        t_step+= dt_step;
+    }
+    computed_arrival_time_ = des_trajectory_.points.back().time_from_start.toSec();
+    cart_result_.computed_arrival_time = computed_arrival_time_;
+    ROS_INFO("new arrival time = %f",cart_result_.computed_arrival_time);
+    cart_result_.return_code = cartesian_planner::cart_moveResult::SUCCESS;
+    cart_move_as_.setSucceeded(cart_result_);
+}
+
 //given q_start, compute the tool-flange pose, and compute a path to move delta_p with R fixed
 // return the optimized joint-space path in optimal_path
 // this fnc can be used fairly generally--e.g., special cases such as 20cm descent from current arm pose 
@@ -757,7 +848,9 @@ bool ArmMotionInterface::plan_path_current_to_goal_gripper_pose() {
     ros::spinOnce();
     q_start = g_q_vec_arm_Xd; 
     std::cout<<"q_start: "<<q_start.transpose()<<std::endl;
-    path_is_valid_ = cartTrajPlanner_.cartesian_path_planner(q_start, goal_flange_affine_, optimal_path_);
+    //path_is_valid_ = cartTrajPlanner_.cartesian_path_planner(q_start, goal_flange_affine_, optimal_path_);
+    path_is_valid_ = cartTrajPlanner_.fine_cartesian_path_planner(q_start, goal_flange_affine_, optimal_path_);    
+
     //std::cout<<"enter 1: "<<std::endl;
     //int ans;
     //std::cin>>ans;
@@ -856,6 +949,11 @@ int main(int argc, char** argv) {
     ros::NodeHandle nh; //standard ros node handle   
     set_jnt_names();
     ros::Subscriber joint_state_sub = nh.subscribe("/irb120/joint_states", 1, jointStatesCb);
+    ros::Subscriber spray_state_sub = nh.subscribe("spray_on_off", 1,sprayOnOffCb);   
+    geometry_msgs::PoseStamped painthead_pose;
+     
+    g_paint_pose_publisher= nh.advertise<geometry_msgs::PoseStamped>("paint_pose", 1, true);   
+     
     g_q_vec_arm_Xd.resize(VECTOR_DIM);
     g_q_vec_arm_Xd[0] = 1000;
     while (g_q_vec_arm_Xd[0]>20) {
@@ -873,7 +971,13 @@ int main(int argc, char** argv) {
     while (ros::ok()) {
 
         ros::spinOnce();
-        ros::Duration(0.1).sleep(); //don't consume much cpu time if not actively working on a command
+        ros::Duration(0.05).sleep(); //don't consume much cpu time if not actively working on a command
+        //if paint spray is on, get and publish the painthead pose
+        if (g_spray_on) {
+          armMotionInterface.compute_tool_stamped_pose_wrt_world();
+          painthead_pose = armMotionInterface.get_current_gripper_stamped_pose_wrt_world();
+          g_paint_pose_publisher.publish(painthead_pose);
+        }
     }
 
     return 0;

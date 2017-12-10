@@ -29,6 +29,7 @@ uint8 PLAN_JSPACE_PATH_CURRENT_TO_QGOAL = 25
 
 uint8 TIME_RESCALE_PLANNED_TRAJECTORY = 40 #can make arm go slower/faster with provided time-stretch factor
 uint8 REFINE_PLANNED_TRAJECTORY = 41 #if used approx IK soln, use this option to refine solns
+uint8 SET_ARRIVAL_TIME_PLANNED_TRAJECTORY = 42 #used to set desired arrival time; put arrival time value in goal time_scale_stretch_factor
 
 # request to preview plan:
 #uint8 DISPLAY_TRAJECTORY = 50
