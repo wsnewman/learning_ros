@@ -353,15 +353,15 @@ Eigen::Affine3d ArmMotionInterface::xform_gripper_pose_to_affine_flange_wrt_base
     geometry_msgs::PoseStamped flange_gmps, flange_wrt_base_gmps;
     //convert des gripper pose to a stamped transform, so we can do more transforms
     //ROS_WARN("xform_gripper_pose_to_affine_flange_wrt_base: input pose-stamped: ");
-    xformUtils.printStampedPose(des_pose_gripper);
+    //xformUtils.printStampedPose(des_pose_gripper);
     tf::StampedTransform gripper_stf = xformUtils.convert_poseStamped_to_stampedTransform(des_pose_gripper, "generic_gripper_frame"); 
     //convert to transform of corresponding tool flange w/rt whatever reference frame_id
     //ROS_INFO("gripper_stf: ");
-    xformUtils.printStampedTf(gripper_stf);
+    //xformUtils.printStampedTf(gripper_stf);
    
     bool mult_ok = xformUtils.multiply_stamped_tfs(gripper_stf,generic_toolflange_frame_wrt_gripper_frame_stf_,flange_stf);
     //ROS_INFO("flange_stf");
-    xformUtils.printStampedTf(flange_stf); 
+    //xformUtils.printStampedTf(flange_stf); 
     if (!mult_ok) { ROS_WARN("stf multiply not legal! "); } //should not happen
     //ROS_INFO("corresponding flange frame: ");
     //xformUtils.printStampedTf(flange_stf);
@@ -386,12 +386,12 @@ Eigen::Affine3d ArmMotionInterface::xform_gripper_pose_to_affine_flange_wrt_base
     }
     
     //ROS_INFO("corresponding flange frame w/rt base frame: ");
-    xformUtils.printStampedPose(flange_wrt_base_gmps);  
+    //xformUtils.printStampedPose(flange_wrt_base_gmps);  
     //convert this to an affine.  parent and child frame id's are lost, so we'll have to remember what this means
     affine_flange_wrt_base = xformUtils.transformPoseToEigenAffine3d(flange_wrt_base_gmps);
     //ROS_WARN("xform_gripper_pose_to_affine_flange_wrt_base returning affine: ");
     display_affine(affine_flange_wrt_base);
-    xformUtils.printAffine(affine_flange_wrt_base);
+    //xformUtils.printAffine(affine_flange_wrt_base);
     return affine_flange_wrt_base;
 }    
 
