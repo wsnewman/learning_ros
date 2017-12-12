@@ -317,6 +317,27 @@ bool CartTrajPlanner::cartesian_path_planner_w_rot_interp(Eigen::Affine3d a_flan
 
 bool CartTrajPlanner::multipoint_cartesian_path_planner(std::vector<Eigen::Affine3d> a_flange_poses,std::vector<int> nsteps_vec, 
 std::vector<Eigen::VectorXd> &optimal_path) {
+  Eigen::Affine3d a_start,a_end;
+  int nsamp_pts;
+  std::vector<Eigen::VectorXd> partial_path;
+  int n_via_pts;
+  n_via_pts = a_flange_poses.size();
+  if (n_via_pts<2) {
+    ROS_WARN("too few poses for path planning");
+    return false;
+  }
+  a_start = a_flange_poses[0];
+  a_end = a_flange_poses[1];
+  nsamp_pts = nsteps_vec[0];
+  bool good_path;
+  good_path = cartesian_path_planner_w_rot_interp(a_start, a_end, nsamp_pts,  partial_path);
+  if (!good_path) {
+    ROS_WARN("IK failed for first segment of path");
+    return false;
+  }
+  //else, partial_path is good, so copy it to optimal_path
+  
+  
 
   return false;
 }
