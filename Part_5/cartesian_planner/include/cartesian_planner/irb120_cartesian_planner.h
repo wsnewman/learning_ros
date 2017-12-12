@@ -9,6 +9,7 @@
 //include the following if/when want to plan a joint-space path and execute it
 #include <joint_space_planner/joint_space_planner.h>
 #include <Eigen/Eigen>
+#include <Eigen/Geometry> 
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -51,6 +52,9 @@ public:
     bool cartesian_path_planner(Eigen::VectorXd q_start,Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path);   
     bool cartesian_path_planner(Eigen::VectorXd q_start, Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path,
             double dp_scalar);
+    //new fnc: interpolate both translation and rotation, using angle-axis to interpolate orientation
+    bool cartesian_path_planner_w_rot_interp(Eigen::Affine3d a_tool_start,Eigen::Affine3d a_tool_end, int nsteps,
+          std::vector<Eigen::VectorXd> &optimal_path );
     
     bool jspace_trivial_path_planner(Eigen::VectorXd  q_start,Eigen::VectorXd  q_end,std::vector<Eigen::VectorXd> &optimal_path);
     /// alt version: specify start as a q_vec, and desired z motion (+ is up) while holding x,y and R fixed

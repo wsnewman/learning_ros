@@ -5,7 +5,7 @@
 // uses package joint_space_planner to find a good joint-space path among options
 // from IK solutions
 #include <cartesian_planner/irb120_cartesian_planner.h>
-
+using namespace std;
 
 //constructor:
 CartTrajPlanner::CartTrajPlanner() // optionally w/ args, e.g. 
@@ -168,6 +168,152 @@ void CartTrajPlanner::test_IK_solns(std::vector<Eigen::VectorXd> &q_solns) {
 //        std::vector<Eigen::VectorXd> &optimal_path) {
 //    return cartesian_path_planner(q_start,a_tool_end,optimal_path,CARTESIAN_PATH_SAMPLE_SPACING);
 //}
+
+//here's a variation that does linear interpolation of both translation and rotation
+//interpolation of orientation is defined as follows:
+// start at R_start, end at R_end--> do a rotation R_change s.t. R_end = R_change*R_start
+//  and thus R_change = R_end*R_start_inv
+//  define R_change in terms of Rot(k_vec,theta)
+//  then sample the path at theta(s), defining goal orientations as Rot(k_vec,theta(s))*R_start
+// 
+
+bool CartTrajPlanner::cartesian_path_planner_w_rot_interp(Eigen::Affine3d a_flange_start,Eigen::Affine3d a_flange_end, 
+        int nsteps,  std::vector<Eigen::VectorXd> &optimal_path) {
+
+    std::vector<std::vector<Eigen::VectorXd> > path_options;
+    path_options.clear();
+    std::vector<Eigen::VectorXd> single_layer_nodes;
+    Eigen::VectorXd node;
+    Eigen::Affine3d a_flange_des;
+
+     Eigen::Matrix3d R_start,R_end,R_change,R_change_interp,R_interp;
+     R_start = a_flange_start.linear();
+     R_end = a_flange_end.linear();
+     R_change = R_end*R_start.transpose();
+     Eigen::AngleAxisd angleAxis(R_change);  //convert rotation matrix to angle/axis
+     
+     optimal_path.clear();
+
+    //store a vector of Cartesian affine samples for desired path:
+    cartesian_affine_samples_.clear();
+    a_flange_des = a_flange_end;
+    //a_flange_start.linear() = R_des; // no interpolation of orientation; set goal orientation immediately   
+    //a_flange_des.linear() = R_des; //expected behavior: will try to achieve orientation first, before translating
+            
+    int nsolns;
+    bool reachable_proposition;
+ 
+    //Eigen::Vector3d p_des,dp_vec,del_p,p_start,p_end;
+    //p_start = a_flange_start.translation();
+    //p_end = a_flange_end.translation();
+    //del_p = p_end-p_start;
+    //double dp_scalar = CARTESIAN_PATH_SAMPLE_SPACING;
+    //nsteps = round(del_p.norm()/dp_scalar);
+    //if (nsteps<1) nsteps=1;
+    //dp_vec = del_p/nsteps;
+    //nsteps++; //account for pose at step 0
+
+
+    std::vector<Eigen::VectorXd> q_solns;
+    //p_des = p_start;
+    cartesian_affine_samples_.push_back(a_flange_start);
+
+     //to interpolate to angle theta_interp:
+     Eigen::Vector3d k_rot_axis;
+     Eigen::Vector3d dp_vec,O_interp,O_start,O_end;
+     O_start = a_flange_start.translation();
+     O_end = a_flange_end.translation();
+     dp_vec = (O_end-O_start)/nsteps;
+     cout<<"O_start = "<<O_start.transpose()<<endl;
+     cout<<"O_end = "<<O_end.transpose()<<endl;
+     cout<<"dp_vec = "<<dp_vec.transpose()<<endl;
+
+     double angle_axis_theta,theta_interp,dtheta;
+     angle_axis_theta = angleAxis.angle();
+     k_rot_axis = angleAxis.axis();
+     cout<<"k_rot_axis = "<<k_rot_axis.transpose()<<endl;
+     cout<<"angle_axis_theta = "<<angle_axis_theta<<endl;
+     cout<<"R_start: "<<endl;
+     cout<<R_start<<endl;
+     cout<<"R_end: "<<endl;
+     cout<<R_end<<endl;
+     theta_interp = 0.0;
+     dtheta = angle_axis_theta/nsteps;
+     cout<<"R_interp at start: "<<endl;
+     cout<<R_start<<endl;
+     for (int i=0;i<nsteps;i++) {
+        theta_interp = (i+1)*dtheta;        
+        R_change_interp = Eigen::AngleAxisd(theta_interp, k_rot_axis);
+        R_interp= R_change_interp*R_start;
+        cout<<"at i= "<<i<<", theta = "<<theta_interp<<" R_interp = "<<endl;   
+        cout<<R_interp<<endl;
+        O_interp = O_start+(i+1)*dp_vec;
+        cout<<"O_interp = "<<O_interp.transpose()<<endl<<endl;
+        a_flange_des.linear() = R_interp;
+        a_flange_des.translation() = O_interp;
+        cartesian_affine_samples_.push_back(a_flange_des);
+     }
+     //now have a vector of Cartesian samples in cartesian_affine_samples_
+     //for each such sample, compute IK options:
+    int nsamps = cartesian_affine_samples_.size();
+    //int nsolns;
+    for (int istep=0;istep<nsamps;istep++) 
+    {
+            a_flange_des = cartesian_affine_samples_[istep];
+            nsolns = ik_solver_.ik_solve(a_flange_des, q_solns);
+            std::cout<<"cartesian step "<<istep<<" has = "<<nsolns<<" IK solns"<<endl;
+            single_layer_nodes.clear();
+            if (nsolns>0) {
+                single_layer_nodes.resize(nsolns);
+                for (int isoln = 0; isoln < nsolns; isoln++) {
+                    // this is annoying: can't treat std::vector<Vectorq7x1> same as std::vector<Eigen::VectorXd> 
+                    //node = q_solns[isoln];
+                    single_layer_nodes[isoln] = q_solns[isoln]; //node;
+                    //single_layer_nodes = q_solns; 
+                }
+
+                path_options.push_back(single_layer_nodes);
+            }
+         else {
+            ROS_WARN("no valid IK soln...");
+            return false;
+          }
+
+    }
+
+    //plan a path through the options:
+    int nlayers = path_options.size();
+    if (nlayers < 1) {
+        ROS_WARN("no viable options: quitting");
+        return false; // give up if no options
+    }
+    //std::vector<Eigen::VectorXd> optimal_path;
+    optimal_path.resize(nlayers);
+    double trip_cost;
+    // set joint penalty weights for computing optimal path in joint space
+    Eigen::VectorXd weights;
+    weights.resize(NJNTS);
+    for (int i = 0; i < NJNTS; i++) {
+        weights(i) = 1.0;
+    }
+
+    // compute min-cost path, using Stagecoach algorithm
+    cout << "instantiating a JointSpacePlanner:" << endl;
+    { //limit the scope of jsp here:
+        JointSpacePlanner jsp(path_options, weights);
+        cout << "recovering the solution..." << endl;
+        jsp.get_soln(optimal_path);
+        trip_cost = jsp.get_trip_cost();
+    }
+
+    //now, jsp is deleted, but optimal_path lives on:
+    cout << "resulting solution path: " << endl;
+    for (int ilayer = 0; ilayer < nlayers; ilayer++) {
+        cout << "ilayer: " << ilayer << " node: " << optimal_path[ilayer].transpose() << endl;
+    }
+    cout << "soln min cost: " << trip_cost << endl;
+    return true;
+}
 
 bool CartTrajPlanner::cartesian_path_planner(Eigen::VectorXd q_start,Eigen::Affine3d a_tool_end, 
           std::vector<Eigen::VectorXd> &optimal_path, double dp_scalar) {
