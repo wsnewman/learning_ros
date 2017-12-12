@@ -315,6 +315,12 @@ bool CartTrajPlanner::cartesian_path_planner_w_rot_interp(Eigen::Affine3d a_flan
     return true;
 }
 
+bool CartTrajPlanner::multipoint_cartesian_path_planner(std::vector<Eigen::Affine3d> a_flange_poses,std::vector<int> nsteps_vec, 
+std::vector<Eigen::VectorXd> &optimal_path) {
+
+  return false;
+}
+
 bool CartTrajPlanner::cartesian_path_planner(Eigen::VectorXd q_start,Eigen::Affine3d a_tool_end, 
           std::vector<Eigen::VectorXd> &optimal_path, double dp_scalar) {
     std::vector<std::vector<Eigen::VectorXd> > path_options;
