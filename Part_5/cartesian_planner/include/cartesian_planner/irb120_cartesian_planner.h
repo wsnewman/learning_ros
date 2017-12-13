@@ -57,7 +57,7 @@ public:
           std::vector<Eigen::VectorXd> &optimal_path );
     // this next version takes an array of poses and plans a path through them, including orientation interpolation
     bool multipoint_cartesian_path_planner(std::vector<Eigen::Affine3d> a_flange_poses,std::vector<int> nsteps_vec, 
-std::vector<Eigen::VectorXd> &optimal_path);
+std::vector<Eigen::VectorXd> &optimal_path, std::vector<int> &nsteps_to_via_pt);
     
     bool jspace_trivial_path_planner(Eigen::VectorXd  q_start,Eigen::VectorXd  q_end,std::vector<Eigen::VectorXd> &optimal_path);
     /// alt version: specify start as a q_vec, and desired z motion (+ is up) while holding x,y and R fixed

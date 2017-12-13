@@ -189,6 +189,7 @@ bool CartTrajPlanner::cartesian_path_planner_w_rot_interp(Eigen::Affine3d a_flan
      Eigen::Matrix3d R_start,R_end,R_change,R_change_interp,R_interp;
      R_start = a_flange_start.linear();
      R_end = a_flange_end.linear();
+     //R_end = R_change*R_start
      R_change = R_end*R_start.transpose();
      Eigen::AngleAxisd angleAxis(R_change);  //convert rotation matrix to angle/axis
      
@@ -316,7 +317,7 @@ bool CartTrajPlanner::cartesian_path_planner_w_rot_interp(Eigen::Affine3d a_flan
 }
 
 bool CartTrajPlanner::multipoint_cartesian_path_planner(std::vector<Eigen::Affine3d> a_flange_poses,std::vector<int> nsteps_vec, 
-std::vector<Eigen::VectorXd> &optimal_path) {
+std::vector<Eigen::VectorXd> &optimal_path, std::vector<int> &nsteps_to_via_pt) {
   Eigen::Affine3d a_start,a_end;
   int nsamp_pts;
   std::vector<Eigen::VectorXd> partial_path;
@@ -336,10 +337,36 @@ std::vector<Eigen::VectorXd> &optimal_path) {
     return false;
   }
   //else, partial_path is good, so copy it to optimal_path
-  
-  
+  optimal_path.clear();
+  int npts = partial_path.size();
+  nsteps_to_via_pt.push_back(npts-1);  //there are this many STEPS to the first via point
+  for (int i=0;i<npts;i++) {
+   optimal_path.push_back(partial_path[i]);
+  }
+  //do the rest of the via points:
+  for (int ivia = 2;ivia< n_via_pts;ivia++) {
+     ROS_INFO("via point %d",ivia);
+     a_start = a_end;
+     a_end = a_flange_poses[ivia];
+     nsamp_pts = nsteps_vec[ivia-1];
+     good_path = cartesian_path_planner_w_rot_interp(a_start, a_end, nsamp_pts,  partial_path);
+     if (!good_path) {
+       ROS_WARN("IK failed for first segment of path");
+       return false;
+     }
+     //else, partial_path is good, so copy it to optimal_path
+     npts = partial_path.size();
+    for (int i=1;i<npts;i++) { //skip first point,since this is a repeat of prior end point
+       optimal_path.push_back(partial_path[i]);
+    }
+    npts = optimal_path.size();
+    nsteps_to_via_pt.push_back(npts-1); //number of STEPS to the current via point, from start of polyline
 
-  return false;
+  }
+  
+  ROS_INFO("path plan through %d via points completed",n_via_pts);
+
+  return true;
 }
 
 bool CartTrajPlanner::cartesian_path_planner(Eigen::VectorXd q_start,Eigen::Affine3d a_tool_end, 
