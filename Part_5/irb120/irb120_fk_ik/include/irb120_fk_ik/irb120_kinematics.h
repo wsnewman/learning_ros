@@ -87,7 +87,9 @@ public:
     Irb120_fwd_solver(); //constructor; //const hand_s& hs, const atlas_frame& base_frame, double rot_ang);
     //atlas_hand_fwd_solver(const hand_s& hs, const atlas_frame& base_frame);
     Eigen::Affine3d fwd_kin_solve(const Vectorq6x1& q_vec); // given vector of q angles, compute fwd kin
+    Eigen::Affine3d fwd_kin_solve(const Eigen::VectorXd& q_vec); 
     Eigen::Matrix4d get_wrist_frame();
+    Eigen::MatrixXd jacobian(const Eigen::VectorXd& q_vec);
     //Eigen::MatrixXd get_Jacobian(const Vectorq6x1& q_vec);
 private:
     Eigen::Matrix4d fwd_kin_solve_(const Vectorq6x1& q_vec);
