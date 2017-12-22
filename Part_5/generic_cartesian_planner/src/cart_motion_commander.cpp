@@ -349,7 +349,7 @@ int CartMotionCommander::request_tool_pose(void) {
     
         tool_pose_stamped_ = cart_result_.current_pose_gripper;
         ROS_INFO("move returned success; tool pose: ");
-        ROS_INFO("origin w/rt torso = %f, %f, %f ",tool_pose_stamped_.pose.position.x,
+        ROS_INFO("toolflange origin w/rt base = %f, %f, %f ",tool_pose_stamped_.pose.position.x,
                 tool_pose_stamped_.pose.position.y,tool_pose_stamped_.pose.position.z);
         ROS_INFO("quaternion x,y,z,w: %f, %f, %f, %f",tool_pose_stamped_.pose.orientation.x,
                 tool_pose_stamped_.pose.orientation.y,tool_pose_stamped_.pose.orientation.z,

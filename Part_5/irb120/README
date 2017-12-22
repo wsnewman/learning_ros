@@ -1,0 +1,40 @@
+IRB120 files packages:
+
+irb120.launch:
+Start up robot simulation in Gazebo with: 
+roslaunch irb120_description irb120.launch 
+
+This loads the robot model onto the parameter server, starts up Gazebo, spawns the robot model,
+starts up individual PID joint controllers, starts a robot-state publisher, and starts an emulator
+of a ROS-I joint-trajectory download interface (publish/subscribe, topic = joint_path_command).
+
+For REAL robot with ROS-I interface, would still need to load robot model onto parameter server, 
+and would need to start a bridge interface that accepts trajectory commands and relays them to
+the robot's native controller for execution. State feedback would be received from the robot and
+republished on ROS topic joint_states.
+
+In addition, static transforms are published for base link, generic gripper frame, and synonym generic_tool_frame.
+These static transforms would also need to be published for the real robot.
+
+Will want to create a separate launch file for the real robot that performs this subset of tasks.
+
+Cartesian-move action server:
+Start up this action server with:
+rosrun irb120_planner irb120_cart_move_as 
+
+This starts up a cartMoveActionServer action server.  It expects goals as defined in package arm_motion_interface.
+It abstracts the robot interface using the arm_motion_interface and generic_cartesian_planner packages.
+Forward and inverse kinematics are integrated a virtual functions with base class defined in fk_ik_virtual.
+Robot specifics are encapsulated and contained in files robot_specific_fk_ik_mappings.h and robot_specific_names.h.
+Additional robots can be abstracted using this as an example.
+
+The intent of presenting an abstracted Cartesian action-server interface is for clients to be task oriented but robot
+agnostic.  An example test client is:
+rosrun generic_cartesian_planner example_generic_cartesian_move_ac
+
+This client node exercises various function options of the abstracted interface.
+It packs each goal messages with a function code (as defined in arm_motion_interface), along with whatever
+additional parameters are required for that function code.  The corresponding action server unpacks the goal
+message and does a switch/case selection to execute the corresponding function.
+
+

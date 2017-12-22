@@ -136,6 +136,7 @@ Eigen::Matrix4d Irb120_fwd_solver::get_wrist_frame() {
 
 //alternative fnc: accepts arg of type Eigen::VectorXd 
 Eigen::Affine3d Irb120_fwd_solver::fwd_kin_solve(const Eigen::VectorXd& q_vec) {
+    //ROS_INFO("called fwd_kin_solve...");
     Eigen::Matrix4d M;
     Vectorq6x1 q_vec_6x1;
     for (int i=0;i<NJNTS;i++) 

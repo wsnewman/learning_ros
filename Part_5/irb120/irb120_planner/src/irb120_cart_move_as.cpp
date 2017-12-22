@@ -50,6 +50,20 @@ int main(int argc, char** argv) {
     //TEST TEST TEST
     //this is odd...possibly a catkin-simple thing.  Needed to instantiate a CartesianInerpolator to coerce compilation--likely linking oddity
     CartesianInterpolator cartesianInterpolator;
+
+    //TEST TEST TEST
+    Eigen::VectorXd q_vec;
+    q_vec.resize(6);
+    q_vec<<0,0,0,0,0,0;
+    //Eigen::Affine3d fwd_kin_solve(Eigen::VectorXd const& q_vec)
+    Eigen::Affine3d test_affine;
+    test_affine = robotSpecificFK.fwd_kin_solve(q_vec);
+    std::cout<<"fwd kin of home pose: origin = "<<test_affine.translation().transpose()<<std::endl;
+    ROS_INFO("again...");
+    test_affine = pFwdSolver->fwd_kin_solve(q_vec);
+    std::cout<<"fwd kin of home pose: origin = "<<test_affine.translation().transpose()<<std::endl;
+    
+
     
     int njnts = g_jnt_names.size();
     ArmMotionInterfaceInits armMotionInterfaceInits;
@@ -58,8 +72,8 @@ int main(int argc, char** argv) {
     armMotionInterfaceInits.joint_states_topic_name = g_joint_states_topic_name;
     armMotionInterfaceInits.traj_pub_topic_name = g_traj_pub_topic_name;
     armMotionInterfaceInits.jnt_names = g_jnt_names;
-    armMotionInterfaceInits.pIKSolver_arg;
-    armMotionInterfaceInits.pFwdSolver_arg;
+    armMotionInterfaceInits.pIKSolver_arg = pIKSolver;
+    armMotionInterfaceInits.pFwdSolver_arg = pFwdSolver;
     
     for (int i=0;i<njnts;i++) {
        armMotionInterfaceInits.q_lower_limits.push_back(q_lower_limits[i]);
