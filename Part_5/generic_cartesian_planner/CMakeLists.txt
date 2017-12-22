@@ -29,17 +29,17 @@ catkin_simple()
 # Libraries: uncomment the following and edit arguments to create a new library
 cs_add_library(cartesian_interpolator src/cartesian_interpolator.cpp)  
 cs_add_library(generic_cartesian_planner src/generic_cartesian_planner.cpp)   
-cs_add_library(cart_motion_commander src/cart_motion_commander.cpp)   
+cs_add_library(cartesian_motion_commander src/cart_motion_commander.cpp)   
 
 # Executables: uncomment the following and edit arguments to compile new nodes
 # may add more of these lines for more nodes from the same package
 # cs_add_executable(example src/example.cpp)
-cs_add_executable(example_generic_cart_move_ac src/example_generic_cart_move_ac.cpp)
+cs_add_executable(example_generic_cartesian_move_ac src/example_generic_cart_move_ac.cpp)
 
 #the following is required, if desire to link a node in this package with a library created in this same package
 # edit the arguments to reference the named node and named library within this package
 #target_link_libraries(example my_lib)
-target_link_libraries(example_generic_cart_move_ac generic_cartesian_planner cart_motion_commander cartesian_interpolator)
+target_link_libraries(example_generic_cartesian_move_ac generic_cartesian_planner cartesian_motion_commander cartesian_interpolator)
 cs_install()
 cs_export()
     

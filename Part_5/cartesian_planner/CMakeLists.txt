@@ -32,7 +32,7 @@ catkin_simple()
 cs_add_library(baxter_cartesian_planner src/baxter_cartesian_planner.cpp) 
 cs_add_library(arm7dof_cartesian_planner src/arm7dof_cartesian_planner.cpp) 
 cs_add_library(ur10_cartesian_planner src/ur10_cartesian_planner.cpp) 
-cs_add_library(irb120_cartesian_planner src/irb120_cartesian_planner.cpp) 
+#cs_add_library(irb120_cartesian_planner src/irb120_cartesian_planner.cpp) 
 
 #cs_add_library(baxter_arm_motion_commander src/baxter_arm_motion_commander.cpp) 
 #cs_add_library(ur10_arm_motion_commander src/ur10_arm_motion_commander.cpp) 
@@ -40,7 +40,7 @@ cs_add_library(irb120_cartesian_planner src/irb120_cartesian_planner.cpp)
 #examples using cartesian-planning libraries in main functions:
 cs_add_executable(example_baxter_cart_path_planner src/example_baxter_cart_path_planner_main.cpp)
 cs_add_executable(example_ur10_cart_path_planner src/example_ur10_cart_path_planner_main.cpp)
-cs_add_executable(example_irb120_cart_path_planner src/example_irb120_cart_path_planner_main.cpp)
+#cs_add_executable(example_irb120_cart_path_planner src/example_irb120_cart_path_planner_main.cpp)
 cs_add_executable(example_arm7dof_cart_path_planner_main src/example_arm7dof_cart_path_planner_main.cpp)
 cs_add_executable(example_arm7dof_cart_path_planner_main2 src/example_arm7dof_cart_path_planner_main2.cpp)
 cs_add_executable(example_arm7dof_cart_path_planner_main3 src/example_arm7dof_cart_path_planner_main3.cpp)
@@ -49,7 +49,7 @@ cs_add_executable(example_arm7dof_cart_path_planner_main3 src/example_arm7dof_ca
 #cartesian-move action service nodes specialized for target robots
 cs_add_executable(baxter_rt_arm_cart_move_as src/baxter_rt_arm_cart_move_as.cpp)
 cs_add_executable(ur10_cart_move_as src/ur10_cart_move_as.cpp)
-cs_add_executable(irb120_cart_move_as src/irb120_cart_move_as.cpp)
+#cs_add_executable(irb120_cart_move_as src/irb120_cart_move_as.cpp)
 #cs_add_executable(arm7dof_cart_move_as src/arm7dof_cart_move_as.cpp)
 #should add arm7dof as well
 
@@ -75,14 +75,14 @@ target_link_libraries(example_arm7dof_cart_path_planner_main2 arm7dof_cartesian_
 target_link_libraries(example_arm7dof_cart_path_planner_main3 arm7dof_cartesian_planner ${catkin_LIBRARIES})
 target_link_libraries(example_baxter_cart_path_planner baxter_cartesian_planner ${catkin_LIBRARIES})
 target_link_libraries(example_ur10_cart_path_planner ur10_cartesian_planner ${catkin_LIBRARIES})
-target_link_libraries(example_irb120_cart_path_planner irb120_cartesian_planner ${catkin_LIBRARIES})
+#target_link_libraries(example_irb120_cart_path_planner irb120_cartesian_planner ${catkin_LIBRARIES})
 
 #target_link_libraries(baxter_cart_move_as baxter_cartesian_planner ${catkin_LIBRARIES})
 
 #link action servers w/ respective planner libraries
 target_link_libraries(baxter_rt_arm_cart_move_as baxter_cartesian_planner ${catkin_LIBRARIES})
 target_link_libraries(ur10_cart_move_as ur10_cartesian_planner ${catkin_LIBRARIES})
-target_link_libraries(irb120_cart_move_as irb120_cartesian_planner ${catkin_LIBRARIES})
+#target_link_libraries(irb120_cart_move_as irb120_cartesian_planner ${catkin_LIBRARIES})
 #target_link_libraries(arm7dof_cart_move_as arm7dof_cartesian_planner ${catkin_LIBRARIES})
 
 #target_link_libraries(baxter_cart_move_action_client baxter_arm_motion_commander ${catkin_LIBRARIES})
