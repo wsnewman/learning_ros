@@ -81,6 +81,10 @@ const double DH_q_offsets[6] = {DH_q_offset1, DH_q_offset2, DH_q_offset3, DH_q_o
 const double q_lower_limits[6] = {DH_q_min1, DH_q_min2, DH_q_min3, DH_q_min4, DH_q_min5, DH_q_min6};
 const double q_upper_limits[6] = {DH_q_max1, DH_q_max2, DH_q_max3, DH_q_max4, DH_q_max5, DH_q_max6};
 const double g_qdot_max_vec[] = {4.3, 4.3, 4.3, 5.5, 5.5, 5.5}; //values per URDF 
+const double g_q_home_pose[6] = {0,0,0,0,0,0};
+
+const double jspace_planner_weights[] = {5,5,3,0.5,0.2,0,2}; //default weights for jspace planner (changeable in planner)
+
 
 class Irb120_fwd_solver {
 public:
@@ -125,5 +129,25 @@ private:
     //Eigen::MatrixXd Jacobian;
 };
 
+/*
+//redefine generic names for better compatibility with higher-level code:
+//the following merely renames the irb120 solvers to a generic name
+class FwdSolver {
+public:
+    FwdSolver(); //constructor
+    Eigen::Affine3d fwd_kin_solve(Eigen::VectorXd const& q_vec); // given vector of q angles, compute fwd kin
+    Eigen::MatrixXd jacobian(const Eigen::VectorXd& q_vec);
+    Irb120_fwd_solver irb120_fwd_solver;
+};
+
+class IKSolver {
+public:
+    IKSolver(); //constructor; 
+    Irb120_IK_solver irb120_IK_solver;
+    // return the number of valid solutions; 
+    // given desired pose, compute IK; return solns in vector of jspace poses
+    int ik_solve(Eigen::Affine3d const& desired_hand_pose,  std::vector<Eigen::VectorXd> &q_ik_solns);
+};
+*/
 #endif	/* IRB120_IK_H */
 

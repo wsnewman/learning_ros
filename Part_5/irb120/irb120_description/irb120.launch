@@ -28,6 +28,13 @@
   <!-- ros_control launch file -->
   <include file="$(find irb120_control)/launch/irb120_control.launch">
  </include>
+  <!-- static transforms -->
+  <include file="$(find irb120_planner)/launch/irb120_static_transforms.launch">
+ </include>  
+  <!-- run node to emulate ROS-I interface publish/subscribe -->
+  <!--rosrun irb120_ctl_interface irb120_ctl_interface -->
+  <node name = "irb120_ctl_interface" pkg = "irb120_ctl_interface" type = "irb120_ctl_interface" output= "screen"/>
+""
   <!--rosrun example_robot_interface example_robot_interface -->
   <!--node name="ros_i_interface" pkg="example_robot_interface" type="example_robot_interface" respawn="true" output="screen"/-->
 </launch>

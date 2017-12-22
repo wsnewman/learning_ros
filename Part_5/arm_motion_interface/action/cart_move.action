@@ -1,0 +1,75 @@
+#cartesian-move action interface
+#minimally, it may contain just a command code
+#more generally, it may contain desired tool-frame pose, as well
+# as gripper pose (gripper opening, or vacuum gripper on/off)
+# and an arrival time for the move
+# It is assumed that a move starts from the previous commanded pose, or from the current joint state
+
+#return codes provide status info, e.g. if a proposed move is reachable
+
+#define message constants:  
+uint8 ARM_TEST_MODE = 0
+
+#queries
+uint8 ARM_IS_SERVER_BUSY_QUERY = 1
+uint8 ARM_QUERY_IS_PATH_VALID = 2
+uint8 GET_TOOL_POSE = 5
+uint8 GET_Q_DATA = 7
+
+#requests for motion plans; 
+uint8 PLAN_PATH_CURRENT_TO_WAITING_POSE=20
+#uint8 PLAN_PATH_CURRENT_TO_PRE_POSE=20 #synonym
+uint8 PLAN_JSPACE_PATH_CURRENT_TO_CART_GRIPPER_POSE = 21 #plan a joint-space path from current arm pose to some IK soln of Cartesian goal
+
+uint8 PLAN_PATH_CURRENT_TO_GOAL_GRIPPER_POSE=22 #plan cartesian path from current arm pose to goal gripper pose
+uint8 PLAN_FINE_PATH_CURRENT_TO_GOAL_GRIPPER_POSE = 23 #plan path to specified gripper pose #as above, but hi-res
+uint8 PLAN_PATH_CURRENT_TO_GOAL_DP_XYZ = 24 #rectilinear translation w/ fixed orientation
+uint8 PLAN_JSPACE_PATH_CURRENT_TO_QGOAL = 25
+ 
+
+uint8 TIME_RESCALE_PLANNED_TRAJECTORY = 40 #can make arm go slower/faster with provided time-stretch factor
+uint8 REFINE_PLANNED_TRAJECTORY = 41 #if used approx IK soln, use this option to refine solns
+uint8 SET_ARRIVAL_TIME_PLANNED_TRAJECTORY = 42 #used to set desired arrival time; put arrival time value in goal time_scale_stretch_factor
+
+# request to preview plan:
+#uint8 DISPLAY_TRAJECTORY = 50
+
+#MOVE command!
+uint8 EXECUTE_PLANNED_PATH = 100
+
+#uint8 ARM_DESCEND_20CM=101
+#uint8 ARM_DEPART_20CM=102
+
+
+#goal:
+int32 command_code
+geometry_msgs/PoseStamped des_pose_gripper
+float64[] arm_dp #to command a 3-D vector displacement relative to current pose, fixed orientation
+float64[] q_goal
+float64 time_scale_stretch_factor
+---
+#result definition
+#  response codes...
+uint8 SUCCESS=0
+
+uint8 ARM_RECEIVED_AND_INITIATED_RQST=1
+uint8 ARM_REQUEST_REJECTED_ALREADY_BUSY=2
+uint8 ARM_SERVER_NOT_BUSY=3
+uint8 ARM_SERVER_IS_BUSY=4
+uint8 ARM_RECEIVED_AND_COMPLETED_RQST=5
+uint8 PATH_IS_VALID=6
+uint8 PATH_NOT_VALID=7
+
+uint8 COMMAND_CODE_NOT_RECOGNIZED=8
+uint8 ARM_STATUS_UNDEFINED=9
+uint8 NOT_FINISHED_BEFORE_TIMEOUT=10
+int32 return_code
+int32 err_code
+string err_msg
+float64 computed_arrival_time
+float64[] q_arm
+geometry_msgs/PoseStamped current_pose_gripper
+#geometry_msgs/PoseStamped current_pose_flange
+---
+#feedback: optional; 
+int32 fdbk

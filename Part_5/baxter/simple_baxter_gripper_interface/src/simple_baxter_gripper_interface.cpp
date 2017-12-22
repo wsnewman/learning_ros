@@ -6,12 +6,20 @@
 
 
 BaxterGripper::BaxterGripper(ros::NodeHandle* nodehandle): nh_(*nodehandle) {
+    gripper_cmd_open.id = 65538;
     gripper_cmd_open.command ="go";
-    gripper_cmd_open.args = "{'position': 100.0}'";
+    //gripper_cmd_open.args = "{'position': 100.0}'"; //oops
+    gripper_cmd_open.args = "{\"position\": 100.0}";
     gripper_cmd_open.sender = "gripper_publisher";
+    gripper_cmd_open.sequence = 2;
+    
+    gripper_cmd_close.id = 65538;
     gripper_cmd_close.command ="go";
-    gripper_cmd_close.args = "{'position': 0.0}'";
+    //gripper_cmd_close.args = "{'position': 0.0}'"; //oops
+    gripper_cmd_close.args = "{\"position\": 0.0}";
     gripper_cmd_close.sender = "gripper_publisher"; 
+    gripper_cmd_close.sequence = 3;
+    
     gripper_pos_filter_val_ = 0.2;
     right_gripper_pos_ = -0.2;
     left_gripper_pos_ = -10.2;

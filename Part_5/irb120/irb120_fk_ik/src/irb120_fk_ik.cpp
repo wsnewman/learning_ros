@@ -2,6 +2,7 @@
 
 #include <irb120_fk_ik/irb120_kinematics.h>
 
+
 // function for use w/ both fwd and inv kin
 // NOTE: q must be q in DH coords!!  use q_vec(i) + DH_q_offsets(i)
 
@@ -74,6 +75,13 @@ Eigen::Matrix4d compute_A_of_DH(int i, double q_abb) {
 Irb120_fwd_solver::Irb120_fwd_solver() { 
 
     ROS_INFO("fwd_solver constructor");
+}
+
+Eigen::MatrixXd Irb120_fwd_solver::jacobian(const Eigen::VectorXd& q_vec) {
+  Eigen::MatrixXd jacobian;
+// ... do some work here FINISH ME!
+  //jacobian = irb120_fwd_solver.jacobian(q_vec);
+  return jacobian;
 }
 
 /*  IN CASE WANT JACOBIAN LATER...
@@ -478,4 +486,31 @@ bool Irb120_IK_solver::solve_spherical_wrist(Vectorq6x1 q_in,Eigen::Matrix3d R_d
     q_solns.push_back(q_soln);        
     return is_singular;
 }
+
+/*
+Eigen::Affine3d FwdSolver::fwd_kin_solve(Eigen::VectorXd const& q_vec) { // given vector of q angles, compute fwd kin
+ Eigen::Affine3d fwd_soln;
+
+ fwd_soln = irb120_fwd_solver.fwd_kin_solve(q_vec);
+ return fwd_soln;
+}
+
+Eigen::MatrixXd FwdSolver::jacobian(const Eigen::VectorXd& q_vec) {
+  Eigen::MatrixXd jacobian;
+// ... do some work here FINISH ME!
+  //jacobian = irb120_fwd_solver.jacobian(q_vec);
+  return jacobian;
+}
+
+IKSolver::IKSolver() {
+
+}
+
+int IKSolver::ik_solve(Eigen::Affine3d const& desired_hand_pose,  std::vector<Eigen::VectorXd> &q_ik_solns) {
+       // int ik_solve(Eigen::Affine3d const& desired_hand_pose,vector<Eigen::VectorXd> &q_ik_solns);
+  int nsolns = irb120_IK_solver.ik_solve(desired_hand_pose,  q_ik_solns);
+  return nsolns;
+}
+ * */
+
 
