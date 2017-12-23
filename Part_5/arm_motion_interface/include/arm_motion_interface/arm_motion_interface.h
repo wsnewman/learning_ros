@@ -52,6 +52,12 @@ private:
     arm_motion_interface::cart_moveResult cart_result_;
     
     vector<string> jnt_names_;
+    
+    string    urdf_base_frame_name_; 
+    string urdf_flange_frame_name_; 
+    string joint_states_topic_name_;
+    string traj_pub_topic_name_; 
+    
 
     //callback fnc for joint-space action server to return result to this node:
     //void js_doneCb_(const actionlib::SimpleClientGoalState& state,
@@ -120,7 +126,7 @@ private:
     void stuff_trajectory(std::vector<Eigen::VectorXd> qvecs, trajectory_msgs::JointTrajectory &new_trajectory);
     double min_transition_time(Eigen::VectorXd dqvec);
     bool plan_jspace_path_qstart_to_qend(Eigen::VectorXd q_start, Eigen::VectorXd q_goal);
-
+    void compute_tool_stamped_pose(void);
 
 
     Eigen::Affine3d a_tool_start_, a_tool_end_;

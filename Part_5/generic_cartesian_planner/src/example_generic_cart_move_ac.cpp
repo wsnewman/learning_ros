@@ -1,5 +1,5 @@
 // example_generic_cart_move_ac: 
-// wsn, Nov, 2016
+// wsn, Nov, 2016; updated 12/17
 // illustrates use of a generic action client that communicates with
 // an action server called "cartMoveActionServer"
 // the actual action server can be customized for a specific robot, whereas
@@ -56,6 +56,7 @@ int main(int argc, char** argv) {
 
     //send command to execute planned motion
     rtn_val=cart_motion_commander.execute_planned_path();   
+    ros::Duration(2.0).sleep();
     
     //let's see where we ended up...should match goal request
     rtn_val=cart_motion_commander.request_q_data();
