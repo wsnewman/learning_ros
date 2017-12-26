@@ -256,6 +256,13 @@ int CartMotionCommander::plan_jspace_traj_current_to_tool_pose(int nsteps, doubl
 
 }
 
+int CartMotionCommander::plan_cartesian_traj_current_to_des_tool_pose(int nsteps, double arrival_time, geometry_msgs::PoseStamped des_pose) {
+    cart_goal_.command_code = arm_motion_action::arm_interfaceGoal::PLAN_CARTESIAN_TRAJ_CURRENT_TO_DES_TOOL_POSE;
+    cart_goal_.nsteps = nsteps; //send 10 sub-commands
+    cart_goal_.arrival_time = arrival_time; //move over 2 sec
+    cart_goal_.des_pose_gripper = des_pose; 
+}
+
 int CartMotionCommander::plan_cartesian_traj_qstart_to_des_tool_pose(int nsteps, double arrival_time,
         Eigen::VectorXd q_start, geometry_msgs::PoseStamped des_pose) {
 
@@ -263,6 +270,11 @@ int CartMotionCommander::plan_cartesian_traj_qstart_to_des_tool_pose(int nsteps,
     cart_goal_.nsteps = nsteps; //send 10 sub-commands
     cart_goal_.arrival_time = arrival_time; //move over 2 sec
     cart_goal_.des_pose_gripper = des_pose;
+    //float64[] q_start
+    cart_goal_.q_start.resize(NJNTS_);
+    for (int i=0;i<NJNTS_;i++) {
+        cart_goal_.q_start[i] = q_start[i];
+    }
     cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&CartMotionCommander::doneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired
     //finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(2.0));
     ROS_INFO("return code: %d", cart_result_.return_code);

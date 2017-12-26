@@ -165,6 +165,8 @@ public:
     bool plan_jspace_traj_current_to_qgoal(); //traj current to a specified jspace pose
     bool plan_jspace_traj_qstart_to_qend();   //jspace traj from specified q_start to q_end
     bool plan_jspace_traj_current_to_tool_pose();   //computes a jspace traj from start pose to some IK soln of desired tool pose
+
+    bool plan_cartesian_traj_current_to_des_tool_pose();    
     bool plan_cartesian_traj_qstart_to_des_tool_pose();
     
 

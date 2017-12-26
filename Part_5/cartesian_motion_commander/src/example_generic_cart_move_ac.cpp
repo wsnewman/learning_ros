@@ -51,8 +51,11 @@ int main(int argc, char** argv) {
     
     //send command to execute planned motion
     ROS_INFO("sending execute_planned_path");
-    rtn_val=cart_motion_commander.execute_planned_traj();
-    ros::Duration(2.0).sleep(); //wait for robot to settle
+    if (rtn_val == arm_motion_action::arm_interfaceResult::SUCCESS)  { 
+            //send command to execute planned motion
+           rtn_val=cart_motion_commander.execute_planned_traj();
+           ros::Duration(arrival_time).sleep();
+    }
     
     //inquire re/ joint angles:
     ROS_INFO("requesting joint angles");
@@ -74,8 +77,11 @@ int main(int argc, char** argv) {
     rtn_val=cart_motion_commander.plan_jspace_traj_current_to_qgoal(nsteps, arrival_time, joint_angles);
 
     //send command to execute planned motion
-    rtn_val=cart_motion_commander.execute_planned_traj();   
-    ros::Duration(2.0).sleep();
+    if (rtn_val == arm_motion_action::arm_interfaceResult::SUCCESS)  { 
+            //send command to execute planned motion
+           rtn_val=cart_motion_commander.execute_planned_traj();
+           ros::Duration(arrival_time).sleep();
+    }
     
     //let's see where we ended up...should match goal request
     joint_angles = cart_motion_commander.get_joint_angles();
@@ -95,30 +101,40 @@ int main(int argc, char** argv) {
     ros::Duration(2.0).sleep();    
     
     //now, go back again, using former tool pose as destination and use Cartesian path
-    rtn_val = cart_motion_commander.plan_jspace_traj_current_to_tool_pose(nsteps, arrival_time,tool_pose);   
-    //send command to execute planned motion; SHOULD check validity of plan
-    rtn_val=cart_motion_commander.execute_planned_traj();    
-    ros::Duration(2.0).sleep();   
+    //int plan_cartesian_traj_qstart_to_des_tool_pose(int nsteps, double arrival_time, Eigen::VectorXd q_start, geometry_msgs::PoseStamped des_pose);
+    rtn_val = cart_motion_commander.plan_cartesian_traj_current_to_des_tool_pose(nsteps, arrival_time,tool_pose);   
+    if (rtn_val == arm_motion_action::arm_interfaceResult::SUCCESS)  { 
+            //send command to execute planned motion
+           rtn_val=cart_motion_commander.execute_planned_traj();
+           ros::Duration(arrival_time).sleep();
+    }
+   
     
     //get resuling tool pose
     //rtn_val = cart_motion_commander.request_tool_pose();
     tool_pose = cart_motion_commander.get_tool_pose_stamped();
     ROS_INFO("tool pose is: ");
     xformUtils.printPose(tool_pose);
-    /*
+
     //alter the tool pose:
 //    std::cout<<"enter 1: ";
 //    int ans;
 //    std::cin>>ans; 
-    //tool_pose.pose.position.z -= 0.2; // descend 20cm, along z in torso frame
+    tool_pose.pose.position.z -= 0.2; // descend 20cm, along z in torso frame
     ROS_INFO("planning Cartesian move to goal pose w/ dpx = 0.2"); //, dpy = -0.2");
     //tool_pose.pose.position.y -= 0.2; // move 20cm, along y in torso frame
     tool_pose.pose.position.x += 0.2; // move 20cm, along x in torso frame
     // send move plan request:
-    rtn_val=cart_motion_commander.plan_path_current_to_goal_gripper_pose(tool_pose);
+    rtn_val=cart_motion_commander.plan_cartesian_traj_current_to_des_tool_pose(nsteps, arrival_time,tool_pose);
     //send command to execute planned motion
-    rtn_val=cart_motion_commander.execute_planned_traj();
-    
+    if (rtn_val == arm_motion_action::arm_interfaceResult::SUCCESS)  { 
+            //send command to execute planned motion
+           rtn_val=cart_motion_commander.execute_planned_traj();
+    }
+    else {
+        ROS_WARN("unsuccessful plan; rtn_code = %d",rtn_val);
+    }
+/*
     //try vector cartesian displacement at fixed orientation:
     ROS_INFO("will plan vertical motion");
     std::cout<<"enter desired delta-z: ";

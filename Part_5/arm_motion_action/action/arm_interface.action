@@ -21,11 +21,12 @@ uint8 PLAN_JSPACE_TRAJ_CURRENT_TO_WAITING_POSE=20
 uint8 PLAN_JSPACE_TRAJ_CURRENT_TO_QGOAL = 21
 uint8 PLAN_JSPACE_TRAJ_CURRENT_TO_CART_TOOL_POSE = 22 #plan a joint-space path from current arm pose to some IK soln of Cartesian goal
 
-uint8 PLAN_CARTESIAN_TRAJ_QSTART_TO_DES_TOOL_POSE = 23
+uint8 PLAN_CARTESIAN_TRAJ_CURRENT_TO_DES_TOOL_POSE = 23
+uint8 PLAN_CARTESIAN_TRAJ_QSTART_TO_DES_TOOL_POSE = 24
 
 #uint8 PLAN_PATH_CURRENT_TO_GOAL_GRIPPER_POSE=22 #plan cartesian path from current arm pose to goal gripper pose
 #uint8 PLAN_FINE_PATH_CURRENT_TO_GOAL_GRIPPER_POSE = 23 #plan path to specified gripper pose #as above, but hi-res
-uint8 PLAN_TRAJ_CURRENT_TO_GOAL_DP_XYZ = 24 #rectilinear translation w/ fixed orientation
+#uint8 PLAN_TRAJ_CURRENT_TO_GOAL_DP_XYZ = 24 #rectilinear translation w/ fixed orientation
 
 #uint8 PLAN_JSPACE_PATH_CURRENT_TO_QGOAL = 25
 #uint8 PLAN_JSPACE_TRAJ_QSTART_TO_CART_GRIPPER_POSE = 26

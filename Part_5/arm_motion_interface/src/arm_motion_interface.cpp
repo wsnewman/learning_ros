@@ -525,13 +525,39 @@ bool ArmMotionInterface::plan_jspace_traj_current_to_tool_pose() {
     return traj_is_valid_;      
 }
 
+bool ArmMotionInterface::plan_cartesian_traj_current_to_des_tool_pose() {
+     goal_gripper_pose_ = cart_goal_.des_pose_gripper;
+    xformUtils.printStampedPose(goal_gripper_pose_);
+    goal_flange_affine_ = xform_gripper_pose_to_affine_flange_wrt_base(goal_gripper_pose_);  
+    arrival_time_ = cart_goal_.arrival_time;
+    nsteps_ = cart_goal_.nsteps;    
+    traj_is_valid_ = pCartTrajPlanner_->plan_cartesian_traj_qstart_to_des_flange_affine(q_vec_arm_Xd_, goal_flange_affine_, nsteps_, arrival_time_,des_trajectory_);
+    if (traj_is_valid_) {
+        computed_arrival_time_ = des_trajectory_.points.back().time_from_start.toSec();
+        cart_result_.return_code = arm_motion_action::arm_interfaceResult::SUCCESS;
+        cart_result_.computed_arrival_time = computed_arrival_time_;
+        cart_move_as_.setSucceeded(cart_result_);
+    } else {
+        cart_result_.return_code = arm_motion_action::arm_interfaceResult::PATH_NOT_VALID;
+        cart_result_.computed_arrival_time = -1.0; //impossible arrival time        
+        cart_move_as_.setSucceeded(cart_result_); //the communication was a success, but not the computation 
+    }
+    return traj_is_valid_;    
+    
+}   
+
+
 bool ArmMotionInterface::plan_cartesian_traj_qstart_to_des_tool_pose() {
    goal_gripper_pose_ = cart_goal_.des_pose_gripper;
     xformUtils.printStampedPose(goal_gripper_pose_);
     goal_flange_affine_ = xform_gripper_pose_to_affine_flange_wrt_base(goal_gripper_pose_);  
     arrival_time_ = cart_goal_.arrival_time;
     nsteps_ = cart_goal_.nsteps;    
-    traj_is_valid_ = pCartTrajPlanner_->plan_cartesian_traj_qstart_to_des_flange_affine(q_vec_arm_Xd_, goal_flange_affine_, nsteps_, arrival_time_,des_trajectory_);
+    q_vec_start_rqst_.resize(NJNTS_);
+    for (int i=0;i<NJNTS_;i++) {
+        q_vec_start_rqst_[i]= cart_goal_.q_start[i];
+    }
+    traj_is_valid_ = pCartTrajPlanner_->plan_cartesian_traj_qstart_to_des_flange_affine(q_vec_start_rqst_, goal_flange_affine_, nsteps_, arrival_time_,des_trajectory_);
     if (traj_is_valid_) {
         computed_arrival_time_ = des_trajectory_.points.back().time_from_start.toSec();
         cart_result_.return_code = arm_motion_action::arm_interfaceResult::SUCCESS;
