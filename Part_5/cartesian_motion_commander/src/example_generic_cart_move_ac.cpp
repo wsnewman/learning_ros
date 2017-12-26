@@ -28,6 +28,8 @@ int main(int argc, char** argv) {
     int nsteps;
     double arrival_time;
     geometry_msgs::PoseStamped tool_pose, tool_pose_home;
+    bool traj_is_valid = false;
+    int rtn_code;
     
     nsteps = 10;
     arrival_time = 2.0;
@@ -78,16 +80,25 @@ int main(int argc, char** argv) {
     //let's see where we ended up...should match goal request
     joint_angles = cart_motion_commander.get_joint_angles();
     
+    tool_pose = cart_motion_commander.get_tool_pose_stamped(); //find tool pose for this jspace pose    
     //return to pre-defined pose by planning path to cartesian pose:
     // send move plan request:
 
 
    // bool CartMotionCommander::plan_jspace_traj_qstart_to_des_tool_pose(Eigen::VectorXd  q_start,  int nsteps, double arrival_time, geometry_msgs::PoseStamped des_pose){
+    //plan_jspace_traj_current_to_tool_pose
+    //    bool plan_jspace_traj_current_to_tool_pose(int nsteps, double arrival_time,geometry_msgs::PoseStamped des_pose);   //computes a jspace traj from start pose to some IK soln of desired tool pose
 
     rtn_val=cart_motion_commander.plan_jspace_traj_current_to_tool_pose(nsteps,arrival_time,tool_pose_home);
     //send command to execute planned motion
     rtn_val=cart_motion_commander.execute_planned_traj();    
     ros::Duration(2.0).sleep();    
+    
+    //now, go back again, using former tool pose as destination and use Cartesian path
+    rtn_val = cart_motion_commander.plan_jspace_traj_current_to_tool_pose(nsteps, arrival_time,tool_pose);   
+    //send command to execute planned motion; SHOULD check validity of plan
+    rtn_val=cart_motion_commander.execute_planned_traj();    
+    ros::Duration(2.0).sleep();   
     
     //get resuling tool pose
     //rtn_val = cart_motion_commander.request_tool_pose();

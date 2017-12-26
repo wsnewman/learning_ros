@@ -21,6 +21,8 @@ uint8 PLAN_JSPACE_TRAJ_CURRENT_TO_WAITING_POSE=20
 uint8 PLAN_JSPACE_TRAJ_CURRENT_TO_QGOAL = 21
 uint8 PLAN_JSPACE_TRAJ_CURRENT_TO_CART_TOOL_POSE = 22 #plan a joint-space path from current arm pose to some IK soln of Cartesian goal
 
+uint8 PLAN_CARTESIAN_TRAJ_QSTART_TO_DES_TOOL_POSE = 23
+
 #uint8 PLAN_PATH_CURRENT_TO_GOAL_GRIPPER_POSE=22 #plan cartesian path from current arm pose to goal gripper pose
 #uint8 PLAN_FINE_PATH_CURRENT_TO_GOAL_GRIPPER_POSE = 23 #plan path to specified gripper pose #as above, but hi-res
 uint8 PLAN_TRAJ_CURRENT_TO_GOAL_DP_XYZ = 24 #rectilinear translation w/ fixed orientation
@@ -30,7 +32,7 @@ uint8 PLAN_TRAJ_CURRENT_TO_GOAL_DP_XYZ = 24 #rectilinear translation w/ fixed or
 #uint8 PLAN_JSPACE_TRAJ_QSTART_TO_QEND = 28
 
 
-uint8 TIME_RESCALE_PLANNED_TRAJECTORY = 40 #can make arm go slower/faster with provided time-stretch factor
+#uint8 TIME_RESCALE_PLANNED_TRAJECTORY = 40 #can make arm go slower/faster with provided time-stretch factor
 uint8 REFINE_PLANNED_TRAJECTORY = 41 #if used approx IK soln, use this option to refine solns
 #uint8 SET_ARRIVAL_TIME_PLANNED_TRAJECTORY = 42 #used to set desired arrival time; put arrival time value in goal time_scale_stretch_factor
 

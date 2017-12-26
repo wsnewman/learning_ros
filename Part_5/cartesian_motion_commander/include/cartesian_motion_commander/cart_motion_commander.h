@@ -53,12 +53,12 @@ public:
     geometry_msgs::PoseStamped get_tool_pose_stamped(void); // { return tool_pose_stamped_;};    
     int execute_planned_traj(void);  
     
-    bool plan_jspace_traj_current_to_waiting_pose(int nsteps, double arrival_time); //traj current pose to a jspace home pose
-    bool plan_jspace_traj_current_to_qgoal(int nsteps, double arrival_time,Eigen::VectorXd q_goal); //traj current to a specified jspace pose
-    bool plan_jspace_traj_qstart_to_qend(int nsteps, double arrival_time,Eigen::VectorXd q_start,Eigen::VectorXd q_goal);   //jspace traj from specified q_start to q_end
-    bool plan_jspace_traj_current_to_tool_pose(int nsteps, double arrival_time,geometry_msgs::PoseStamped des_pose);   //computes a jspace traj from start pose to some IK soln of desired tool pose
-
-
+    int plan_jspace_traj_current_to_waiting_pose(int nsteps, double arrival_time); //traj current pose to a jspace home pose
+    int plan_jspace_traj_current_to_qgoal(int nsteps, double arrival_time,Eigen::VectorXd q_goal); //traj current to a specified jspace pose
+    //int plan_jspace_traj_qstart_to_qend(int nsteps, double arrival_time,Eigen::VectorXd q_start,Eigen::VectorXd q_goal);   //jspace traj from specified q_start to q_end
+    int plan_jspace_traj_current_to_tool_pose(int nsteps, double arrival_time,geometry_msgs::PoseStamped des_pose);   //computes a jspace traj from start pose to some IK soln of desired tool pose
+    
+    int plan_cartesian_traj_qstart_to_des_tool_pose(int nsteps, double arrival_time, Eigen::VectorXd q_start, geometry_msgs::PoseStamped des_pose);
 
     
     //bool plan_jspace_traj_qstart_to_des_tool_pose(Eigen::VectorXd  q_start,int nsteps,double arrival_time,geometry_msgs::PoseStamped des_pose);

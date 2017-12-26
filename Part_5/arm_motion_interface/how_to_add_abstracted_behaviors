@@ -79,4 +79,12 @@ armMotionInterface policy:
   call corresponding generic-planner fnc w/ all args;
   pack result
   return bool
-
+  
+  =-----------
+  want to add:
+  
+  cartesian_traj_planner_w_rot_interp(Eigen::VectorXd q_start,Eigen::Affine3d a_flange_goal, 
+        int nsteps,  double arrival_time, trajectory_msgs::JointTrajectory &new_trajectory) 
+        
+  cartesian_multipt_traj_planner_w_rot_interp(Eigen::VectorXd q_start, vector<Eigen::Affine3d> a_flange_goals, 
+        vector<int> nsteps_vec,  vector<double> arrival_times, trajectory_msgs::JointTrajectory &new_trajectory) 

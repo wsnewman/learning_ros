@@ -140,7 +140,7 @@ void CartTrajPlanner::path_to_traj(std::vector<Eigen::VectorXd> qvecs, double ar
     }*/
 }
 
-
+//this version starts from affine and goes to affine, i.e. start pose is not specified
 bool CartTrajPlanner::cartesian_path_planner_w_rot_interp(Eigen::Affine3d a_flange_start,Eigen::Affine3d a_flange_end, 
         int nsteps,  std::vector<Eigen::VectorXd> &optimal_path) {
     
@@ -254,7 +254,6 @@ bool CartTrajPlanner::plan_jspace_traj_qstart_to_affine_goal(Eigen::VectorXd  q_
   path_ok= plan_jspace_path_qstart_to_des_flange_affine(q_start, nsteps, a_flange_end, path);
   if (!path_ok) return false;
   path_to_traj(path, arrival_time, new_trajectory);
-    
     return true;
 }
 
@@ -337,10 +336,21 @@ bool CartTrajPlanner::plan_jspace_path_qstart_to_des_flange_affine(Eigen::Vector
     //return false; // not debugged, so don't trust!
 }
 
+//Cartesian trajectory planner:
+bool CartTrajPlanner::plan_cartesian_traj_qstart_to_des_flange_affine(Eigen::VectorXd q_start,Eigen::Affine3d a_flange_goal,
+        int nsteps,  double arrival_time, trajectory_msgs::JointTrajectory &new_trajectory) {
+     std::vector<Eigen::VectorXd> path;
+     bool valid_path = plan_cartesian_path_w_rot_interp(q_start,a_flange_goal, nsteps,path);
+     if (!valid_path) return false;
+
+     path_to_traj(path, arrival_time, new_trajectory); 
+     return true;
+        
+  }
 //Cartesian planner that interpolates both translation and rotation--using angle/axis interpolation--
 // starting from a specified joint-space pose and ending with a specified Cartesian-space pose
 // specify goal pose w/rt toolflange
-bool CartTrajPlanner::cartesian_path_planner_w_rot_interp(Eigen::VectorXd q_start,Eigen::Affine3d a_flange_end, 
+bool CartTrajPlanner::plan_cartesian_path_w_rot_interp(Eigen::VectorXd q_start,Eigen::Affine3d a_flange_end, 
         int nsteps,  std::vector<Eigen::VectorXd> &optimal_path) {
 
     std::vector<std::vector<Eigen::VectorXd> > path_options;

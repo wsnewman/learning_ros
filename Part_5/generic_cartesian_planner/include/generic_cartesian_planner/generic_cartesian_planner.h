@@ -75,11 +75,10 @@ public:
     bool plan_jspace_path_qstart_to_des_flange_affine(Eigen::VectorXd  q_start, int nsteps, Eigen::Affine3d goal_flange_affine,std::vector<Eigen::VectorXd> &optimal_path);
     bool plan_jspace_traj_qstart_to_affine_goal(Eigen::VectorXd  q_start, Eigen::Affine3d a_flange_end, int nsteps, double arrival_time, trajectory_msgs::JointTrajectory &new_trajectory);
 
-    //    path_is_valid_ = pCartTrajPlanner_->plan_jspace_traj_qstart_to_affine_goal(q_start, goal_flange_affine_, nsteps_, arrival_time_,optimal_path_);
+    bool plan_cartesian_traj_qstart_to_des_flange_affine(Eigen::VectorXd q_start,Eigen::Affine3d a_flange_goal,
+        int nsteps,  double arrival_time, trajectory_msgs::JointTrajectory &new_trajectory);
 
-    //    path_is_valid_ = pCartTrajPlanner_->plan_jspace_traj_qstart_to_affine_goal(q_start, goal_flange_affine_, nsteps_, arrival_time_,optimal_path_);
-
-    bool cartesian_path_planner_w_rot_interp(Eigen::VectorXd q_start,Eigen::Affine3d a_flange_end, 
+    bool plan_cartesian_path_w_rot_interp(Eigen::VectorXd q_start,Eigen::Affine3d a_flange_end, 
         int nsteps,  std::vector<Eigen::VectorXd> &optimal_path);
     void path_to_traj(std::vector<Eigen::VectorXd> qvecs, double arrival_time, trajectory_msgs::JointTrajectory &new_trajectory); 
     //cartTrajPlanner_.jspace_trivial_path_planner(q_start, q_goal, optimal_path_);

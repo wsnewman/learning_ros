@@ -30,7 +30,7 @@ Additional robots can be abstracted using this as an example.
 
 The intent of presenting an abstracted Cartesian action-server interface is for clients to be task oriented but robot
 agnostic.  An example test client is:
-rosrun generic_cartesian_planner example_generic_cartesian_move_ac
+rosrun cartesian_motion_commander example_generic_cartesian_move_ac
 
 This client node exercises various function options of the abstracted interface.
 It packs each goal messages with a function code (as defined in arm_motion_interface), along with whatever
