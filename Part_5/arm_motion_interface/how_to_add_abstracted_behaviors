@@ -1,0 +1,82 @@
+how to add a new robot-move capability: 
+  may need to edit:
+    arm_motion_action/arm_interface.action to add new function codes, new function args and new return codes/values
+
+  on the client side, use these:
+    generic_cartesian_planner/cart_motion_commander.h (how to talk to action server)
+    generic_cartesian_planner/cart_motion_commander.cpp (creates functions that communicate with action server)
+    
+  on the server side, use these to map function codes to behaviors and unpack args:
+    arm_motion_interface/arm_motion_interface.h (how to interpret goals in terms of func codes)
+    arm_motion_interface/arm_motion_interface.cpp
+    
+    this might involve help from library generic_cartesian_planner 
+    
+
+action_client:
+creates a CartMotionCommander cart_motion_commander;
+executes member fncs, such as:
+  int plan_jspace_path_current_to_cart_gripper_pose(geometry_msgs::PoseStamped des_pose);
+add this fnc to cart_motion_commander.h
+add implementation to cart_motion_commander.cpp, which loads goal message with:
+  cart_goal_.command_code = arm_motion_action::arm_interfaceGoal::PLAN_JSPACE_PATH_CURRENT_TO_CART_GRIPPER_POSE; 
+  (and any other necessary params to get passed to action server)
+  pass back rtn arg: return (int) cart_result_.return_code;   
+  
+Edit arm_motion_interface/cart_move.action to add new action code, e.g.
+uint8 PLAN_JSPACE_PATH_CURRENT_TO_CART_GRIPPER_POSE = 21 #plan a joint-space path from current arm pose to some IK soln of Cartesian goal
+add any addl goal input params and result return params, as necessary
+
+Edit arm_motion_interface.h, e.g. to add:
+    bool plan_jspace_path_current_to_cart_gripper_pose(); 
+    (args will be in goal message)
+
+Add fnc selection in switch/case of arm_motion_interface.cpp, e.g.:
+        case arm_motion_action::arm_interfaceGoal::PLAN_JSPACE_PATH_CURRENT_TO_CART_GRIPPER_POSE:  
+            ROS_WARN("responding to request PLAN_JSPACE_PATH_CURRENT_TO_CART_GRIPPER_POSE");
+            plan_jspace_path_current_to_cart_gripper_pose();   
+            break;   
+
+Add body of fnc to arm_motion_interface.cpp, e.g.:
+ bool ArmMotionInterface::plan_jspace_path_current_to_cart_gripper_pose() 
+ 
+ 
+ this might use existing or new member fnc of generic_cartesian_planner, e.g.:
+ 
+     path_is_valid_ = pCartTrajPlanner_->jspace_path_planner_to_affine_goal(q_start, goal_flange_affine_, optimal_path_);
+     
+     if so, add new fnc to generic_cartesian_planner.h and implementation to generic_cartesian_planner.cpp
+     
+--------add: 
+bool CartTrajPlanner::cartesian_path_planner_w_rot_interp(Eigen::Affine3d a_flange_start,Eigen::Affine3d a_flange_end, 
+        int nsteps,  double arrival_time, std::vector<Eigen::VectorXd> &optimal_path)
+
+ plan_jspace_traj_current_to_cart_gripper_pose()
+ 
+---new....test these!
+void CartTrajPlanner::path_to_traj(std::vector<Eigen::VectorXd> qvecs, double arrival_time, trajectory_msgs::JointTrajectory &new_trajectory) {
+bool jspace_traj_planner_to_affine_goal(Eigen::VectorXd  q_start, Eigen::Affine3d a_flange_end, double arrival_time, trajectory_msgs::JointTrajectory &new_trajectory);
+------------
+added: 
+bool ArmMotionInterface::plan_jspace_traj_current_to_cart_gripper_pose() {
+
+bool CartTrajPlanner::plan_jspace_traj_qstart_to_affine_goal(Eigen::VectorXd  q_start, Eigen::Affine3d a_flange_end, int nsteps, double arrival_time, trajectory_msgs::JointTrajectory &new_trajectory) {
+
+bool CartTrajPlanner::plan_jspace_path_qstart_to_des_flange_affine(Eigen::VectorXd  q_start, int nsteps, Eigen::Affine3d goal_flange_affine,std::vector<Eigen::VectorXd> &optimal_path){
+
+action codes:
+uint8 PLAN_JSPACE_TRAJ_QSTART_TO_CART_GRIPPER_POSE = 26
+uint8 PLAN_JSPACE_PATH_QSTART_TO_CART_GRIPPER_POSE = 27
+
+bool CartMotionCommander::plan_jspace_traj_qstart_to_des_tool_pose(Eigen::VectorXd  q_start,  int nsteps, double arrival_time, geometry_msgs::PoseStamped des_pose){
+
+bool ArmMotionInterface::plan_jspace_traj_qstart_to_qend(Eigen::VectorXd q_start, Eigen::VectorXd q_goal, int nsteps, double arrival_time) {
+
+------------------test plan_jspace_traj
+armMotionInterface policy:
+  make all switch/case calls minimal (no args to fncs)
+  withing respective armMotionInterface fnc defs, unpack needed goal elements
+  call corresponding generic-planner fnc w/ all args;
+  pack result
+  return bool
+

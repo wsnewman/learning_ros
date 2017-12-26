@@ -19,6 +19,8 @@
 //helper class for Cartesian interpolation:
 #include <cartesian_interpolator/cartesian_interpolator.h>
 #include <fk_ik_virtual/fk_ik_virtual.h> //defines the base class with virtual fncs
+#include <trajectory_msgs/JointTrajectory.h>
+
 using namespace std;
 //#define VECTOR_DIM 6 // e.g., a 6-dof vector
 //const int NJNTS = 6;
@@ -37,7 +39,6 @@ private:
     std::vector<Eigen::VectorXd> optimal_path_;
     std::vector<Eigen::Affine3d> cartesian_affine_samples;
 
-    //FwdSolver * pFwdSolver
     IKSolver * pIKSolver_; // instantiate an IK solver
     FwdSolver * pFwdSolver_; //instantiate a forward-kinematics solver   
     std::vector<Eigen::Affine3d> cartesian_affine_samples_;
@@ -47,23 +48,40 @@ private:
     double cartesian_path_sample_spacing_;
     double cartesian_path_fine_sample_spacing_;
     CartesianInterpolator cartesianInterpolator_; //cartesianInterpolator_
-    int NJNTS;
-    
+    int NJNTS_;
+    vector<string> jnt_names_;
    
 public:
-    CartTrajPlanner(IKSolver * pIKSolver, FwdSolver * pFwdSolver); //define the body of the constructor outside of class definition
+    CartTrajPlanner(IKSolver * pIKSolver, FwdSolver * pFwdSolver, int njnts); //define the body of the constructor outside of class definition
 
     ~CartTrajPlanner(void) {
     }
-    void set_njnts(int njnts) {NJNTS = njnts;};
-    void set_jspace_planner_weights(Eigen::VectorXd jspace_planner_weights);
+    void set_njnts(int njnts) {NJNTS_ = njnts;};
+    void set_jspace_planner_weights(vector<double> planner_joint_weights); //Eigen::VectorXd jspace_planner_weights);
        //{jspace_planner_weights_ = jspace_planner_weights; };
+    void set_joint_names(vector<string> jnt_names);
     bool cartesian_path_planner_w_rot_interp(Eigen::Affine3d a_flange_start,Eigen::Affine3d a_flange_end, 
         int nsteps,  std::vector<Eigen::VectorXd> &optimal_path);
     Eigen::Matrix3d get_R_gripper_down(void) {
         return R_gripper_down_;
     }
     bool jspace_trivial_path_planner(Eigen::VectorXd q_start, Eigen::VectorXd q_end, std::vector<Eigen::VectorXd> &optimal_path);
+    bool plan_jspace_traj_qstart_to_qend(Eigen::VectorXd q_start, Eigen::VectorXd q_goal, int nsteps, double arrival_time, trajectory_msgs::JointTrajectory &trajectory);
+
+    //bool jspace_path_planner_to_affine_goal(Eigen::VectorXd q_start, Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path);
+    bool plan_jspace_path_qstart_to_affine_goal(Eigen::VectorXd  q_start, Eigen::Affine3d a_flange_end, int nsteps, std::vector<Eigen::VectorXd> &optimal_path);
+
+    //bool plan_jspace_traj_qstart_to_affine_goal(Eigen::VectorXd  q_start, Eigen::Affine3d a_flange_end, int nsteps, double arrival_time, trajectory_msgs::JointTrajectory &new_trajectory);
+    bool plan_jspace_path_qstart_to_des_flange_affine(Eigen::VectorXd  q_start, int nsteps, Eigen::Affine3d goal_flange_affine,std::vector<Eigen::VectorXd> &optimal_path);
+    bool plan_jspace_traj_qstart_to_affine_goal(Eigen::VectorXd  q_start, Eigen::Affine3d a_flange_end, int nsteps, double arrival_time, trajectory_msgs::JointTrajectory &new_trajectory);
+
+    //    path_is_valid_ = pCartTrajPlanner_->plan_jspace_traj_qstart_to_affine_goal(q_start, goal_flange_affine_, nsteps_, arrival_time_,optimal_path_);
+
+    //    path_is_valid_ = pCartTrajPlanner_->plan_jspace_traj_qstart_to_affine_goal(q_start, goal_flange_affine_, nsteps_, arrival_time_,optimal_path_);
+
+    bool cartesian_path_planner_w_rot_interp(Eigen::VectorXd q_start,Eigen::Affine3d a_flange_end, 
+        int nsteps,  std::vector<Eigen::VectorXd> &optimal_path);
+    void path_to_traj(std::vector<Eigen::VectorXd> qvecs, double arrival_time, trajectory_msgs::JointTrajectory &new_trajectory); 
     //cartTrajPlanner_.jspace_trivial_path_planner(q_start, q_goal, optimal_path_);
     //the next version takes a required start pose in jointspace and plans as above to destination pose
     /*
@@ -112,7 +130,6 @@ public:
         cartesian_path_fine_sample_spacing_ = spacing;
     };
 
-    bool jspace_path_planner_to_affine_goal(Eigen::VectorXd q_start, Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path);
     bool fine_cartesian_path_planner(Eigen::VectorXd q_start, Eigen::Affine3d a_flange_end, std::vector<Eigen::VectorXd> &optimal_path);
 
     bool cartesian_path_planner_delta_p(Eigen::VectorXd q_start, Eigen::Vector3d delta_p, std::vector<Eigen::VectorXd> &optimal_path);

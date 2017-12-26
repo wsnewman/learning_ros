@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>generic_arm_motion_interface</name>
+  <name>arm_motion_action</name>
   <version>0.0.0</version>
-  <description>The generic_arm_motion_interface package</description>
+  <description>The arm_motion_action package</description>
   
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
@@ -31,27 +31,42 @@
   <!-- Dependencies can be catkin packages or system dependencies -->
   <!-- Examples: -->
   <!-- Use build_depend for packages you need at compile time: -->
-  <!--   <build_depend>message_generation</build_depend> -->
+
   <!-- Use buildtool_depend for build tool packages: -->
   <!--   <buildtool_depend>catkin</buildtool_depend> -->
   <!-- Use run_depend for packages you need at runtime: -->
-  <!--   <run_depend>message_runtime</run_depend> -->
+  <!-- Use test_depend for packages you need only for testing: -->
+  <!--   <test_depend>gtest</test_depend> -->
+  
+  
+   <build_depend>message_generation</build_depend>
+  <!-- Use buildtool_depend for build tool packages: -->
+  <!--   <buildtool_depend>catkin</buildtool_depend> -->
+  <!-- Use run_depend for packages you need at runtime: -->
+  <run_depend>message_runtime</run_depend>
   <!-- Use test_depend for packages you need only for testing: -->
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
   <buildtool_depend>catkin_simple</buildtool_depend>
   <build_depend>roscpp</build_depend>
-<build_depend>cartesian_planner</build_depend>
-<build_depend>xform_utils</build_depend>
-<build_depend>geometry_msgs</build_depend>
-<build_depend>fk_ik_virtual</build_depend>
-<build_depend>arm_motion_interface</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+     <build_depend>actionlib</build_depend>
+     <build_depend>simple_action_client</build_depend>
+     <build_depend>actionlib_msgs</build_depend>
+     <build_depend>actionlib_servers</build_depend>
+          
+     <run_depend>actionlib_servers</run_depend> 
+    <run_depend>actionlib_msgs</run_depend>       
   <run_depend>roscpp</run_depend>
-<run_depend>cartesian_planner</run_depend>
-<run_depend>xform_utils</run_depend>
-<run_depend>geometry_msgs</run_depend>
-<run_depend>fk_ik_virtual</run_depend>
-<run_depend>arm_motion_interface</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+      <run_depend>actionlib</run_depend>
+    <!--  <run_depend>actionlib_servers</run_depend> -->
+    <run_depend>actionlib_msgs</run_depend>
+     
+    <run_depend>simple_action_client</run_depend>
+
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- You can specify that this package is a metapackage here: -->

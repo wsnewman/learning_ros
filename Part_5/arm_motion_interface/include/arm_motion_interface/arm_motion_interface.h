@@ -9,7 +9,7 @@
 #include <generic_cartesian_planner/generic_cartesian_planner.h>
 #include <cartesian_interpolator/cartesian_interpolator.h>
 #include <actionlib/server/simple_action_server.h>
-#include <arm_motion_interface/cart_moveAction.h>
+#include <arm_motion_action/arm_interfaceAction.h>
 using namespace std;
 
 //some needed robot-specific info:
@@ -25,6 +25,7 @@ struct ArmMotionInterfaceInits {
     vector<double> q_upper_limits;
     vector<double> qdot_max_vec;
     vector<double> q_home_pose;
+    vector<double> planner_joint_weights;
 };
 
 
@@ -38,22 +39,22 @@ private:
     double min_dt_traj_; 
     //create an action server, which will be called "cartMoveActionServer"
     //this service will accept goals in Cartesian coordinates
-    actionlib::SimpleActionServer<arm_motion_interface::cart_moveAction> cart_move_as_;
+    actionlib::SimpleActionServer<arm_motion_action::arm_interfaceAction> cart_move_as_;
     int NJNTS_; // this will get discovered by size of input arg for joint name vector
     std::vector<Eigen::VectorXd> des_path;
-    trajectory_msgs::JointTrajectory des_trajectory; // empty trajectory   
+    trajectory_msgs::JointTrajectory des_trajectory_; // empty trajectory   
     Eigen::VectorXd q_lower_limits_,q_upper_limits_,qdot_max_vec_,q_home_pose_; 
 
     ros::Publisher traj_publisher_; //<trajectory_msgs::JointTrajectory>;// = nh.advertise<trajectory_msgs::JointTrajectory>;//("joint_path_command", 1);   
     ros::Subscriber joint_states_subscriber_; 
 
     //messages to receive cartesian goals / return results:
-    arm_motion_interface::cart_moveGoal cart_goal_;
-    arm_motion_interface::cart_moveResult cart_result_;
+    arm_motion_action::arm_interfaceGoal cart_goal_;
+    arm_motion_action::arm_interfaceResult cart_result_;
     
     vector<string> jnt_names_;
     
-    string    urdf_base_frame_name_; 
+    string urdf_base_frame_name_; 
     string urdf_flange_frame_name_; 
     string joint_states_topic_name_;
     string traj_pub_topic_name_; 
@@ -67,7 +68,7 @@ private:
     //callback function to receive and act on cartesian move goal requests
     //this is the key method in this node;
     // can/should be extended to cover more motion-planning cases
-    void executeCB(const actionlib::SimpleActionServer<arm_motion_interface::cart_moveAction>::GoalConstPtr& goal);
+    void executeCB(const actionlib::SimpleActionServer<arm_motion_action::arm_interfaceAction>::GoalConstPtr& goal);
 
     double computed_arrival_time_; //when a move time is computed, result is stored here
 
@@ -100,12 +101,13 @@ private:
     Eigen::Affine3d A_tool_wrt_flange_;
 
     double arrival_time_;
+    int nsamps_,nsteps_;
     bool path_is_valid_;
+    bool traj_is_valid_;
     bool busy_working_on_a_request_;
 
     // vec to contain optimal path from planners
     std::vector<Eigen::VectorXd> optimal_path_; 
-    trajectory_msgs::JointTrajectory des_trajectory_; //  trajectory object
 
     Eigen::VectorXd last_arm_jnt_cmd_;
 
@@ -120,13 +122,16 @@ private:
 
     // key method: invokes motion from pre-planned trajectory
     // this is a private method, to try to protect it from accident or abuse
-    void execute_planned_move(void);
+
     void jointStatesCb(const sensor_msgs::JointState& joint_states); //prototype for callback of joint_states subscriber
     void map_arm_joint_indices(vector<string> joint_names);
+    
+    //making the following 2 fncs obsolete by requiring user to specfiy nsteps and arrival_time
     void stuff_trajectory(std::vector<Eigen::VectorXd> qvecs, trajectory_msgs::JointTrajectory &new_trajectory);
     double min_transition_time(Eigen::VectorXd dqvec);
-    bool plan_jspace_path_qstart_to_qend(Eigen::VectorXd q_start, Eigen::VectorXd q_goal);
-    void compute_tool_stamped_pose(void);
+    //            plan_jspace_path_qstart_to_qend(q_start_Xd_, q_pre_pose_Xd_, nsteps_, arrival_time_);
+
+
 
 
     Eigen::Affine3d a_tool_start_, a_tool_end_;
@@ -152,14 +157,25 @@ public:
 
     ~ArmMotionInterface(void) {
     }
+
     tf::TransformListener* tfListener_; //make listener available to main;
+    void execute_planned_traj(void);    
+    //jspace trajectory planners:
+    bool plan_jspace_traj_current_to_waiting_pose(); //traj current pose to a jspace home pose
+    bool plan_jspace_traj_current_to_qgoal(); //traj current to a specified jspace pose
+    bool plan_jspace_traj_qstart_to_qend();   //jspace traj from specified q_start to q_end
+    bool plan_jspace_traj_current_to_tool_pose();   //computes a jspace traj from start pose to some IK soln of desired tool pose
+
     
     //handy utilities, primarily used internally, but publicly accessible
+    void compute_tool_stamped_pose(void);    
+    Eigen::Affine3d xform_gripper_pose_to_affine_flange_wrt_base(geometry_msgs::PoseStamped des_pose_gripper);
+    void display_affine(Eigen::Affine3d affine);    
     //Eigen::Affine3d transformTFToEigen(const tf::Transform &t);
     //Eigen::Affine3d transformPoseToEigenAffine3d(geometry_msgs::Pose pose);
     //geometry_msgs::Pose transformEigenAffine3dToPose(Eigen::Affine3d e);
 /*  
-    void display_affine(Eigen::Affine3d affine);
+
 
 
 
@@ -177,8 +193,7 @@ public:
 
     bool plan_path_current_to_goal_gripper_pose(); //uses goal.des_pose_gripper to plan a cartesian path
     //bool plan_path_current_to_goal_flange_pose(); //interprets goal.des_pose_flange  as a des FLANGE pose to plan a cartesian path
-    //plan a joint-space path from current jspace pose to some soln of desired toolflange cartesian pose
-    bool plan_jspace_path_current_to_cart_gripper_pose();
+
     //bool plan_fine_path_current_to_goal_flange_pose(); //interprets goal.des_pose_flange as a des FLANGE pose to plan a cartesian path
     bool plan_fine_path_current_to_goal_gripper_pose();
     //for 
@@ -193,7 +208,7 @@ public:
     void rescale_planned_trajectory_time(double time_stretch_factor);
     void set_arrival_time_planned_trajectory(double arrival_time);
     bool refine_cartesian_path_soln();
-    Eigen::Affine3d xform_gripper_pose_to_affine_flange_wrt_base(geometry_msgs::PoseStamped des_pose_gripper);
+    
 
     geometry_msgs::PoseStamped get_current_gripper_stamped_pose_wrt_world() { return current_gripper_stamped_pose_wrt_world_; };
 */  

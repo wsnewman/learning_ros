@@ -44,21 +44,21 @@
   <build_depend>fk_ik_virtual</build_depend>
   <build_depend>joint_space_planner</build_depend>
   <build_depend>simple_action_client</build_depend>
-  <build_depend>message_generation</build_depend>
   <build_depend>actionlib</build_depend>
   <build_depend>tf</build_depend>
   <build_depend>xform_utils</build_depend>
-  <build_depend>geometry_msgs</build_depend>   
-  
+  <build_depend>geometry_msgs</build_depend>    
+  <build_depend>arm_motion_action</build_depend> 
+     
   <run_depend>roscpp</run_depend>
   <run_depend>fk_ik_virtual</run_depend>
   <run_depend>joint_space_planner</run_depend>
   <run_depend>simple_action_client</run_depend>
-  <run_depend>message_runtime</run_depend>
   <run_depend>actionlib</run_depend>
   <run_depend>tf</run_depend>
   <run_depend>xform_utils</run_depend>
   <run_depend>geometry_msgs</run_depend>
+  <run_depend>arm_motion_action</run_depend>    
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- You can specify that this package is a metapackage here: -->
