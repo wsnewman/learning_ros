@@ -164,29 +164,9 @@ int CartMotionCommander::plan_jspace_traj_current_to_waiting_pose(int nsteps, do
     cart_goal_.command_code = arm_motion_action::arm_interfaceGoal::PLAN_JSPACE_TRAJ_CURRENT_TO_WAITING_POSE;
     cart_goal_.nsteps = nsteps; //send 10 sub-commands
     cart_goal_.arrival_time = arrival_time; //move over 2 sec
-    cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&CartMotionCommander::doneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired
-    //finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(2.0));
-    ROS_INFO("return code: %d", cart_result_.return_code);
-    if (!cb_received_in_time(1.0)) {
-        ROS_WARN("giving up waiting on result");
-        return (int) arm_motion_action::arm_interfaceResult::NOT_FINISHED_BEFORE_TIMEOUT;
-    }
-
-    ROS_INFO("finished before timeout");
-    if (cart_result_.return_code == arm_motion_action::arm_interfaceResult::PATH_NOT_VALID) {
-        ROS_WARN(" arm plan not valid");
-        return (int) cart_result_.return_code;
-    }
-    if (cart_result_.return_code != arm_motion_action::arm_interfaceResult::SUCCESS) {
-        ROS_WARN("unknown return code... not SUCCESS");
-        return (int) cart_result_.return_code;
-    }
-
-    //here if success return code
-    ROS_INFO("returned SUCCESS from planning request");
-    computed_arrival_time_ = cart_result_.computed_arrival_time; //action_client.get_computed_arrival_time();
-    //ROS_INFO("computed move time: %f",computed_arrival_time_);
-    return (int) cart_result_.return_code;
+    double t_wait = 2.0; //max wait this long for planning result
+    int rtn_val = send_planning_goal_get_result( t_wait);
+    return rtn_val;    
 }
 
 int CartMotionCommander::plan_jspace_traj_current_to_qgoal(int nsteps, double arrival_time, Eigen::VectorXd q_goal) {
@@ -198,29 +178,9 @@ int CartMotionCommander::plan_jspace_traj_current_to_qgoal(int nsteps, double ar
     for (int i = 0; i < NJNTS_; i++) {
         cart_goal_.q_goal[i] = q_goal[i];
     }
-    cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&CartMotionCommander::doneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired
-    //finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(2.0));
-    ROS_INFO("return code: %d", cart_result_.return_code);
-    if (!cb_received_in_time(1.0)) {
-        ROS_WARN("giving up waiting on result");
-        return (int) arm_motion_action::arm_interfaceResult::NOT_FINISHED_BEFORE_TIMEOUT;
-    }
-
-    ROS_INFO("finished before timeout");
-    if (cart_result_.return_code == arm_motion_action::arm_interfaceResult::PATH_NOT_VALID) {
-        ROS_WARN(" arm plan not valid");
-        return (int) cart_result_.return_code;
-    }
-    if (cart_result_.return_code != arm_motion_action::arm_interfaceResult::SUCCESS) {
-        ROS_WARN("unknown return code... not SUCCESS");
-        return (int) cart_result_.return_code;
-    }
-
-    //here if success return code
-    ROS_INFO("returned SUCCESS from planning request");
-    computed_arrival_time_ = cart_result_.computed_arrival_time; //action_client.get_computed_arrival_time();
-    //ROS_INFO("computed move time: %f",computed_arrival_time_);
-    return (int) cart_result_.return_code;
+    double t_wait = 2.0; //max wait this long for planning result
+    int rtn_val = send_planning_goal_get_result( t_wait);
+    return rtn_val;    
 }
 
 //computes a jspace traj from start pose to some IK soln of desired tool pose
@@ -230,29 +190,9 @@ int CartMotionCommander::plan_jspace_traj_current_to_tool_pose(int nsteps, doubl
     cart_goal_.nsteps = nsteps; //send 10 sub-commands
     cart_goal_.arrival_time = arrival_time; //move over 2 sec
     cart_goal_.des_pose_gripper = des_pose;
-    cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&CartMotionCommander::doneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired
-    //finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(2.0));
-    ROS_INFO("return code: %d", cart_result_.return_code);
-    if (!cb_received_in_time(2.0)) {
-        ROS_WARN("giving up waiting on result");
-        return (int) arm_motion_action::arm_interfaceResult::NOT_FINISHED_BEFORE_TIMEOUT;
-    }
-
-    ROS_INFO("finished before timeout");
-    if (cart_result_.return_code == arm_motion_action::arm_interfaceResult::PATH_NOT_VALID) {
-        ROS_WARN(" arm plan not valid");
-        return (int) cart_result_.return_code;
-    }
-    if (cart_result_.return_code != arm_motion_action::arm_interfaceResult::SUCCESS) {
-        ROS_WARN("unknown return code... not SUCCESS");
-        return (int) cart_result_.return_code;
-    }
-
-    //here if success return code
-    ROS_INFO("returned SUCCESS from planning request");
-    computed_arrival_time_ = cart_result_.computed_arrival_time; //action_client.get_computed_arrival_time();
-    //ROS_INFO("computed move time: %f",computed_arrival_time_);
-    return (int) cart_result_.return_code;
+     double t_wait = 2.0; //max wait this long for planning result
+    int rtn_val = send_planning_goal_get_result( t_wait);
+    return rtn_val;    
 
 }
 
@@ -261,7 +201,21 @@ int CartMotionCommander::plan_cartesian_traj_current_to_des_tool_pose(int nsteps
     cart_goal_.nsteps = nsteps; //send 10 sub-commands
     cart_goal_.arrival_time = arrival_time; //move over 2 sec
     cart_goal_.des_pose_gripper = des_pose; 
+    double t_wait = 2.0;
+    int rtn_val = send_planning_goal_get_result( t_wait);
+    return rtn_val;
 }
+
+int CartMotionCommander::plan_cartesian_traj_qprev_to_des_tool_pose(int nsteps, double arrival_time, geometry_msgs::PoseStamped des_pose) {
+    cart_goal_.command_code = arm_motion_action::arm_interfaceGoal::PLAN_CARTESIAN_TRAJ_QPREV_TO_DES_TOOL_POSE;
+    cart_goal_.nsteps = nsteps; //send 10 sub-commands
+    cart_goal_.arrival_time = arrival_time; //move over 2 sec
+    cart_goal_.des_pose_gripper = des_pose; 
+    double t_wait = 2.0; //max wait this long for planning result
+    int rtn_val = send_planning_goal_get_result( t_wait);
+    return rtn_val;    
+}
+
 
 int CartMotionCommander::plan_cartesian_traj_qstart_to_des_tool_pose(int nsteps, double arrival_time,
         Eigen::VectorXd q_start, geometry_msgs::PoseStamped des_pose) {
@@ -275,10 +229,16 @@ int CartMotionCommander::plan_cartesian_traj_qstart_to_des_tool_pose(int nsteps,
     for (int i=0;i<NJNTS_;i++) {
         cart_goal_.q_start[i] = q_start[i];
     }
-    cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&CartMotionCommander::doneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired
+    double t_wait = 2.0; //max waiting time for planning request
+    int rtn_val = send_planning_goal_get_result( t_wait);
+    return rtn_val; 
+}
+
+int CartMotionCommander::send_planning_goal_get_result(double t_wait) {
+        cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&CartMotionCommander::doneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired
     //finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(2.0));
-    ROS_INFO("return code: %d", cart_result_.return_code);
-    if (!cb_received_in_time(2.0)) {
+    //ROS_INFO("return code: %d", cart_result_.return_code);
+    if (!cb_received_in_time(t_wait)) {
         ROS_WARN("giving up waiting on result");
         return (int) arm_motion_action::arm_interfaceResult::NOT_FINISHED_BEFORE_TIMEOUT;
     }

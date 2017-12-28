@@ -105,7 +105,7 @@ void Irb120RobotInterface::sendTrajPointCmd() {
         joint5_command_publisher_.publish(pos_cmd_);
         pos_cmd_.data = current_trajectory_point_.positions[5];
         joint6_command_publisher_.publish(pos_cmd_);        
-        print_point(current_trajectory_point_);
+        //print_point(current_trajectory_point_);
 
     } else {
         npts_traj_ = 0;

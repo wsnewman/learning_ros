@@ -1,0 +1,151 @@
+status, 12/26:
+example cart_move action client 
+    tool_pose.pose.position.y+=0.2;
+     ROS_INFO("requesting plan move along 7 axis:");
+    xformUtils.printPose(tool_pose);
+    rtn_val=cart_motion_commander.plan_cartesian_traj_qprev_to_des_tool_pose(nsteps, arrival_time,tool_pose);
+    
+ tool pose is confirmed to be z=0;
+ HOWEVER, result has tool origin at z = 0.030;
+ rosrun tf tf_echo flange_frame generic_tool_frame
+--> - Translation: [0.000, 0.000, 0.019]
+
+arm-motion interface says:
+O_start =    0.2   -0.1 0.0195
+O_end =    0.2    0.1 0.0195
+(seems reasonable--place flange 0.019 above ground)
+
+So why does flange end up 
+rosrun tf tf_echo world generic_tool_frame
+- Translation: [0.220, 0.110, 0.030]
+
+(is xformUtils in wrong direction? or stfTransform somewhere?)
+
+have correct flange pose...but not correct IK!!
+
+at home pose, computed flange frame (per arm_motion_interface):
+toolflange origin w/rt base = 0.375355, 0.000000, 0.627255 
+
+rosrun tf tf_echo world flange_frame
+Translation: [0.375, 0.000, 0.627]
+
+arm_motion_interface start-up: jnt args all 0-->
+fwd kin of home pose: origin =      0.374 2.0819e-18       0.63 (....)
+
+rosrun tf tf_echo world generic_tool_frame
+Translation: [0.395, 0.000, 0.627]
+
+rosrun tf tf_echo world generic_gripper_frame
+Translation: [0.395, 0.000, 0.627]
+
+planner:  O_interp =    0.3    0.1 0.0195
+ilayer: 10 node:     0.321751      1.17478     0.405529 -3.86358e-14  -0.00951058     0.321751
+fk origin:    0.3    0.1 0.0195
+
+turn off gravity;
+position:            [0.3218,      1.0830,     0.3995,   -0.0014,      0.0878,        0.3217]
+rosrun tf tf_echo world flange_frame
+rosrun tf tf_echo world generic_gripper_frame
+- Translation: [0.318, 0.106, 0.030]
+
+positions: [0.3217505543966423, 1.1747774419820742, 0.4055294617993854, 4.8405723873656825e-14, -0.009510576986563548, 0.32175055439659395]
+
+j2 actual:  1.082558
+j2 cmd: 1.17477
+j2 effort: 100
+
+...
+
+increase j2 sat trq:
+AND set gravity to 0
+fk origin:    0.3    0.1 0.0195
+ilayer: 10 node:     0.321751      1.17478     0.405529 -2.53131e-14  -0.00951058     0.321751
+
+joint-states:       [0.321769,     1.08765,    0.3848,  -0.000119,     0.098107,      0.32272]
+effort: [-0.048754508165771426, 215.89873474425195, 25.297699267974878, -0.02756297968815602, -20.0, -0.042722173466103186]
+--don't understand why joint states are not identically equal to commands, nor why jnts 2, 3, 5 have nonzero effort, nor
+why integral-error control does not fix this, particularly at zero gravity ?????
+
+after move, arm interface claims tool pose is:
+origin: 0.322024, 0.104822, 0.0497023
+
+rosrun tf tf_echo world generic_tool_frame
+- Translation: [0.322, 0.107, 0.030]
+
+---------start-up, --> home pose-----
+fwd kin of home pose: origin =      0.374 2.0819e-18       0.63
+
+rosrun tf tf_echo world flange_frame
+- Translation: [0.396, 0.000, 0.601]
+
+rosrun tf tf_echo world generic_tool_frame
+- Translation: [0.416, 0.000, 0.599]
+
+
+URDF:
+jnt2:     <origin rpy="0 0 0" xyz="0 0 0.29"/>
+jnt3:      <origin rpy="0 0 0" xyz="0 0 0.27"/>
+jnt4:      <origin rpy="0 0 0" xyz="0 0 0.07"/>
+jnt5:       <origin rpy="0 0 0" xyz="0.302 0 0"/>
+jnt6:      <origin rpy="0 0 0" xyz="0.072 0 0"/>
+ (to link7)
+ in home pose: z = 0.29+0.27+0.07 = 0.63
+    x = 0.302+0.072 = 0.374
+ so fwd-kin is consistent w/ URDF (up to link7)
+ rosrun tf tf_echo world link7
+ - Translation: [0.389, 0.000, 0.609]
+ joint_states/position:
+ [0.0, 0.0426762178287019, 0.009999999977012841, 0.0, -1.0819167783893135e-10, 0.0]
+
+test each jnt:
+
+link3 w/rt world: - Translation: [0.000, 0.000, 0.290]
+link4 w/rt world: - Translation: [0.011, 0.000, 0.560]  (0.011)
+link4 frame is at elbow joint; leaning slightly forward (0.0427).  
+link5 frame is along forarm rot: - Translation: [0.013, 0.000, 0.630]
+link6 frame is at elbow bend: - Translation: [0.314, 0.000, 0.616]
+link7 frame origin is at flange: - Translation: [0.386, 0.000, 0.613]
+fnc fwd kin of home pose: origin =               0.374 2.0819e-18       0.63
+diff is attributable to non-zero joint2 angle
+
+jnt vals:            0    0.0301433   0.00999998            0 -1.25685e-07            0
+fwd kin of home pose: origin =    0.384645 3.01193e-18    0.614811
+link7 w/rt world:
+- Translation: [0.384, 0.000, 0.615]
+agrees!
+
+so, link7 fwd kin from irb120_fk_ik is consistent w/ tf for link7
+generic tool frame (per tf): - Translation: [0.403, 0.000, 0.615] (OK)
+
+w/ tool commanded to face down, 
+pose returned by arm-motion interface:
+origin: 0.321225, 0.107077, 0.0496679 (tool pose stamped) --consistent w/ tf FLANGE frame!! (not tool frame)
+something wrong w/ 
+
+from tf to generic tool frame: - Translation: [0.321, 0.107, 0.030]
+rosrun tf tf_echo world flange_frame
+- Translation: [0.322, 0.107, 0.050] (agrees w/ arm-motion interface fk)
+seems consistent at these jnt angles: look at cmd vs actual jnts:
+joint states: [0.32176, 1.0890, 0.3813, 0, 0.1004, 0.3228]
+cmd: positions: [0.3217, 1.1747, 0.4055, 0, -0.0095, 0.3217]
+ilayer: 10 node:    0.321751     1.17478    0.405529 6.61693e-14 -0.00951058    0.321751 (consistent w/ command)
+fk origin: 0.3    0.1 0.0195  (of cmd?)
+des origin: O_interp =    0.3    0.1 0.0195
+
+not terrible; j2, j3 lead forward a bit too much; should result in lower flange ht.
+
+so...why tool frame at [0.321, 0.107, 0.030]?
+(and tf flange frame at - Translation: [0.322, 0.107, 0.050])
+
+
+something wrong w/ tool_pose_home = cart_motion_commander.get_tool_pose_stamped();
+
+
+
+
+
+
+
+
+
+

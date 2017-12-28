@@ -3,7 +3,7 @@
 // implementaton for ArmMotionInterface, used in the action server
 
 #include<arm_motion_interface/arm_motion_interface.h>
-
+#include "arm_motion_interface_switcher.cpp"
 
 ArmMotionInterface::ArmMotionInterface(ros::NodeHandle* nodehandle,ArmMotionInterfaceInits armMotionInterfaceInits) : nh_(*nodehandle),
 cart_move_as_(*nodehandle, "cartMoveActionServer", boost::bind(&ArmMotionInterface::executeCB, this, _1), false)
@@ -105,7 +105,11 @@ cart_move_as_(*nodehandle, "cartMoveActionServer", boost::bind(&ArmMotionInterfa
     }
     ROS_INFO("tf is good for generic gripper frame w/rt tool flange");
     xformUtils.printStampedTf(generic_toolflange_frame_wrt_gripper_frame_stf_);
- 
+    
+    //   Eigen::Affine3d transformPoseToEigenAffine3d(geometry_msgs::PoseStamped stPose); 
+    //transformPoseToEigenAffine3d
+    affine_tool_wrt_flange_ = xformUtils.transformStampedTfToEigenAffine3d(generic_toolflange_frame_wrt_gripper_frame_stf_);
+    affine_flange_wrt_tool_ = affine_tool_wrt_flange_.inverse();
         tferr=true;
     ROS_INFO("waiting for tf between system_ref_frame and base_link...");
 
@@ -170,6 +174,18 @@ cart_move_as_(*nodehandle, "cartMoveActionServer", boost::bind(&ArmMotionInterfa
     optimal_path_[1] = q_home_pose_;
     stuff_trajectory(optimal_path_, des_trajectory_);
     traj_publisher_.publish(des_trajectory_);    
+    //wait to settle:
+    ros::Duration(2.0).sleep();
+    //get jnt angles
+    for (int i=0;i<5;i++) {
+       ros::spinOnce();
+       ros::Duration(0.1).sleep();
+    }
+    cout<<"jnt vals: "<<q_vec_arm_Xd_.transpose()<<endl;
+    
+    test_affine = pFwdSolver_->fwd_kin_solve(q_vec_arm_Xd_); //tool-flange frame
+    std::cout<<"fwd kin of home pose: origin = "<<test_affine.translation().transpose()<<std::endl;
+    
 
     ROS_INFO("starting action server: cartMoveActionServer ");
     cart_move_as_.start(); //start the server running
@@ -343,81 +359,7 @@ float64[] q_start
 
 
 
-void ArmMotionInterface::executeCB(const actionlib::SimpleActionServer<arm_motion_action::arm_interfaceAction>::GoalConstPtr& goal) {
-    ROS_INFO("in executeCB of ArmMotionInterface");
-    cart_goal_ = *goal; // copy of goal held in member var
-    command_mode_ = goal->command_code;
-    ROS_INFO_STREAM("received command mode " << command_mode_);
-    int njnts;
 
-    switch (command_mode_) {
-        //a simple "is-alive" test
-        case arm_motion_action::arm_interfaceGoal::ARM_TEST_MODE:
-            ROS_INFO("responding to request TEST_MODE: ");
-            cart_result_.return_code = arm_motion_action::arm_interfaceResult::SUCCESS;
-            cart_move_as_.setSucceeded(cart_result_);
-            break;
-        //a couple of queries:
-        case arm_motion_action::arm_interfaceGoal::GET_TOOL_POSE:
-            ROS_INFO("responding to request GET_TOOL_POSE");
-            compute_tool_stamped_pose();
-            cart_result_.current_pose_gripper = current_gripper_stamped_pose_;
-            cart_result_.return_code = arm_motion_action::arm_interfaceResult::SUCCESS;
-            cart_move_as_.setSucceeded(cart_result_);
-            break;
-        //looks up current arm joint angles and returns them to client
-        case arm_motion_action::arm_interfaceGoal::GET_Q_DATA:
-            ROS_INFO("responding to request GET_Q_DATA");
-            //get_joint_angles(); 
-            cart_result_.q_arm.resize(NJNTS_);
-            for (int i = 0; i < NJNTS_; i++) {
-                cart_result_.q_arm[i] = q_vec_arm_Xd_[i];
-            }
-            cart_result_.return_code = arm_motion_action::arm_interfaceResult::SUCCESS;
-            cart_move_as_.setSucceeded(cart_result_);
-            break;  
- 
-        //this cmd checks if have a valid pre-computed trajectory, and if so, invokes execution;
-        case arm_motion_action::arm_interfaceGoal::EXECUTE_PLANNED_TRAJ: //assumes there is a valid planned path in optimal_path_
-            ROS_INFO("responding to request EXECUTE_PLANNED_TRAJ");
-            execute_planned_traj(); //this fnc does setSucceeded on its own
-            break;
-            
-        //various flavors of trajectory planning:
-            
-        //prepares a trajectory plan to move arm from current pose to pre-defined pose
-        case arm_motion_action::arm_interfaceGoal::PLAN_JSPACE_TRAJ_CURRENT_TO_WAITING_POSE:
-            ROS_INFO("responding to request PLAN_TRAJ_CURRENT_TO_WAITING_POSE");
-            plan_jspace_traj_current_to_waiting_pose(); //q_start_Xd_, q_pre_pose_Xd_);
-            busy_working_on_a_request_ = false;
-            break;   
-            
-        //prepares a jspace trajectory plan to move arm from current pose to specified goal pose
-        case arm_motion_action::arm_interfaceGoal::PLAN_JSPACE_TRAJ_CURRENT_TO_QGOAL:
-            ROS_INFO("responding to request PLAN_JSPACE_TRAJ_CURRENT_TO_QGOAL");
-            plan_jspace_traj_current_to_qgoal(); //q_start_Xd_, q_pre_pose_Xd_);
-            busy_working_on_a_request_ = false;
-            break;   
-            
-        case arm_motion_action::arm_interfaceGoal::PLAN_JSPACE_TRAJ_CURRENT_TO_CART_TOOL_POSE:
-            ROS_INFO("responding to request PLAN_JSPACE_TRAJ_CURRENT_TO_CART_TOOL_POSE");
-            plan_jspace_traj_current_to_tool_pose(); //q_start_Xd_, q_pre_pose_Xd_);
-            busy_working_on_a_request_ = false;
-            break;  
-
-        case arm_motion_action::arm_interfaceGoal::PLAN_CARTESIAN_TRAJ_QSTART_TO_DES_TOOL_POSE:
-            ROS_INFO("responding to request PLAN_CARTESIAN_TRAJ_QSTART_TO_DES_TOOL_POSE");
-            plan_cartesian_traj_qstart_to_des_tool_pose();
-            break;
-    
-        default:
-            ROS_WARN("this command mode is not defined: %d", command_mode_);
-            cart_result_.return_code = arm_motion_action::arm_interfaceResult::COMMAND_CODE_NOT_RECOGNIZED;
-            cart_move_as_.setAborted(cart_result_); // tell the client we have given up on this goal; send the result message as well
-    }
-}
-
-//END OF SWITCH/CASE STATEMENTS
 //implementations of armMotionInterface member functions
 //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
@@ -525,6 +467,31 @@ bool ArmMotionInterface::plan_jspace_traj_current_to_tool_pose() {
     return traj_is_valid_;      
 }
 
+bool ArmMotionInterface::plan_cartesian_traj_qprev_to_des_tool_pose() {
+    goal_gripper_pose_ = cart_goal_.des_pose_gripper;
+    xformUtils.printStampedPose(goal_gripper_pose_);
+    goal_flange_affine_ = xform_gripper_pose_to_affine_flange_wrt_base(goal_gripper_pose_);  
+    arrival_time_ = cart_goal_.arrival_time;
+    nsteps_ = cart_goal_.nsteps;   
+    //pick off last point of previous trajectory
+    int n_traj_pts = des_trajectory_.points.size();
+    if (n_traj_pts<2) {
+        ROS_WARN("previous trajectory invalid");
+        traj_is_valid_ = false;
+        traj_plan_wrapup(); 
+        return traj_is_valid_;
+    }
+    //previous traj is valid, so pick off last point:
+    trajectory_msgs::JointTrajectoryPoint trajectory_point = des_trajectory_.points.back();
+    //use this point as start of next trajectory
+    for (int i = 0; i < NJNTS_; i++) { //pre-sizes positions vector, so can access w/ indices later
+        q_vec_arm_Xd_[i] = trajectory_point.positions[i]; //
+    }
+    traj_is_valid_ = pCartTrajPlanner_->plan_cartesian_traj_qstart_to_des_flange_affine(q_vec_arm_Xd_, goal_flange_affine_, nsteps_, arrival_time_,des_trajectory_);
+    traj_plan_wrapup();    
+    return traj_is_valid_;   
+}
+
 bool ArmMotionInterface::plan_cartesian_traj_current_to_des_tool_pose() {
      goal_gripper_pose_ = cart_goal_.des_pose_gripper;
     xformUtils.printStampedPose(goal_gripper_pose_);
@@ -559,10 +526,12 @@ bool ArmMotionInterface::plan_cartesian_traj_qstart_to_des_tool_pose() {
     }
     traj_is_valid_ = pCartTrajPlanner_->plan_cartesian_traj_qstart_to_des_flange_affine(q_vec_start_rqst_, goal_flange_affine_, nsteps_, arrival_time_,des_trajectory_);
     if (traj_is_valid_) {
+        ROS_INFO("plan_cartesian_traj_qstart_to_des_tool_pose successful");
         computed_arrival_time_ = des_trajectory_.points.back().time_from_start.toSec();
         cart_result_.return_code = arm_motion_action::arm_interfaceResult::SUCCESS;
         cart_result_.computed_arrival_time = computed_arrival_time_;
         cart_move_as_.setSucceeded(cart_result_);
+        ROS_WARN("trajectory plan not successful");
     } else {
         cart_result_.return_code = arm_motion_action::arm_interfaceResult::PATH_NOT_VALID;
         cart_result_.computed_arrival_time = -1.0; //impossible arrival time        
@@ -622,11 +591,16 @@ bool ArmMotionInterface::plan_jspace_traj_qstart_to_qend() {
 //handy fnc to get current  tool pose
 // gets current joint angles, does fwd kin, includes tool xform
 // converts result to a geometry_msgs::PoseStamped
+//fills in member var current_gripper_stamped_pose_
 void ArmMotionInterface::compute_tool_stamped_pose(void) {
     //get_joint_angles(); //will update q_vec
     q_vec_= q_vec_arm_Xd_;
-    affine_tool_wrt_base_ =
-            pFwdSolver_->fwd_kin_solve(q_vec_); //rtns pose w/rt base frame
+    affine_flange_wrt_base_ =
+            pFwdSolver_->fwd_kin_solve(q_vec_); //rtns pose of flange w/rt base frame
+    // ^tool_A_flange * ^flange_A_base
+    //affine_tool_wrt_flange_
+    affine_tool_wrt_base_ = affine_tool_wrt_flange_*affine_flange_wrt_base_;
+
     current_gripper_pose_ = xformUtils.transformEigenAffine3dToPose(affine_tool_wrt_base_);
     current_gripper_stamped_pose_.pose = current_gripper_pose_;
     current_gripper_stamped_pose_.header.stamp = ros::Time::now(); 
@@ -687,6 +661,23 @@ void ArmMotionInterface::display_affine(Eigen::Affine3d affine) {
     cout << "Affine rotation: " << endl;
     cout << affine.linear() << endl;
 }
+
+//repetive code, so make it a fnc;
+//evals if traj is valid and stuffs result message
+void ArmMotionInterface::traj_plan_wrapup() {
+
+    if (traj_is_valid_) {
+        computed_arrival_time_ = des_trajectory_.points.back().time_from_start.toSec();
+        cart_result_.return_code = arm_motion_action::arm_interfaceResult::SUCCESS;
+        cart_result_.computed_arrival_time = computed_arrival_time_;
+        cart_move_as_.setSucceeded(cart_result_);
+    } else {
+        cart_result_.return_code = arm_motion_action::arm_interfaceResult::PATH_NOT_VALID;
+        cart_result_.computed_arrival_time = -1.0; //impossible arrival time        
+        cart_move_as_.setSucceeded(cart_result_); //the communication was a success, but not the computation 
+    }
+}
+
 
 //this is a pretty general function:
 // goal contains a desired tool pose;

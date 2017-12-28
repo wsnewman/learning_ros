@@ -34,6 +34,7 @@ private:
     bool finished_before_timeout_;
     //callback fnc for cartesian action server to return result to this node:
     void doneCb_(const actionlib::SimpleClientGoalState& state,const arm_motion_action::arm_interfaceResultConstPtr& result);
+    int send_planning_goal_get_result(double t_wait);
     int request_q_data(void);
     bool got_done_callback_;
     int NJNTS_;
@@ -60,7 +61,9 @@ public:
     
     int plan_cartesian_traj_current_to_des_tool_pose(int nsteps, double arrival_time, geometry_msgs::PoseStamped des_pose);
     int plan_cartesian_traj_qstart_to_des_tool_pose(int nsteps, double arrival_time, Eigen::VectorXd q_start, geometry_msgs::PoseStamped des_pose);
-    
+    //the next command plans from previous trajectory end jspace pose
+    int plan_cartesian_traj_qprev_to_des_tool_pose(int nsteps, double arrival_time, geometry_msgs::PoseStamped des_pose);
+
     
     //bool plan_jspace_traj_qstart_to_des_tool_pose(Eigen::VectorXd  q_start,int nsteps,double arrival_time,geometry_msgs::PoseStamped des_pose);
 

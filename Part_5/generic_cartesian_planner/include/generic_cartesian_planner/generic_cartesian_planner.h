@@ -78,6 +78,7 @@ public:
     bool plan_cartesian_traj_qstart_to_des_flange_affine(Eigen::VectorXd q_start,Eigen::Affine3d a_flange_goal,
         int nsteps,  double arrival_time, trajectory_msgs::JointTrajectory &new_trajectory);
 
+    
     bool plan_cartesian_path_w_rot_interp(Eigen::VectorXd q_start,Eigen::Affine3d a_flange_end, 
         int nsteps,  std::vector<Eigen::VectorXd> &optimal_path);
     void path_to_traj(std::vector<Eigen::VectorXd> qvecs, double arrival_time, trajectory_msgs::JointTrajectory &new_trajectory); 

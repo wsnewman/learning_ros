@@ -33,10 +33,13 @@ cs_add_library(cartesian_motion_commander src/cart_motion_commander.cpp)
 # Executables: uncomment the following and edit arguments to compile new nodes
 # may add more of these lines for more nodes from the same package
 cs_add_executable(example_generic_cartesian_move_ac src/example_generic_cart_move_ac.cpp)
+cs_add_executable(example_generic_cartesian_move_ac2 src/example_generic_cart_move_ac2.cpp)
+
 
 #the following is required, if desire to link a node in this package with a library created in this same package
 # edit the arguments to reference the named node and named library within this package
 target_link_libraries(example_generic_cartesian_move_ac cartesian_motion_commander)
+target_link_libraries(example_generic_cartesian_move_ac2 cartesian_motion_commander)
 
 cs_install()
 cs_export()

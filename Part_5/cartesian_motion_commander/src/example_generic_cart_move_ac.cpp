@@ -28,6 +28,7 @@ int main(int argc, char** argv) {
     int nsteps;
     double arrival_time;
     geometry_msgs::PoseStamped tool_pose, tool_pose_home;
+
     bool traj_is_valid = false;
     int rtn_code;
     
@@ -64,7 +65,10 @@ int main(int argc, char** argv) {
     tool_pose_home = cart_motion_commander.get_tool_pose_stamped();//get_tool_pose_stamped
     ROS_INFO("tool pose is: ");
     xformUtils.printPose(tool_pose_home);
-
+    //alter the tool pose:
+    std::cout<<"enter 1: ";
+    int ans;
+    std::cin>>ans; 
     
     //do a joint-space move; get the start angles:
     joint_angles = cart_motion_commander.get_joint_angles();
@@ -121,9 +125,9 @@ int main(int argc, char** argv) {
 //    int ans;
 //    std::cin>>ans; 
     tool_pose.pose.position.z -= 0.2; // descend 20cm, along z in torso frame
-    ROS_INFO("planning Cartesian move to goal pose w/ dpx = 0.2"); //, dpy = -0.2");
+    ROS_INFO("planning Cartesian move to goal pose w/ dpz = -0.2"); //, dpy = -0.2");
     //tool_pose.pose.position.y -= 0.2; // move 20cm, along y in torso frame
-    tool_pose.pose.position.x += 0.2; // move 20cm, along x in torso frame
+    //tool_pose.pose.position.x += 0.2; // move 20cm, along x in torso frame
     // send move plan request:
     rtn_val=cart_motion_commander.plan_cartesian_traj_current_to_des_tool_pose(nsteps, arrival_time,tool_pose);
     //send command to execute planned motion
@@ -134,6 +138,72 @@ int main(int argc, char** argv) {
     else {
         ROS_WARN("unsuccessful plan; rtn_code = %d",rtn_val);
     }
+    
+    ROS_INFO("lower z again and plan  ");
+    tool_pose.pose.position.z -= 0.2; // descend 20cm, along z in torso frame
+    ROS_INFO("planning Cartesian move to goal pose w/ dpz = -0.2"); //, dpy = -0.2")
+    //tool_pose.pose.position.y -= 0.2; // move 20cm, along y in torso frame
+    //tool_pose.pose.position.x += 0.2; // move 20cm, along x in torso frame
+    // send move plan request:
+    rtn_val=cart_motion_commander.plan_cartesian_traj_qprev_to_des_tool_pose(nsteps, arrival_time,tool_pose);
+    //send command to execute planned motion
+    if (rtn_val == arm_motion_action::arm_interfaceResult::SUCCESS)  { 
+            //send command to execute planned motion
+           rtn_val=cart_motion_commander.execute_planned_traj();
+    }
+    else {
+        ROS_WARN("unsuccessful plan; rtn_code = %d",rtn_val);
+    }    
+    Eigen::Vector3d b_des,n_des,t_des,O_des;
+    Eigen::Matrix3d R_gripper;
+    b_des << 0, 0, -1;
+    n_des << -1, 0, 0;
+    t_des = b_des.cross(n_des);
+    
+    R_gripper.col(0) = n_des;
+    R_gripper.col(1) = t_des;
+    R_gripper.col(2) = b_des;
+    
+    O_des<<0.3,-0.1,0.0;
+    Eigen::Affine3d tool_affine;
+    tool_affine.linear() = R_gripper;
+    tool_affine.translation()= O_des;
+    //   geometry_msgs::PoseStamped transformEigenAffine3dToPoseStamped(Eigen::Affine3d e,std::string reference_frame_id);   
+
+    tool_pose = xformUtils.transformEigenAffine3dToPoseStamped(tool_affine,"system_ref_frame");
+    ROS_INFO("requesting plan to gripper-down pose:");
+    xformUtils.printPose(tool_pose);
+    rtn_val=cart_motion_commander.plan_jspace_traj_current_to_tool_pose(nsteps,arrival_time,tool_pose);
+    if (rtn_val == arm_motion_action::arm_interfaceResult::SUCCESS)  { 
+        ROS_INFO("successful plan; command execution of trajectory");
+        rtn_val=cart_motion_commander.execute_planned_traj();
+        ros::Duration(arrival_time+0.2).sleep(); 
+    }
+    else {
+        ROS_WARN("unsuccessful plan; rtn_code = %d",rtn_val);
+    }    
+    
+    tool_pose.pose.position.y+=0.2;
+     ROS_INFO("requesting plan move along 7 axis:");
+    xformUtils.printPose(tool_pose);
+    rtn_val=cart_motion_commander.plan_cartesian_traj_qprev_to_des_tool_pose(nsteps, arrival_time,tool_pose);
+    if (rtn_val == arm_motion_action::arm_interfaceResult::SUCCESS)  { 
+        ROS_INFO("successful plan; command execution of trajectory");
+        rtn_val=cart_motion_commander.execute_planned_traj();
+        ros::Duration(arrival_time+0.2).sleep(); 
+    }
+    else {
+        ROS_WARN("unsuccessful plan; rtn_code = %d",rtn_val);
+    }       
+    
+    tool_pose = cart_motion_commander.get_tool_pose_stamped();//get_tool_pose_stamped
+    ROS_INFO("resulting tool pose is: ");
+    xformUtils.printPose(tool_pose);
+    ros::Duration(arrival_time+0.2).sleep();
+     tool_pose = cart_motion_commander.get_tool_pose_stamped();//get_tool_pose_stamped
+    ROS_INFO("resulting tool pose is: ");
+    xformUtils.printPose(tool_pose);   
+   
 /*
     //try vector cartesian displacement at fixed orientation:
     ROS_INFO("will plan vertical motion");

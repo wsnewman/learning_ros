@@ -83,7 +83,7 @@ const double q_upper_limits[6] = {DH_q_max1, DH_q_max2, DH_q_max3, DH_q_max4, DH
 const double g_qdot_max_vec[] = {4.3, 4.3, 4.3, 5.5, 5.5, 5.5}; //values per URDF 
 const double g_q_home_pose[6] = {0,0,0,0,0,0};
 
-const double jspace_planner_weights[] = {5,5,3,0.5,0.2,0,2}; //default weights for jspace planner (changeable in planner)
+const double jspace_planner_weights[] = {5,5,3,0.5,0.2,0.2}; //default weights for jspace planner (changeable in planner)
 
 
 class Irb120_fwd_solver {

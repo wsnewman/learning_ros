@@ -114,7 +114,7 @@
     <child link="link3"/>
     <origin rpy="0 0 0" xyz="0 0 0.29"/>
     <axis xyz="0 1 0"/>
-    <limit effort="100" lower="-1.91986" upper="1.91986" velocity="4.36332"/>    
+    <limit effort="500" lower="-1.91986" upper="1.91986" velocity="4.36332"/>    
     <dynamics damping="1.7"/>
   </joint>
 
@@ -186,7 +186,8 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-	<box size="0.2 0.2 0.2"/>
+	<!--box size="${width} ${width} ${height3}"/-->
+	        <mesh filename="package://irb120_description/meshes/irb120/visual/link_4.stl"/>
       </geometry>
     </collision>
 
@@ -219,12 +220,12 @@
   </joint>  
    
    <link name="link6">
-    <collision>
+    <!--collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-	<box size="0.2 0.2 0.2"/>
+	        <mesh filename="package://irb120_description/meshes/irb120/visual/link_5.stl"/>
       </geometry>
-    </collision>
+    </collision-->
 
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -256,9 +257,10 @@
 
    <link name="link7">
     <collision>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+     <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-	<box size="0.1 0.1 0.1"/>
+	<!--box size="${width} ${width} ${height3}"/-->
+	        <mesh filename="package://irb120_description/meshes/irb120/visual/link_6.stl"/>
       </geometry>
     </collision>
 

@@ -17,6 +17,7 @@ CartTrajPlanner::CartTrajPlanner(IKSolver * pIKSolver_arg, FwdSolver * pFwdSolve
     ROS_INFO("in constructor of CartTrajPlanner...");
     NJNTS_=njnts; // default; parent code should reset this w/ "set" member fnc
     pIKSolver_ = pIKSolver_arg;
+    pFwdSolver_ = pFwdSolver_arg; //instantiate a forward-kinematics solver   
    //define a fixed orientation: tool flange pointing down, with x-axis forward
     b_des_ << 0, 0, -1;
     n_des_ << 1, 0, 0;
@@ -347,6 +348,9 @@ bool CartTrajPlanner::plan_cartesian_traj_qstart_to_des_flange_affine(Eigen::Vec
      return true;
         
   }
+
+    
+    
 //Cartesian planner that interpolates both translation and rotation--using angle/axis interpolation--
 // starting from a specified joint-space pose and ending with a specified Cartesian-space pose
 // specify goal pose w/rt toolflange
@@ -359,7 +363,10 @@ bool CartTrajPlanner::plan_cartesian_path_w_rot_interp(Eigen::VectorXd q_start,E
     Eigen::VectorXd node;
     Eigen::Affine3d a_flange_des,a_flange_start;
 
+    cout<<"plan_cartesian_path_w_rot_interp"<<endl;
+    cout<<"q_start = "<<q_start.transpose()<<endl;
      a_flange_start = pFwdSolver_->fwd_kin_solve(q_start);
+     cout<<"a_flange_start origin: "<<a_flange_start.translation().transpose()<<endl;
      Eigen::Matrix3d R_start,R_end,R_change,R_change_interp,R_interp;
      R_start = a_flange_start.linear();
      R_end = a_flange_end.linear();
@@ -472,8 +479,13 @@ bool CartTrajPlanner::plan_cartesian_path_w_rot_interp(Eigen::VectorXd q_start,E
 
     //now, jsp is deleted, but optimal_path lives on:
     cout << "resulting solution path: " << endl;
+    Eigen::Affine3d affine_fk;
+    Eigen::Vector3d origin_fk;
     for (int ilayer = 0; ilayer < nlayers; ilayer++) {
         cout << "ilayer: " << ilayer << " node: " << optimal_path[ilayer].transpose() << endl;
+        affine_fk = pFwdSolver_->fwd_kin_solve(optimal_path[ilayer]);
+        origin_fk=affine_fk.translation();
+        cout<<"fk origin: "<<origin_fk.transpose()<<endl;
     }
     cout << "soln min cost: " << trip_cost << endl;
     return true;

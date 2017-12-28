@@ -98,7 +98,7 @@ private:
 
     Eigen::Affine3d affine_tool_wrt_base_,affine_flange_wrt_base_;
 
-    Eigen::Affine3d A_tool_wrt_flange_;
+    Eigen::Affine3d affine_tool_wrt_flange_,affine_flange_wrt_tool_;
 
     double arrival_time_;
     int nsamps_,nsteps_;
@@ -130,7 +130,7 @@ private:
     void stuff_trajectory(std::vector<Eigen::VectorXd> qvecs, trajectory_msgs::JointTrajectory &new_trajectory);
     double min_transition_time(Eigen::VectorXd dqvec);
     //            plan_jspace_path_qstart_to_qend(q_start_Xd_, q_pre_pose_Xd_, nsteps_, arrival_time_);
-
+    void traj_plan_wrapup();
 
 
 
@@ -167,6 +167,7 @@ public:
     bool plan_jspace_traj_current_to_tool_pose();   //computes a jspace traj from start pose to some IK soln of desired tool pose
 
     bool plan_cartesian_traj_current_to_des_tool_pose();    
+    bool plan_cartesian_traj_qprev_to_des_tool_pose(); //start from last pose of previously-computd trajectory
     bool plan_cartesian_traj_qstart_to_des_tool_pose();
     
 
