@@ -37,6 +37,13 @@ void ArmMotionInterface::executeCB(const actionlib::SimpleActionServer<arm_motio
             ROS_INFO("responding to request EXECUTE_PLANNED_TRAJ");
             execute_planned_traj(); //this fnc does setSucceeded on its own
             break;
+
+        //this version executes 1 of NSEG segments of a vector of trajectories
+        case arm_motion_action::arm_interfaceGoal::EXECUTE_TRAJ_NSEG: //assumes there is a valid planned path in optimal_path_
+            ROS_INFO("responding to request EXECUTE_PLANNED_TRAJ");
+            execute_traj_nseg(); //this fnc does setSucceeded on its own
+            break;            
+            
             
         //various flavors of trajectory planning:
             
@@ -74,8 +81,25 @@ void ArmMotionInterface::executeCB(const actionlib::SimpleActionServer<arm_motio
         case arm_motion_action::arm_interfaceGoal::PLAN_CARTESIAN_TRAJ_QPREV_TO_DES_TOOL_POSE:
             ROS_INFO("responding to request PLAN_CARTESIAN_TRAJ_QPREV_TO_DES_TOOL_POSE");
             plan_cartesian_traj_qprev_to_des_tool_pose();
-            break;            
+            break;    
             
+            //uint8 CLEAR_MULTI_TRAJ_PLAN = 26
+//uint8 APPEND_MULTI_TRAJ_CART_SEGMENT = 27
+//uint8 APPEND_MULTI_TRAJ_JSPACE_SEGMENT = 28
+        case arm_motion_action::arm_interfaceGoal::CLEAR_MULTI_TRAJ_PLAN:
+            ROS_INFO("responding to request CLEAR_MULTI_TRAJ_PLAN");
+            multi_traj_vec_.clear();
+            cart_result_.return_code = arm_motion_action::arm_interfaceResult::SUCCESS;
+            cart_move_as_.setSucceeded(cart_result_);
+            break;   
+        case arm_motion_action::arm_interfaceGoal::APPEND_MULTI_TRAJ_CART_SEGMENT:
+            ROS_INFO("responding to request APPEND_MULTI_TRAJ_CART_SEGMENT");
+            append_multi_traj_cart_segment();
+            break;   
+        case arm_motion_action::arm_interfaceGoal::APPEND_MULTI_TRAJ_JSPACE_SEGMENT:
+            ROS_INFO("responding to request APPEND_MULTI_TRAJ_JSPACE_SEGMENT");
+            append_multi_traj_jspace_segment();
+            break;               
     
         default:
             ROS_WARN("this command mode is not defined: %d", command_mode_);

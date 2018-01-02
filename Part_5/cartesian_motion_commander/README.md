@@ -21,5 +21,13 @@ rosrun irb120_planner irb120_cart_move_as
 Try running a sample action client:
 rosrun cartesian_motion_commander example_generic_cartesian_move_ac
 
+or:
+rosrun cartesian_motion_commander example_generic_cartesian_move_ac3
+which demonstrates how to build and execute multi-segment trajectories.
+Intent is that an entire plan can be pre-computed and evaluated before execution, and actions
+(e.g., gripper, painter on/off, etc) can be performed between trajectory segment executions
+
+
+
 ## Running tests/demos
     

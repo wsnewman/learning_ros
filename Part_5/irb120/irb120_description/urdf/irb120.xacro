@@ -120,12 +120,12 @@
 
   <!-- Top Link -->
   <link name="link3">
-    <collision>
+    <!--collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
 	<box size="0.2 0.2 0.2"/>
       </geometry>
-    </collision>
+    </collision-->
 
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -147,12 +147,12 @@
   </link>
 
   <link name="link4">
-    <collision>
+    <!--collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
 	<box size="0.2 0.2 0.2"/>
       </geometry>
-    </collision>
+    </collision-->
 
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>

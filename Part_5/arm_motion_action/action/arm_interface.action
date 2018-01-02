@@ -25,25 +25,20 @@ uint8 PLAN_CARTESIAN_TRAJ_CURRENT_TO_DES_TOOL_POSE = 23
 uint8 PLAN_CARTESIAN_TRAJ_QSTART_TO_DES_TOOL_POSE = 24
 uint8 PLAN_CARTESIAN_TRAJ_QPREV_TO_DES_TOOL_POSE = 25
 
-
-#uint8 PLAN_PATH_CURRENT_TO_GOAL_GRIPPER_POSE=22 #plan cartesian path from current arm pose to goal gripper pose
-#uint8 PLAN_FINE_PATH_CURRENT_TO_GOAL_GRIPPER_POSE = 23 #plan path to specified gripper pose #as above, but hi-res
-#uint8 PLAN_TRAJ_CURRENT_TO_GOAL_DP_XYZ = 24 #rectilinear translation w/ fixed orientation
-
-#uint8 PLAN_JSPACE_PATH_CURRENT_TO_QGOAL = 25
-#uint8 PLAN_JSPACE_TRAJ_QSTART_TO_CART_GRIPPER_POSE = 26
-#uint8 PLAN_JSPACE_TRAJ_QSTART_TO_QEND = 28
+uint8 CLEAR_MULTI_TRAJ_PLAN = 26
+uint8 APPEND_MULTI_TRAJ_CART_SEGMENT = 27
+uint8 APPEND_MULTI_TRAJ_JSPACE_SEGMENT = 28
 
 
-#uint8 TIME_RESCALE_PLANNED_TRAJECTORY = 40 #can make arm go slower/faster with provided time-stretch factor
 uint8 REFINE_PLANNED_TRAJECTORY = 41 #if used approx IK soln, use this option to refine solns
-#uint8 SET_ARRIVAL_TIME_PLANNED_TRAJECTORY = 42 #used to set desired arrival time; put arrival time value in goal time_scale_stretch_factor
 
 # request to preview plan:
 #uint8 DISPLAY_TRAJECTORY = 50
 
 #MOVE command!
 uint8 EXECUTE_PLANNED_TRAJ = 100
+#specify a segment number to be executed from a multi-segment trajectory
+uint8 EXECUTE_TRAJ_NSEG = 101
 
 #uint8 ARM_DESCEND_20CM=101
 #uint8 ARM_DEPART_20CM=102
@@ -55,9 +50,10 @@ geometry_msgs/PoseStamped des_pose_gripper
 float64[] arm_dp #to command a 3-D vector displacement relative to current pose, fixed orientation
 float64[] q_goal
 float64[] q_start
-float64 time_scale_stretch_factor
 int32 nsteps
 float64 arrival_time
+int32 nseg #to choose one of NSEG segments in a multi-traj vector
+#float64 time_scale_stretch_factor
 ---
 #result definition
 #  response codes...

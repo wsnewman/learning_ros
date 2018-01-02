@@ -14,6 +14,8 @@
 //#include <xform_utils/xform_utils.h>
 //using namespace std;
 
+const double MAX_WAIT_TIME=10.0; //avoid deadlock--wait for max time for server response
+
 
 //define a class to encapsulate some of the tedium of populating and sending goals,
 // and interpreting responses
@@ -49,10 +51,13 @@ public:
     bool cb_received_in_time(double max_wait_time);    
     void send_test_goal(void);
     Eigen::VectorXd get_joint_angles(void); 
+    int clear_multi_traj_plan(void);
     
     
     geometry_msgs::PoseStamped get_tool_pose_stamped(void); // { return tool_pose_stamped_;};    
     int execute_planned_traj(void);  
+    int execute_traj_nseg(int iseg);
+
     
     int plan_jspace_traj_current_to_waiting_pose(int nsteps, double arrival_time); //traj current pose to a jspace home pose
     int plan_jspace_traj_current_to_qgoal(int nsteps, double arrival_time,Eigen::VectorXd q_goal); //traj current to a specified jspace pose
@@ -64,6 +69,9 @@ public:
     //the next command plans from previous trajectory end jspace pose
     int plan_cartesian_traj_qprev_to_des_tool_pose(int nsteps, double arrival_time, geometry_msgs::PoseStamped des_pose);
 
+    int append_multi_traj_cart_segment(int nsteps, double arrival_time, geometry_msgs::PoseStamped des_pose);
+    //uint8 APPEND_MULTI_TRAJ_JSPACE_SEGMENT = 28 not implemented yet; not needed?
+    //int append_multi_traj_jspace_segment()
     
     //bool plan_jspace_traj_qstart_to_des_tool_pose(Eigen::VectorXd  q_start,int nsteps,double arrival_time,geometry_msgs::PoseStamped des_pose);
 

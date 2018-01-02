@@ -1,24 +1,20 @@
-// irb120_cart_move_as: 
+// ur10_cart_move_as: 
 // wsn,  Dec, 2017
 // action server to accept commands and perform planning and motion requests
-// this code is specific to the irb120, 
+// this code is specific to the ur10 robot, following the pattern of the irb120 robot, 
 
+#include <ur_fk_ik/ur_kin.h> //in this case, choose irb120; change this for different robots
 
-
-
-
-//#include <arm_motion_interface/arm_motion_interface.h>
-#include <irb120_fk_ik/irb120_kinematics.h> //in this case, choose irb120; change this for different robots
 #include <fk_ik_virtual/fk_ik_virtual.h> //defines the base class with virtual fncs
 #include <arm_motion_interface/arm_motion_interface.h>
 #include <generic_cartesian_planner/generic_cartesian_planner.h>
 #include <cartesian_interpolator/cartesian_interpolator.h>
 #include "robot_specific_fk_ik_mappings.h" //SPECIFIC TO TARGET ROBOT
 #include "robot_specific_names.h" //THIS MUST BE SPECIFIC TO TARGET ROBOT
-#include "planner_joint_weights.h" //need these for joint-space planner; 
+#include "planner_joint_weights.h" //need these for joint-space planner
 
 int main(int argc, char** argv) {
-    ros::init(argc, argv, "irb120_cart_move_as");
+    ros::init(argc, argv, "ur10_cart_move_as");
     ros::NodeHandle nh; //standard ros node handle   
 
     //TEST TEST TEST
@@ -45,12 +41,11 @@ int main(int argc, char** argv) {
     armMotionInterfaceInits.urdf_flange_frame_name = g_urdf_flange_frame_name;            
     armMotionInterfaceInits.joint_states_topic_name = g_joint_states_topic_name;
     armMotionInterfaceInits.traj_pub_topic_name = g_traj_pub_topic_name;
-    armMotionInterfaceInits.traj_as_name = g_traj_as_name;
     armMotionInterfaceInits.jnt_names = g_jnt_names;
-
+    armMotionInterfaceInits.use_trajectory_action_server = g_use_trajectory_action_server;
+    armMotionInterfaceInits.traj_as_name = g_traj_as_name;
     armMotionInterfaceInits.pIKSolver_arg = pIKSolver;
     armMotionInterfaceInits.pFwdSolver_arg = pFwdSolver;
-    armMotionInterfaceInits.use_trajectory_action_server = g_use_trajectory_action_server;
     
     for (int i=0;i<njnts;i++) {
        armMotionInterfaceInits.q_lower_limits.push_back(q_lower_limits[i]);

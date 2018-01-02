@@ -119,7 +119,7 @@ Eigen::MatrixXd irb120_hand_fwd_solver::get_Jacobian(const Vectorq6x1& q_vec) {
  */
 
 
-
+/*
 //return soln out to tool flange; would still need to account for tool transform for gripper
 Eigen::Affine3d Irb120_fwd_solver::fwd_kin_solve(const Vectorq6x1& q_vec) {
     Eigen::Matrix4d M;
@@ -127,7 +127,7 @@ Eigen::Affine3d Irb120_fwd_solver::fwd_kin_solve(const Vectorq6x1& q_vec) {
     Eigen::Affine3d A(M);
     return A;
 }
-
+*/
 
 
 Eigen::Matrix4d Irb120_fwd_solver::get_wrist_frame() {

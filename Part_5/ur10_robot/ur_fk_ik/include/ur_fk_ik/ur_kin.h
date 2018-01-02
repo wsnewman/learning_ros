@@ -103,6 +103,7 @@ const double q_lower_limits[] = {DH_q_min1, DH_q_min2, DH_q_min3, DH_q_min4, DH_
 const double q_upper_limits[] = {DH_q_max1, DH_q_max2, DH_q_max3, DH_q_max4, DH_q_max5, DH_q_max6};
 
 const double g_qdot_max_vec[] = {2.16, 2.16, 3.15, 3.2, 3.2, 3.2}; //values per URDF ur10.urdf.xacro in ur_description
+const double g_q_home_pose[6] = {0,-1.5707,-1.5707,0,0,0};
 
 class UR10FwdSolver {
     
@@ -120,6 +121,7 @@ public:
     void set_affine_tool_wrt_flange(Eigen::Affine3d A_tool_wrt_flange) { 
         A_tool_wrt_flange_=A_tool_wrt_flange;
     }    
+    Eigen::MatrixXd jacobian(const Eigen::VectorXd& q_vec);
 private:
     Eigen::Affine3d A_tool_wrt_flange_;
     Eigen::Matrix4d fwd_kin_solve_(const Eigen::VectorXd& q_vec);

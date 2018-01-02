@@ -183,18 +183,57 @@ int main(int argc, char** argv) {
         ROS_WARN("unsuccessful plan; rtn_code = %d",rtn_val);
     }    
     
+    //start multi-traj planning:
+    int nsegs = 0;
+    vector<double> arrival_times;
+    
     tool_pose.pose.position.y+=0.2;
-     ROS_INFO("requesting plan move along 7 axis:");
+     ROS_INFO("requesting plan move along y axis:");
     xformUtils.printPose(tool_pose);
     rtn_val=cart_motion_commander.plan_cartesian_traj_qprev_to_des_tool_pose(nsteps, arrival_time,tool_pose);
-    if (rtn_val == arm_motion_action::arm_interfaceResult::SUCCESS)  { 
-        ROS_INFO("successful plan; command execution of trajectory");
-        rtn_val=cart_motion_commander.execute_planned_traj();
-        ros::Duration(arrival_time+0.2).sleep(); 
+    if (rtn_val != arm_motion_action::arm_interfaceResult::SUCCESS) {
+         ROS_WARN("unsuccessful plan; rtn_code = %d",rtn_val);
+         exit(1);
+    } 
+    else {
+       nsegs++;
+       arrival_times.push_back(arrival_time);   
+    }
+    
+//    int append_multi_traj_cart_segment(int nsteps, double arrival_time, geometry_msgs::PoseStamped des_pose);
+    tool_pose.pose.position.x+=0.1;    
+    rtn_val=cart_motion_commander.append_multi_traj_cart_segment(nsteps, arrival_time,tool_pose);
+    if (rtn_val != arm_motion_action::arm_interfaceResult::SUCCESS) {
+         ROS_WARN("unsuccessful plan; rtn_code = %d",rtn_val);
+         exit(1);
     }
     else {
-        ROS_WARN("unsuccessful plan; rtn_code = %d",rtn_val);
-    }       
+       nsegs++;
+       arrival_times.push_back(arrival_time);   
+    }
+    tool_pose.pose.position.y-=0.2;
+     ROS_INFO("requesting plan move along -y axis:");
+    xformUtils.printPose(tool_pose);
+    rtn_val=cart_motion_commander.append_multi_traj_cart_segment(nsteps, arrival_time,tool_pose);
+    if (rtn_val != arm_motion_action::arm_interfaceResult::SUCCESS) {
+         ROS_WARN("unsuccessful plan; rtn_code = %d",rtn_val);
+         exit(1);
+    }     
+    else {
+       nsegs++;
+       arrival_times.push_back(arrival_time);   
+    }
+    //execute multi-traj:
+    double wait_time;
+    for (int iseg=0;iseg<nsegs;iseg++) {
+        ROS_INFO("commanding seg %d",iseg);
+        wait_time = arrival_times[iseg];
+        rtn_val = cart_motion_commander.execute_traj_nseg(iseg);
+        ros::Duration(wait_time).sleep();
+    }
+    
+ 
+/*
     
     tool_pose = cart_motion_commander.get_tool_pose_stamped();//get_tool_pose_stamped
     ROS_INFO("resulting tool pose is: ");
@@ -203,7 +242,7 @@ int main(int argc, char** argv) {
      tool_pose = cart_motion_commander.get_tool_pose_stamped();//get_tool_pose_stamped
     ROS_INFO("resulting tool pose is: ");
     xformUtils.printPose(tool_pose);   
-   
+   */
 /*
     //try vector cartesian displacement at fixed orientation:
     ROS_INFO("will plan vertical motion");

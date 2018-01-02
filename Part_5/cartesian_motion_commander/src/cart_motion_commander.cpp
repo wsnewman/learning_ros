@@ -77,6 +77,27 @@ int CartMotionCommander::execute_planned_traj(void) {
     return (int) cart_result_.return_code;
 }
 
+
+//EXECUTE_TRAJ_NSEG
+int CartMotionCommander::execute_traj_nseg(int iseg) {
+    ROS_INFO("requesting execution of segment %d of multi-traj plan",iseg);
+    cart_goal_.command_code = arm_motion_action::arm_interfaceGoal::EXECUTE_TRAJ_NSEG;
+    cart_goal_.nseg = iseg;
+    cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&CartMotionCommander::doneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired
+    //finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(computed_arrival_time_+2.0));
+    if (!cb_received_in_time(MAX_WAIT_TIME)) {
+        ROS_WARN("did not complete move in MAX_WAIT_TIME");
+        return (int) arm_motion_action::arm_interfaceResult::NOT_FINISHED_BEFORE_TIMEOUT;
+    }
+    if (cart_result_.return_code != arm_motion_action::arm_interfaceResult::SUCCESS) {
+        ROS_WARN("move did not return success; code = %d", cart_result_.return_code);
+        return (int) cart_result_.return_code;
+    }
+
+    ROS_INFO("move returned success");
+    return (int) cart_result_.return_code;
+}
+
 //Eigen::VectorXd get_joint_angles(void); 
 
 Eigen::VectorXd CartMotionCommander::get_joint_angles(void) {
@@ -90,6 +111,8 @@ Eigen::VectorXd CartMotionCommander::get_joint_angles(void) {
     //cout<<"angs_vecXd: "<<angs_vecXd.transpose()<<endl;
     return angs_vecXd;
 }
+
+
 
 //send goal command to request arm joint angles; these will be stored in internal variable
 
@@ -132,6 +155,25 @@ void CartMotionCommander::send_test_goal(void) {
         ROS_INFO("return code: %d", cart_result_.return_code);
     }
 }
+
+int CartMotionCommander::clear_multi_traj_plan(void) {
+
+    ROS_INFO("sending command to clear multitraj vector");
+    cart_goal_.command_code = arm_motion_action::arm_interfaceGoal::CLEAR_MULTI_TRAJ_PLAN;
+    got_done_callback_ = false; //flag to check if got callback
+    cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&CartMotionCommander::doneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired
+    //double max_wait_time = 2.0;
+
+    //finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(2.0));
+    //bool finished_before_timeout = action_client.waitForResult(); // wait forever...
+    if (!cb_received_in_time(MAX_WAIT_TIME)) {
+        ROS_WARN("giving up waiting on result");
+    } else {
+        ROS_INFO("finished before timeout");
+        ROS_INFO("return code: %d", cart_result_.return_code);
+    }
+}
+
 
 geometry_msgs::PoseStamped CartMotionCommander::get_tool_pose_stamped(void) { // { return tool_pose_stamped_;};    
     ROS_INFO("requesting tool pose");
@@ -214,6 +256,16 @@ int CartMotionCommander::plan_cartesian_traj_qprev_to_des_tool_pose(int nsteps, 
     double t_wait = 2.0; //max wait this long for planning result
     int rtn_val = send_planning_goal_get_result( t_wait);
     return rtn_val;    
+}
+
+int CartMotionCommander::append_multi_traj_cart_segment(int nsteps, double arrival_time, geometry_msgs::PoseStamped des_pose) {
+    cart_goal_.command_code = arm_motion_action::arm_interfaceGoal::APPEND_MULTI_TRAJ_CART_SEGMENT;
+    cart_goal_.nsteps = nsteps; //send 10 sub-commands
+    cart_goal_.arrival_time = arrival_time; //move over 2 sec
+    cart_goal_.des_pose_gripper = des_pose; 
+    double t_wait = 2.0; //max wait this long for planning result
+    int rtn_val = send_planning_goal_get_result( t_wait);
+    return rtn_val;      
 }
 
 

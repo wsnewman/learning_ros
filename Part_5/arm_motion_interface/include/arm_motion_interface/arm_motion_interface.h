@@ -10,6 +10,9 @@
 #include <cartesian_interpolator/cartesian_interpolator.h>
 #include <actionlib/server/simple_action_server.h>
 #include <arm_motion_action/arm_interfaceAction.h>
+#include <control_msgs/FollowJointTrajectoryAction.h>
+#include <actionlib/client/simple_action_client.h>
+#include <actionlib/client/terminal_state.h>
 using namespace std;
 
 //some needed robot-specific info:
@@ -18,6 +21,7 @@ struct ArmMotionInterfaceInits {
     string urdf_flange_frame_name; 
     string joint_states_topic_name;
     string traj_pub_topic_name; 
+    string traj_as_name;
     vector<string> jnt_names;
     IKSolver * pIKSolver_arg;
     FwdSolver * pFwdSolver_arg;
@@ -26,6 +30,7 @@ struct ArmMotionInterfaceInits {
     vector<double> qdot_max_vec;
     vector<double> q_home_pose;
     vector<double> planner_joint_weights;
+    bool use_trajectory_action_server; //
 };
 
 
@@ -42,7 +47,8 @@ private:
     actionlib::SimpleActionServer<arm_motion_action::arm_interfaceAction> cart_move_as_;
     int NJNTS_; // this will get discovered by size of input arg for joint name vector
     std::vector<Eigen::VectorXd> des_path;
-    trajectory_msgs::JointTrajectory des_trajectory_; // empty trajectory   
+    trajectory_msgs::JointTrajectory des_trajectory_, des_trajectory_segment_; // holder for planned trajectory
+    std::vector<trajectory_msgs::JointTrajectory> multi_traj_vec_; //holder for multiple traj segments
     Eigen::VectorXd q_lower_limits_,q_upper_limits_,qdot_max_vec_,q_home_pose_; 
 
     ros::Publisher traj_publisher_; //<trajectory_msgs::JointTrajectory>;// = nh.advertise<trajectory_msgs::JointTrajectory>;//("joint_path_command", 1);   
@@ -58,6 +64,8 @@ private:
     string urdf_flange_frame_name_; 
     string joint_states_topic_name_;
     string traj_pub_topic_name_; 
+    string traj_as_name_;
+    bool use_trajectory_action_server_;
     
 
     //callback fnc for joint-space action server to return result to this node:
@@ -122,7 +130,8 @@ private:
 
     // key method: invokes motion from pre-planned trajectory
     // this is a private method, to try to protect it from accident or abuse
-
+    void armDoneCb_(const actionlib::SimpleClientGoalState& state,
+        const control_msgs::FollowJointTrajectoryResultConstPtr& result);
     void jointStatesCb(const sensor_msgs::JointState& joint_states); //prototype for callback of joint_states subscriber
     void map_arm_joint_indices(vector<string> joint_names);
     
@@ -148,7 +157,11 @@ private:
 
     double time_scale_stretch_factor_;
     bool finished_before_timeout_;
-
+    control_msgs::FollowJointTrajectoryGoal js_goal_; //consistent goal message for UR action service
+    //control_msgs::FollowJointTrajectoryGoal goal;
+    bool arm_motion_doneCb_flag_;
+    actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> action_client_;
+ 
 public:
     
     //ArmMotionInterface(ros::NodeHandle*, string, string, string, string, vector<string>, IKSolver *,FwdSolver *); //define the body of the constructor outside of class definition
@@ -159,7 +172,8 @@ public:
     }
 
     tf::TransformListener* tfListener_; //make listener available to main;
-    void execute_planned_traj(void);    
+    void execute_planned_traj(void); 
+    void execute_traj_nseg();
     //jspace trajectory planners:
     bool plan_jspace_traj_current_to_waiting_pose(); //traj current pose to a jspace home pose
     bool plan_jspace_traj_current_to_qgoal(); //traj current to a specified jspace pose
@@ -170,7 +184,8 @@ public:
     bool plan_cartesian_traj_qprev_to_des_tool_pose(); //start from last pose of previously-computd trajectory
     bool plan_cartesian_traj_qstart_to_des_tool_pose();
     
-
+    bool append_multi_traj_cart_segment();
+    bool append_multi_traj_jspace_segment();
     
     //handy utilities, primarily used internally, but publicly accessible
     void compute_tool_stamped_pose(void);    

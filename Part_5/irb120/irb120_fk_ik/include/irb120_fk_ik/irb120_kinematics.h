@@ -82,15 +82,15 @@ const double q_lower_limits[6] = {DH_q_min1, DH_q_min2, DH_q_min3, DH_q_min4, DH
 const double q_upper_limits[6] = {DH_q_max1, DH_q_max2, DH_q_max3, DH_q_max4, DH_q_max5, DH_q_max6};
 const double g_qdot_max_vec[] = {4.3, 4.3, 4.3, 5.5, 5.5, 5.5}; //values per URDF 
 const double g_q_home_pose[6] = {0,0,0,0,0,0};
-
-const double jspace_planner_weights[] = {5,5,3,0.5,0.2,0.2}; //default weights for jspace planner (changeable in planner)
+//put these in planner_joint_weights.h
+//const double jspace_planner_weights[] = {5,5,3,0.5,0.2,0.2}; //default weights for jspace planner (changeable in planner)
 
 
 class Irb120_fwd_solver {
 public:
     Irb120_fwd_solver(); //constructor; //const hand_s& hs, const atlas_frame& base_frame, double rot_ang);
     //atlas_hand_fwd_solver(const hand_s& hs, const atlas_frame& base_frame);
-    Eigen::Affine3d fwd_kin_solve(const Vectorq6x1& q_vec); // given vector of q angles, compute fwd kin
+    //Eigen::Affine3d fwd_kin_solve(const Vectorq6x1& q_vec); // given vector of q angles, compute fwd kin
     Eigen::Affine3d fwd_kin_solve(const Eigen::VectorXd& q_vec); 
     Eigen::Matrix4d get_wrist_frame();
     Eigen::MatrixXd jacobian(const Eigen::VectorXd& q_vec);

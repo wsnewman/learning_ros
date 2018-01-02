@@ -165,6 +165,10 @@ UR10FwdSolver::UR10FwdSolver() { //(const hand_s& hs, const atlas_frame& base_fr
     A_tool_wrt_flange_.translation() = O_hand;
 }
 
+Eigen::MatrixXd UR10FwdSolver::jacobian(const Eigen::VectorXd& q_vec) {
+    ROS_WARN("Jacobian function not implemented!");
+    exit(1);
+}
 /*  IN CASE WANT JACOBIAN LATER...finish this
 Eigen::MatrixXd irb120_hand_fwd_solver::get_Jacobian(const Vectorq6x1& q_vec) {
     solve(q_vec);
