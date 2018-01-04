@@ -98,6 +98,25 @@ int CartMotionCommander::execute_traj_nseg(int iseg) {
     return (int) cart_result_.return_code;
 }
 
+int CartMotionCommander::execute_traj_nseg(int iseg,double desired_move_time) {
+    ROS_INFO("requesting execution of segment %d of multi-traj plan",iseg);
+    cart_goal_.command_code = arm_motion_action::arm_interfaceGoal::EXECUTE_TRAJ_NSEG;
+    cart_goal_.nseg = iseg;
+    cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&CartMotionCommander::doneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired
+    //finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(computed_arrival_time_+2.0));
+    if (!cb_received_in_time(desired_move_time+2.0)) {
+        ROS_WARN("did not complete move before timeout, %f sec",desired_move_time+2.0);
+        return (int) arm_motion_action::arm_interfaceResult::NOT_FINISHED_BEFORE_TIMEOUT;
+    }
+    if (cart_result_.return_code != arm_motion_action::arm_interfaceResult::SUCCESS) {
+        ROS_WARN("move did not return success; code = %d", cart_result_.return_code);
+        return (int) cart_result_.return_code;
+    }
+
+    ROS_INFO("move returned success");
+    return (int) cart_result_.return_code;
+}
+
 //Eigen::VectorXd get_joint_angles(void); 
 
 Eigen::VectorXd CartMotionCommander::get_joint_angles(void) {

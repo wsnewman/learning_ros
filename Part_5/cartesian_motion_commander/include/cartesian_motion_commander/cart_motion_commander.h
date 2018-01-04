@@ -57,6 +57,7 @@ public:
     geometry_msgs::PoseStamped get_tool_pose_stamped(void); // { return tool_pose_stamped_;};    
     int execute_planned_traj(void);  
     int execute_traj_nseg(int iseg);
+    int execute_traj_nseg(int iseg,double desired_move_time);
 
     
     int plan_jspace_traj_current_to_waiting_pose(int nsteps, double arrival_time); //traj current pose to a jspace home pose
