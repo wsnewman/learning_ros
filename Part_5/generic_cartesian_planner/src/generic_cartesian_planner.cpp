@@ -205,6 +205,8 @@ bool CartTrajPlanner::cartesian_path_planner_w_rot_interp(Eigen::Affine3d a_flan
         jsp.get_soln(optimal_path);
         trip_cost = jsp.get_trip_cost();
     }
+    //given jspace path, refine it, in case IK requires addl numerical correction:
+    pIKSolver_->ik_refine(cartesian_affine_samples_, optimal_path);
 
     //now, jsp is deleted, but optimal_path lives on:
     /*
@@ -488,6 +490,9 @@ bool CartTrajPlanner::plan_cartesian_path_w_rot_interp(Eigen::VectorXd q_start,E
         cout<<"fk origin: "<<origin_fk.transpose()<<endl;
     }
     cout << "soln min cost: " << trip_cost << endl;
+    //refine this path, if necessary:
+    //given jspace path, refine it, in case IK requires addl numerical correction:
+    pIKSolver_->ik_refine(cartesian_affine_samples_, optimal_path);
     return true;
 }
 

@@ -41,6 +41,7 @@ public:
     // given desired pose, compute IK; return solns in vector of jspace poses
     //virtual int ik_solve(){};
     virtual int ik_solve(Eigen::Affine3d const& desired_hand_pose,  std::vector<Eigen::VectorXd> &q_ik_solns)=0; //{};
+    virtual void ik_refine(std::vector<Eigen::Affine3d> cartesian_affine_samples, std::vector<Eigen::VectorXd> &optimal_path)=0;
 };
 
 

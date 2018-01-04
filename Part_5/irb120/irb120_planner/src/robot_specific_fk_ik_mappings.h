@@ -33,6 +33,12 @@ public:
     int ik_solve(Eigen::Affine3d const& desired_hand_pose, std::vector<Eigen::VectorXd> &q_ik_solns) {
         return (irb120_ik_solver_.ik_solve(desired_hand_pose, q_ik_solns));
     }
+    //irb120 does not need Jacobian refinement of IK, so provide a do-nothing dummy fnc
+    //this is only needed if the robot requires refinement of IK solutions using Jacobian
+    void ik_refine(std::vector<Eigen::Affine3d> cartesian_affine_samples, std::vector<Eigen::VectorXd> &optimal_path) {
+        return;
+    };
+
 };
 
 //these are global--but convenient to put them here:

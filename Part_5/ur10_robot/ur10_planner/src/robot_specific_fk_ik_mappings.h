@@ -33,6 +33,10 @@ public:
     int ik_solve(Eigen::Affine3d const& desired_hand_pose, std::vector<Eigen::VectorXd> &q_ik_solns) {
         return (ur10IkSolver_.ik_solve(desired_hand_pose, q_ik_solns)); //call the robot-specific IK solver
     }
+    //do-nothing fnc, since soln is analytic, don't need numerical refinement
+    void ik_refine(std::vector<Eigen::Affine3d> cartesian_affine_samples, std::vector<Eigen::VectorXd> &optimal_path) {
+        return;
+    };
 };
 
 //these are global--but convenient to put them here:

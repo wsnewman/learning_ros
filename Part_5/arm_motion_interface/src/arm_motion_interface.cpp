@@ -391,53 +391,6 @@ double ArmMotionInterface::min_transition_time(Eigen::VectorXd dqvec) {
     return t_max;
 }
 
-//take in q_start and q_end and build trivial path in optimal_path_ for pure joint-space move
-/*
-bool ArmMotionInterface::plan_jspace_path_qstart_to_qend() { //Eigen::VectorXd q_start, Eigen::VectorXd q_goal) {
-    ROS_INFO("setting up a joint-space path");
-    int njnts = goal->q_goal.size();
-    
-    xxx
-                q_start_Xd_ = q_vec_arm_Xd_; //get_jspace_start_();
-            q_goal_pose_Xd_.resize(NJNTS_);
-         
-            njnts = goal->q_goal.size();
-            if (njnts != NJNTS_) {
-                ROS_WARN("joint-space goal is wrong dimension");
-                cart_result_.return_code = arm_motion_action::arm_interfaceResult::PATH_NOT_VALID;
-            } else {
-
-                //    bool plan_jspace_traj_qstart_to_qend(Eigen::VectorXd q_start, Eigen::VectorXd q_goal, int nsteps, double arrival_time, trajectory_msgs::JointTrajectory &trajectory);
-
-                for (int i = 0; i < NJNTS_; i++) q_goal_pose_Xd_[i] = goal->q_goal[i];
-                plan_jspace_path_qstart_to_qend(q_start_Xd_, q_goal_pose_Xd_);
-                //busy_working_on_a_request_ = false;
-            }
-            
-    xxx
-    float64[] q_goal
-float64[] q_start
-    q_start_Xd_ = goal.//q_vec_arm_Xd_;//current pose
-            //q_start=q_start_Xd; // convert to fixed-size vector;
-    path_is_valid_ = pCartTrajPlanner_->jspace_trivial_path_planner(q_start, q_goal, optimal_path_);
-    if (path_is_valid_) {
-
-        stuff_trajectory(optimal_path_, des_trajectory_); //convert from vector of poses to trajectory message   
-        computed_arrival_time_ = des_trajectory_.points.back().time_from_start.toSec();
-        cart_result_.return_code = arm_motion_action::arm_interfaceResult::SUCCESS;
-        cart_result_.computed_arrival_time = computed_arrival_time_;
-        cart_move_as_.setSucceeded(cart_result_);
-    } else {
-        cart_result_.return_code = arm_motion_action::arm_interfaceResult::PATH_NOT_VALID;
-        cart_result_.computed_arrival_time = -1.0; //impossible arrival time        
-        cart_move_as_.setSucceeded(cart_result_); //the communication was a success, but not the computation 
-    }
-    return path_is_valid_;
-}
- */
-
-
-
 
 //implementations of armMotionInterface member functions
 //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
