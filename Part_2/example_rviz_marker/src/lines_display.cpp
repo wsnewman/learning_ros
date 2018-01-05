@@ -4,6 +4,7 @@
 // this node subscribes to topic "lineseg_vertices", from which it receives 
 //geometry_msgs/Point points specifying two vertices of a line segment
 // each input ADDS to the current array of line segments (without deletions)
+//NOTE: ASSUMES RECEIVED POINTS ARE WITH RESPECT TO "WORLD" FRAME
 
 // To see the result, add a "Marker" display in rviz and subscribe to the marker topic "/lines_display"
 // Can test this display node with the test node: "lines_display_test_node"

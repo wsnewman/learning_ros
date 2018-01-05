@@ -191,6 +191,8 @@ public:
     void compute_tool_stamped_pose(void);    
     Eigen::Affine3d xform_gripper_pose_to_affine_flange_wrt_base(geometry_msgs::PoseStamped des_pose_gripper);
     void display_affine(Eigen::Affine3d affine);    
+    geometry_msgs::PoseStamped get_current_tool_stamped_pose() {  return current_gripper_stamped_pose_; };
+    
     //Eigen::Affine3d transformTFToEigen(const tf::Transform &t);
     //Eigen::Affine3d transformPoseToEigenAffine3d(geometry_msgs::Pose pose);
     //geometry_msgs::Pose transformEigenAffine3dToPose(Eigen::Affine3d e);
