@@ -19,6 +19,13 @@
         <mesh filename="package://exmpl_models/glennan_2nd_flr/glennan_2nd_flr.stl"/>
       </geometry>
     </visual>
+    <collision>
+      <origin xyz="0 0 -0.1" rpy="0 0 0"/>
+      <geometry>
+        <!--box size="0.2 0.2 1"/-->
+        <mesh filename="package://exmpl_models/glennan_2nd_flr/glennan_2nd_flr.stl"/>
+      </geometry>
+    </collision>
     <inertial>
       <origin xyz="0 0 0.5" rpy="0 0 0"/>
       <mass value="1000"/>

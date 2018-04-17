@@ -1,0 +1,27 @@
+<launch>
+
+<!-- Convert an xacro and put on parameter server -->
+  <!-- These arguments load the electric grippers, for example left_electric_gripper:=true -->
+  <arg name="left_electric_gripper" default="true"/>
+  <arg name="right_electric_gripper" default="true"/>
+  
+<param name="robot_description" command="$(find xacro)/xacro --inorder '$(find baxter_variations)/baxter_on_mobot.xacro' gazebo:=true" />
+
+
+<!-- Spawn robot into Gazebo -->
+<node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model baxter_on_mobot" />
+<!--start a second robot_state_publisher...needed for mobot caster joints -->
+<node name="robot_state_publisher2" pkg="robot_state_publisher" type="robot_state_publisher" />
+  <!-- ros_control baxter launch file -->
+  <include file="$(find baxter_sim_hardware)/launch/baxter_sdk_control.launch">
+      <arg name="right_electric_gripper" value="$(arg right_electric_gripper)"/>
+      <arg name="left_electric_gripper" value="$(arg left_electric_gripper)"/>
+  </include>
+  <!-- Load the software version into the ROS Parameter Server -->
+  <param name="rethink/software_version" value="1.2.0" />  
+
+  <node pkg="tf" type="static_transform_publisher" name="kinect_broadcaster" args="0 0 0 -0.500 0.500 -0.500 0.500 kinect_link kinect_depth_frame 100" />
+  <node pkg="tf" type="static_transform_publisher" name="kinect_broadcaster2" args="0 0 0 -0.500 0.500 -0.500 0.500 kinect_link kinect_pc_frame 100" />  
+
+
+</launch>
