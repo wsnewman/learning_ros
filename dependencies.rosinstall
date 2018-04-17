@@ -1,0 +1,9 @@
+# NOTE: This is an example source dependency, remove it before adding the
+# dependencies.rosinstall file to your repository.
+#
+# The 'wstool' utility is the preferred way of adding elements to this file. To
+# add all repositories from an existing workspace, you can use `wstool scrape`.
+
+- git:
+   local-name: catkin_simple
+   uri: https://github.com/catkin/catkin_simple.git
