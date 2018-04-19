@@ -31,6 +31,7 @@ catkin_simple()
 # may add more of these lines for more nodes from the same package
 cs_add_executable(lin_steering_wrt_odom src/lin_steering_wrt_odom.cpp)
 cs_add_executable(lin_steering_wrt_amcl src/lin_steering_wrt_amcl.cpp)
+cs_add_executable(lin_steering_wrt_amcl_and_odom src/lin_steering_wrt_amcl_and_odom.cpp)
 
 #the following is required, if desire to link a node in this package with a library created in this same package
 # edit the arguments to reference the named node and named library within this package

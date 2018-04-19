@@ -36,6 +36,7 @@ cs_add_executable(pub_des_state_path_client src/pub_des_state_path_client.cpp)
 cs_add_executable(pub_des_state_path_client_3x3 src/pub_des_state_path_client_3mx3m_sqr.cpp)
 #cs_add_executable(pub_des_state_path_client_10x10 src/pub_des_state_path_client_10mx10m_sqr.cpp)
 cs_add_executable(starting_pen_pub_des_state_path_client src/starting_pen_pub_des_state_path_client.cpp)
+cs_add_executable(glennan_pub_des_state_path_client src/glennan_pub_des_state_path_client.cpp)
 
 #the following is required, if desire to link a node in this package with a library created in this same package
 # edit the arguments to reference the named node and named library within this package
