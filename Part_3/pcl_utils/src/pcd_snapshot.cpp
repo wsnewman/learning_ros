@@ -6,7 +6,7 @@
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h> 
 #include <pcl_ros/point_cloud.h> //use these to convert between PCL and ROS datatypes
-#include <pcl/ros/conversions.h>
+#include <pcl/conversions.h>
 #include <pcl-1.7/pcl/point_cloud.h>
 #include <pcl-1.7/pcl/PCLHeader.h>
 
