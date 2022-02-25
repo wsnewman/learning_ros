@@ -35,6 +35,11 @@ catkin_simple()
 # edit the arguments to reference the named node and named library within this package
 # target_link_library(example my_lib)
 
+install(DIRECTORY models
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  PATTERN "*~" EXCLUDE
+  )
+
 cs_install()
 cs_export()
     

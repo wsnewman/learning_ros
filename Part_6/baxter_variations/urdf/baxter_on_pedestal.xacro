@@ -11,8 +11,8 @@
   <xacro:include filename="$(find baxter_description)/urdf/right_end_effector.urdf.xacro" />
   
   <!--retrofit with Kinect and pedestal-->
-  <xacro:include filename="$(find baxter_variations)/kinect_link.urdf.xacro" />
-  <xacro:include filename="$(find baxter_variations)/baxter_pedestal.xacro" />
+  <xacro:include filename="$(find baxter_variations)/urdf/kinect_link.urdf.xacro" />
+  <xacro:include filename="$(find baxter_variations)/urdf/baxter_pedestal.xacro" />
 
   <!-- attach baxter torso to the pedestal -->
   <!-- results in torso 0.760 above ground plane-->

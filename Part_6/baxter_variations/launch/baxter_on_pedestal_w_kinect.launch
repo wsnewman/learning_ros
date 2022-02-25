@@ -4,7 +4,7 @@
   <arg name="left_electric_gripper" default="true"/>
   <arg name="right_electric_gripper" default="true"/>
   
-<param name="robot_description" command="$(find xacro)/xacro.py --inorder '$(find baxter_variations)/baxter_on_pedestal.xacro' gazebo:=true" />
+<param name="robot_description" command="$(find xacro)/xacro.py --inorder '$(find baxter_variations)/urdf/baxter_on_pedestal.xacro' gazebo:=true" />
 
 <!-- Spawn a robot into Gazebo -->
 <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model baxter_on_pedestal" />
@@ -18,7 +18,7 @@
   <param name="rethink/software_version" value="1.2.0" />  
  
 
-  <!--node pkg="tf" type="static_transform_publisher" name="kinect_broadcaster" args="0 0 0 -0.500 0.500 -0.500 0.500 kinect_link kinect_depth_frame 100" /-->
-  <!--node pkg="tf" type="static_transform_publisher" name="kinect_broadcaster2" args="0 0 0 -0.500 0.500 -0.500 0.500 kinect_link kinect_pc_frame 100" /-->  
+  <node pkg="tf" type="static_transform_publisher" name="kinect_broadcaster" args="0 0 0 -0.500 0.500 -0.500 0.500 kinect_link kinect_depth_frame 100" />
+  <node pkg="tf" type="static_transform_publisher" name="kinect_broadcaster2" args="0 0 0 -0.500 0.500 -0.500 0.500 kinect_link kinect_pc_frame 100" />  
 
 </launch>
