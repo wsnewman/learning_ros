@@ -32,11 +32,11 @@
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 #include <pcl_ros/point_cloud.h>
-#include <pcl/ros/conversions.h>
+#include <pcl/conversions.h>
 #include <pcl/features/normal_3d.h>
 #include <pcl/filters/extract_indices.h>
 #include <pcl_ros/transforms.h>
-#include <pcl-1.7/pcl/impl/point_types.hpp>
+#include <pcl-1.10/pcl/impl/point_types.hpp>
 
 #include <pcl/filters/passthrough.h>
 #include <pcl/filters/voxel_grid.h> 

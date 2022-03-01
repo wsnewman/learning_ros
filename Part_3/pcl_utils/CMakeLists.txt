@@ -8,7 +8,7 @@ find_package(catkin_simple REQUIRED)
 #find_package(OpenCV REQUIRED)
 
 #uncomment the next line to use the point-cloud library
-find_package(PCL 1.7 REQUIRED)
+find_package(PCL 1.10 REQUIRED)
 include_directories(${PCL_INCLUDE_DIRS})
 
 #uncomment the following 4 lines to use the Eigen library

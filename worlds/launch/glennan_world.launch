@@ -12,7 +12,7 @@
   <!-- We resume the logic in empty_world.launch, changing the name of the world to be launched -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <!--arg name="world_name" value="$(find baxter_gazebo)/worlds/baxter.world"/-->
-    <arg name="world_name" value="$(find worlds)/no_ground_plane.world"/>
+    <arg name="world_name" value="$(find worlds)/worlds/no_ground_plane.world"/>
     <arg name="debug" value="$(arg debug)" />
     <arg name="gui" value="$(arg gui)" />
     <arg name="paused" value="$(arg paused)"/>
@@ -20,6 +20,6 @@
     <arg name="headless" value="$(arg headless)"/>
   </include>
 <include file="$(find exmpl_models)/launch/add_glennan_2nd_flr.launch" />
-<include file="$(find baxter_variations)/baxter_on_mobot_no_gazebo.launch" />
+<include file="$(find baxter_variations)/urdf/baxter_on_mobot_no_gazebo.launch" />
 
 </launch>

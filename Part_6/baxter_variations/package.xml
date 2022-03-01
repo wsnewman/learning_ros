@@ -40,6 +40,7 @@
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
   <buildtool_depend>catkin_simple</buildtool_depend>
+  <run_depend>exmpl_models</run_depend>
   
   
   <!-- The export tag contains other, unspecified, tags -->

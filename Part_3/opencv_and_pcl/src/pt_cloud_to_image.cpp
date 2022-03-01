@@ -22,8 +22,8 @@
 //#include <pcl/PCLPointCloud2.h> //PCL is migrating to PointCloud2 
 
 #include <pcl/common/common_headers.h>
-#include <pcl-1.7/pcl/point_cloud.h>
-#include <pcl-1.7/pcl/PCLHeader.h>
+#include <pcl-1.10/pcl/point_cloud.h>
+#include <pcl-1.10/pcl/PCLHeader.h>
 
 using namespace std;
 //will use filter objects "passthrough" and "voxel_grid" in this example

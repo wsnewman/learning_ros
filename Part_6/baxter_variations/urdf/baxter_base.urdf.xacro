@@ -3,7 +3,7 @@
   <xacro:arg name="gazebo" default="false"/>
   <xacro:if value="$(arg gazebo)">
     <!-- Gazebo Tags -->
-    <xacro:include filename="$(find baxter_variations)/baxter_drives.gazebo.xacro" />
+    <xacro:include filename="$(find baxter_variations)/urdf/baxter_drives.gazebo.xacro" />
   </xacro:if>
   <link name="base">
   </link>

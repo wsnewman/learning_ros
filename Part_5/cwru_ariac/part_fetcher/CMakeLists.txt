@@ -7,7 +7,7 @@ find_package(catkin_simple REQUIRED)
 #find_package(OpenCV REQUIRED)
 
 #uncomment the next 2 lines to use the point-cloud library
-#find_package(PCL 1.7 REQUIRED)
+#find_package(PCL 1.10 REQUIRED)
 #include_directories(${PCL_INCLUDE_DIRS})
 
 
@@ -18,6 +18,11 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 add_definitions(${EIGEN_DEFINITIONS})
 
 catkin_simple()
+
+find_package(ignition-cmake2 REQUIRED)
+find_package(ignition-math6 REQUIRED)
+find_package(ignition-common3 REQUIRED)
+find_package(ignition-msgs5)
 
 # example boost usage
 find_package(Boost REQUIRED COMPONENTS system thread)

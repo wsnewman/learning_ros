@@ -38,7 +38,7 @@
   
  <!-- here we add our own models to the simulation-->   
   
-  <param name="robot_description" command="$(find xacro)/xacro.py '$(find simple_camera_model)/stereo_camera_model.xacro'" />
+  <param name="robot_description" command="$(find xacro)/xacro '$(find simple_camera_model)/stereo_camera_model.xacro'" />
 
 <!-- Spawn a robot into Gazebo -->
 <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model stereo_cam" />

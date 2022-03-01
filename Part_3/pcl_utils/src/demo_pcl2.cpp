@@ -9,15 +9,15 @@
 
 #include <sensor_msgs/PointCloud2.h> 
 #include <pcl_ros/point_cloud.h> //to convert between PCL and ROS
-#include <pcl/ros/conversions.h>
+#include <pcl/conversions.h>
 
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 //#include <pcl/PCLPointCloud2.h> //PCL is migrating to PointCloud2 
 
 #include <pcl/common/common_headers.h>
-#include <pcl-1.7/pcl/point_cloud.h>
-#include <pcl-1.7/pcl/PCLHeader.h>
+#include <pcl-1.10/pcl/point_cloud.h>
+#include <pcl-1.10/pcl/PCLHeader.h>
 #include <pcl/PCLPointCloud2.h>
 
 //will use filter objects "passthrough" and "voxel_grid" in this example
@@ -30,7 +30,7 @@
 #include <pcl/segmentation/sac_segmentation.h>
 
 #include <pcl_utils/pcl_utils.h>
-#include <pcl-1.7/pcl/pcl_base.h>  //a local library with some utility fncs
+#include <pcl-1.10/pcl/pcl_base.h>  //a local library with some utility fncs
 
 
 int main(int argc, char** argv) {

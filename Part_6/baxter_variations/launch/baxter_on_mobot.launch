@@ -3,7 +3,7 @@
 <include file="$(find gazebo_ros)/launch/empty_world.launch"/>
 
 <!-- add starting pen-->
-<node name="spawn_sdf1" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/starting_pen/model.sdf -sdf -model starting_pen -y -5" />
+<node name="spawn_sdf1" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/models/starting_pen/model.sdf -sdf -model starting_pen -y -5" />
 
 <!-- add tables and blocks -->
    <include file="$(find exmpl_models)/launch/add_table.launch"> </include>
@@ -16,7 +16,7 @@
   <arg name="left_electric_gripper" default="true"/>
   <arg name="right_electric_gripper" default="true"/>
   
-<param name="robot_description" command="$(find xacro)/xacro.py --inorder '$(find baxter_variations)/baxter_on_mobot.xacro' gazebo:=true" />
+<param name="robot_description" command="$(find xacro)/xacro --inorder '$(find baxter_variations)/urdf/baxter_on_mobot.xacro' gazebo:=true" />
 
 
 <!-- Spawn robot into Gazebo -->

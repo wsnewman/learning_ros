@@ -1,6 +1,6 @@
 <launch>
 	
-	<param name="robot_description" command="$(find xacro)/xacro.py --inorder '$(find baxter_variations)/baxter.xacro' gazebo:=false" />
+	<param name="robot_description" command="$(find xacro)/xacro --inorder '$(find baxter_variations)/urdf/baxter.xacro' gazebo:=false" />
 	
 	<!-- static transforms  -->
 	

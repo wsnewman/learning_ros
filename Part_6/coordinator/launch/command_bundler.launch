@@ -22,7 +22,7 @@
   <node pkg="coordinator" type="open_loop_nav_service" name="open_loop_nav_service"  output="screen"/>  
   <node pkg="coordinator" type="open_loop_yaw_service" name="open_loop_yaw_service"  output="screen"/>
 
-  <include file="$(find baxter_variations)/mobot_startup_navstack.launch">
+  <include file="$(find baxter_variations)/urdf/mobot_startup_navstack.launch">
  </include> 
     
 </launch>

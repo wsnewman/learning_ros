@@ -7,7 +7,7 @@ find_package(catkin_simple REQUIRED)
 #find_package(OpenCV REQUIRED)
 
 #uncomment the next line to use the point-cloud library
-#find_package(PCL 1.7 REQUIRED)
+#find_package(PCL 1.10 REQUIRED)
 
 #uncomment the following 4 lines to use the Eigen library
 #find_package(cmake_modules REQUIRED)
@@ -34,6 +34,11 @@ catkin_simple()
 #the following is required, if desire to link a node in this package with a library created in this same package
 # edit the arguments to reference the named node and named library within this package
 # target_link_library(example my_lib)
+
+install(DIRECTORY models
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  PATTERN "*~" EXCLUDE
+  )
 
 cs_install()
 cs_export()
