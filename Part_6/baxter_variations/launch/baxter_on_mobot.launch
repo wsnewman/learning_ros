@@ -16,7 +16,7 @@
   <arg name="left_electric_gripper" default="true"/>
   <arg name="right_electric_gripper" default="true"/>
   
-<param name="robot_description" command="$(find xacro)/xacro.py --inorder '$(find baxter_variations)/urdf/baxter_on_mobot.xacro' gazebo:=true" />
+<param name="robot_description" command="$(find xacro)/xacro --inorder '$(find baxter_variations)/urdf/baxter_on_mobot.xacro' gazebo:=true" />
 
 
 <!-- Spawn robot into Gazebo -->

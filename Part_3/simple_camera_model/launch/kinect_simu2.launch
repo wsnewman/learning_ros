@@ -1,6 +1,6 @@
 <launch>
  <!-- add kinect model to the parameter server-->   
-<param name="robot_description" command="$(find xacro)/xacro.py '$(find simple_camera_model)/simple_kinect_model2.xacro'" />
+<param name="robot_description" command="$(find xacro)/xacro '$(find simple_camera_model)/simple_kinect_model2.xacro'" />
 
 <!-- Spawn the model into Gazebo -->
 <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model simple_kinect" />
