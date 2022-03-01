@@ -8,9 +8,9 @@
 #include <pcl/sample_consensus/method_types.h>
 #include <pcl/sample_consensus/model_types.h>
 #include <pcl/segmentation/sac_segmentation.h>
-#include <pcl-1.7/pcl/point_cloud.h>
-#include <pcl-1.7/pcl/PointIndices.h>
-#include <pcl-1.7/pcl/PCLHeader.h>
+#include <pcl-1.10/pcl/point_cloud.h>
+#include <pcl-1.10/pcl/PointIndices.h>
+#include <pcl-1.10/pcl/PCLHeader.h>
 using namespace std;
 
 int main(int argc, char** argv) {

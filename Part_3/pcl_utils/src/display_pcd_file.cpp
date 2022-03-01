@@ -7,12 +7,12 @@
 #include <math.h>
 #include <sensor_msgs/PointCloud2.h> //useful ROS message types
 #include <pcl_ros/point_cloud.h> //to convert between PCL a nd ROS
-#include <pcl/ros/conversions.h>
+#include <pcl/conversions.h>
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 #include <pcl/common/common_headers.h>
-#include <pcl-1.7/pcl/point_cloud.h>
-#include <pcl-1.7/pcl/PCLHeader.h>
+#include <pcl-1.10/pcl/point_cloud.h>
+#include <pcl-1.10/pcl/PCLHeader.h>
 
 using namespace std;
 

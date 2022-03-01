@@ -3,6 +3,8 @@
 
 #include <nav_core/base_local_planner.h>
 #include <nav_msgs/Path.h>
+#include <tf/tf.h>
+#include <tf/transform_listener.h>
  
 	class MinimalPlanner : public nav_core::BaseLocalPlanner {
 	public:

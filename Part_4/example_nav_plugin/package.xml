@@ -41,9 +41,11 @@
   <buildtool_depend>catkin</buildtool_depend>
   <buildtool_depend>catkin_simple</buildtool_depend>
   <build_depend>roscpp</build_depend>
-<build_depend>nav_core</build_depend>
+  <build_depend>nav_core</build_depend>
+  <build_depend>base_local_planner</build_depend>
   <run_depend>roscpp</run_depend>
-<run_depend>nav_core</run_depend>
+  <run_depend>nav_core</run_depend>
+  <run_depend>base_local_planner</run_depend>
   <!-- The export tag contains other, unspecified, tags -->
   <export>
      <!-- the following line refers to another xml file, in which some

@@ -7,8 +7,8 @@ find_package(catkin_simple REQUIRED)
 #find_package(OpenCV REQUIRED)
 
 #uncomment the next 2 lines to use the point-cloud library
-#find_package(PCL 1.7 REQUIRED)
-#include_directories(${PCL_INCLUDE_DIRS})
+find_package(PCL 1.10 REQUIRED)
+include_directories(${PCL_INCLUDE_DIRS})
 
 
 #uncomment the following 4 lines to use the Eigen library
@@ -19,8 +19,13 @@ add_definitions(${EIGEN_DEFINITIONS})
 
 catkin_simple()
 
+find_package(ignition-cmake2 REQUIRED)
+find_package(ignition-math6 REQUIRED)
+find_package(ignition-common3 REQUIRED)
+
 # example boost usage
-# find_package(Boost REQUIRED COMPONENTS system thread)
+find_package(Boost REQUIRED COMPONENTS system thread)
+find_package(gazebo)
 
 # C++0x support - not quite the same as final C++11!
 # use carefully;  can interfere with point-cloud library
