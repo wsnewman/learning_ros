@@ -2,7 +2,7 @@
 //
 
 #include <pcl_utils/pcl_utils.h>
-#include <pcl-1.7/pcl/PCLHeader.h>
+#include <pcl-1.10/pcl/PCLHeader.h>
 //uses initializer list for member vars
 
 PclUtils::PclUtils(ros::NodeHandle* nodehandle) : nh_(*nodehandle), pclKinect_ptr_(new PointCloud<pcl::PointXYZ>),

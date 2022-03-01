@@ -43,6 +43,7 @@
   <build_depend>roscpp</build_depend>
 <build_depend>object_finder</build_depend>
 <build_depend>object_grabber</build_depend>
+<build_depend>navigator</build_depend>
 <build_depend>actionlib</build_depend>
 <build_depend>simple_action_client</build_depend>
 <build_depend>tf</build_depend>
@@ -54,6 +55,7 @@
   <run_depend>roscpp</run_depend>
 <run_depend>object_finder</run_depend>
 <run_depend>object_grabber</run_depend>
+<run_depend>navigator</run_depend>
 <run_depend>actionlib</run_depend>
 <run_depend>simple_action_client</run_depend>
 <run_depend>tf</run_depend>
